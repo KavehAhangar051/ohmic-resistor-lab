@@ -43,11 +43,9 @@ test('Deep parallel resistor module returns equivalent resistance and branch tel
 test('Deep parallel resistor module enforces branch collection invariants and short-circuit detection', () => {
   let items: ResistorItem[] = [{ id: '1', value: '0', unit: 'Ohm', count: 1 }];
 
-  // Invariant: removing the last remaining branch is a no-op
   items = removeResistorBranch(items, '1');
   assert.equal(items.length, 1);
 
-  // Appending, updating, and duplicating branches
   items = appendResistorBranch(items, '2');
   items = updateResistorBranch(items, '2', { value: '10', unit: 'kOhm' });
   items = duplicateResistorBranch(items, items[1], '3');
@@ -99,7 +97,6 @@ test('Deep voltage divider workspace module evaluates E24/E96 pairs, effective s
   assert.equal(workspace.result.voutVolts, 2.5);
   assert.equal(workspace.result.adcImpedanceStatus, 'direct');
 
-  // Selecting a suggested pair resolves selectedPair without mutating base state
   const targetPair = workspace.suggestedPairs[1];
 
   const selection = applySelectedPairToState(
@@ -113,7 +110,6 @@ test('Deep voltage divider workspace module evaluates E24/E96 pairs, effective s
 
   assert.equal(selection.selectedPair?.r1Ohms, targetPair.r1Ohms);
 
-  // Direct calculation remains deterministic for explicit circuit states
   const directResult = calculateVoltageDivider(baseState);
   assert.equal(directResult.theveninResistanceOhms, 5000);
 });

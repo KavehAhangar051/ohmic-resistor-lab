@@ -74,13 +74,12 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
     setCurrentFilter('all');
   }, []);
 
-  // Delegate domain filtering and multi-criterion sorting to the application layer
   const sortedPairs = React.useMemo(
     () => filterAndSortResistorPairs(pairs, currentFilter, sortState.key, sortState.dir),
     [pairs, currentFilter, sortState]
   );
 
-  if (!pairs || pairs.length === 0) {
+  if (pairs.length === 0) {
     return (
       <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-5 text-center text-xs text-zinc-400">
         <p className="font-semibold text-zinc-300 mb-1">جدول جفت مقاومت‌های استاندارد تجاری (E24 / E96)</p>

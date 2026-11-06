@@ -71,7 +71,7 @@ const EMPTY_DIVIDER_RESULT: VoltageDividerResult = {
  * and Thevenin equivalent resistance across forward and inverse solve modes.
  */
 export function calculateVoltageDivider(state: VoltageDividerState): VoltageDividerResult {
-  const solveMode = state.solveMode || 'vout';
+  const { solveMode } = state;
 
   let rlOhms: number | null = null;
 
@@ -84,7 +84,7 @@ export function calculateVoltageDivider(state: VoltageDividerState): VoltageDivi
   }
 
   let vinVolts = toVolts(state.vin, state.vinUnit);
-  const voutTargetVolts = toVolts(state.vout || '0', state.voutUnit || 'V');
+  const voutTargetVolts = toVolts(state.vout, state.voutUnit);
   let r1Ohms = toOhms(state.r1, state.r1Unit);
   let r2Ohms = toOhms(state.r2, state.r2Unit);
 
@@ -309,9 +309,7 @@ export function calculateVoltageDivider(state: VoltageDividerState): VoltageDivi
 }
 
 /**
- * Deep module entry point for the Voltage Divider workspace.
- * Hides unit parsing, E24/E96 commercial pair search, active pair selection fallback,
- * and loaded/unloaded circuit analysis behind a single high-leverage interface.
+ * Evaluates the voltage divider workspace state, suggested E24/E96 pairs, and circuit telemetry.
  */
 export function evaluateVoltageDividerWorkspace(
   state: VoltageDividerState,
@@ -320,7 +318,7 @@ export function evaluateVoltageDividerWorkspace(
   maxSuggestions = 20
 ): VoltageDividerWorkspaceEvaluation {
   const vinNum = toVolts(state.vin, state.vinUnit);
-  const targetVout = toVolts(state.vout || '0', state.voutUnit || 'V');
+  const targetVout = toVolts(state.vout, state.voutUnit);
 
   let suggestedPairs: StandardResistorPair[] = [];
 

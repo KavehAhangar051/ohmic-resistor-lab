@@ -23,8 +23,7 @@ export const DividerResultDisplay = React.memo(function DividerResultDisplay({
   const r2UnitSym = getResistorSymbol(state.r2Unit);
 
   const errorPct = result.targetErrorPct ?? 0;
-  const appMode = state.appMode || 'sampling';
-  const solveMode = state.solveMode || 'vout';
+  const { appMode, solveMode } = state;
   const adcStatus = result.adcImpedanceStatus ?? 'direct';
   const adcBadgeLabel = result.adcImpedanceBadgeLabel ?? 'مستقیم (ADC OK)';
 

@@ -88,8 +88,7 @@ function evaluateHighPassResponse(ratio: number): TransferFunctionPoint {
 }
 
 /**
- * Evaluates first-order passive filter magnitude and phase at normalized frequency ratio (f / fc)
- * without boolean control flags.
+ * Evaluates first-order passive filter magnitude and phase at normalized frequency ratio (f / fc).
  */
 function evaluateFilterResponse(
   ratio: number,

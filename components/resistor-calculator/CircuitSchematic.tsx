@@ -2,11 +2,7 @@
 
 import * as React from 'react';
 import { ResistorItem, ParallelCalculationResult } from '@/types/resistor';
-import { calculateParallelBranchStats } from '@/lib/resistor-calc';
-import {
-  SymbolStandard,
-  BranchStat,
-} from './schematic/schematic-types';
+import { SymbolStandard } from './schematic/schematic-types';
 import { SchematicCard } from '../schematic-core/SchematicCard';
 import { SchematicLegendItem } from '../schematic-core/schematic-types';
 import { SchematicTerminals } from './schematic/SchematicTerminals';
@@ -47,12 +43,6 @@ export function CircuitSchematic({ items, result }: CircuitSchematicProps) {
 
   const topBusY = 44;
   const bottomBusY = 168;
-
-  // Consume branch telemetry directly from the deep module result
-  const branchStats: BranchStat[] = React.useMemo(
-    () => result.branchStats ?? calculateParallelBranchStats(items, result.conductanceSiemens),
-    [items, result.branchStats, result.conductanceSiemens]
-  );
 
   const handleHover = React.useCallback((idx: number | null) => {
     setHoveredIndex(idx);
@@ -99,7 +89,7 @@ export function CircuitSchematic({ items, result }: CircuitSchematicProps) {
               branchX={firstBranchX + idx * branchSpacing}
               topBusY={topBusY}
               bottomBusY={bottomBusY}
-              stats={branchStats[idx]}
+              stats={result.branchStats[idx]}
               isHovered={hoveredIndex === idx}
               symbolStandard={std}
               animateFlow={flow}
