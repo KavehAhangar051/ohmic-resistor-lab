@@ -234,6 +234,25 @@ export function calculateVoltageDivider(state: VoltageDividerState): VoltageDivi
 
   const r2EffectiveFmt = formatResistance(r2Equivalent);
 
+  const targetErrorPct =
+    !isNaN(voutTargetVolts) && voutTargetVolts > 0
+      ? Math.abs((voutVolts - voutTargetVolts) / voutTargetVolts) * 100
+      : 0;
+
+  const maxShortCircuitCurrentAmperes = r1Ohms > 0 && vinVolts > 0 ? vinVolts / r1Ohms : 0;
+  const maxIscFmt = formatCurrent(maxShortCircuitCurrentAmperes);
+
+  const safeOutputCurrent5PctAmperes =
+    rthOhms > 0 && voutVolts > 0 ? (0.05 * voutVolts) / rthOhms : 0;
+
+  const safeI5Fmt = formatCurrent(safeOutputCurrent5PctAmperes);
+
+  const adcImpedanceStatus: 'direct' | 'buffered' | 'high_impedance' =
+    rthOhms <= 10e3 ? 'direct' : rthOhms <= 50e3 ? 'buffered' : 'high_impedance';
+
+  const adcImpedanceBadgeLabel =
+    rthOhms <= 10e3 ? 'مستقیم (ADC OK)' : rthOhms <= 50e3 ? 'سرعت پایین' : 'نیاز به بافر';
+
   return {
     isValid: true,
     vinVolts,
@@ -273,6 +292,15 @@ export function calculateVoltageDivider(state: VoltageDividerState): VoltageDivi
     loadSagPercentage: loadSagPct,
     r2EffectiveOhms: state.hasLoad ? r2Equivalent : null,
     displayR2Effective: `${r2EffectiveFmt.value} ${r2EffectiveFmt.unit}`,
+    targetErrorPct,
+    maxShortCircuitCurrentAmperes,
+    displayMaxIscValue: maxIscFmt.value,
+    displayMaxIscUnit: maxIscFmt.unit,
+    safeOutputCurrent5PctAmperes,
+    displaySafeI5Value: safeI5Fmt.value,
+    displaySafeI5Unit: safeI5Fmt.unit,
+    adcImpedanceStatus,
+    adcImpedanceBadgeLabel,
   };
 }
 

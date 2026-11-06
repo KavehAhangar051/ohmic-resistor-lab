@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { FilterState, FilterCalculationResult } from '@/types/passive-filter';
+import { getResistorSymbol } from '@/lib/voltage-divider-format';
 import { SymbolStandard, SchematicLegendItem } from '../schematic-core/schematic-types';
 import { SchematicCard } from '../schematic-core/SchematicCard';
 import { SchematicGround } from '../schematic-core/SchematicGround';
@@ -47,7 +48,7 @@ export const FilterSchematic = React.memo(function FilterSchematic({
   const wireColor = '#10b981';
   const returnColor = '#71717a';
 
-  const rUnitText = state.resistanceUnit === 'Ohm' ? 'Ω' : state.resistanceUnit === 'kOhm' ? 'kΩ' : 'MΩ';
+  const rUnitText = getResistorSymbol(state.resistanceUnit);
   const cText = `${state.capacitance} ${state.capacitanceUnit}`;
   const lText = `${state.inductance} ${state.inductanceUnit}`;
 

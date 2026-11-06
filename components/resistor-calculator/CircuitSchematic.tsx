@@ -2,10 +2,10 @@
 
 import * as React from 'react';
 import { ResistorItem, ParallelCalculationResult } from '@/types/resistor';
+import { calculateParallelBranchStats } from '@/lib/resistor-calc';
 import {
   SymbolStandard,
   BranchStat,
-  UNIT_MULTIPLIER_MAP,
 } from './schematic/schematic-types';
 import { SchematicCard } from '../schematic-core/SchematicCard';
 import { SchematicLegendItem } from '../schematic-core/schematic-types';
@@ -48,85 +48,11 @@ export function CircuitSchematic({ items, result }: CircuitSchematicProps) {
   const topBusY = 44;
   const bottomBusY = 168;
 
-  // Calculate current share percentage and animation dynamics
-  const branchStats: BranchStat[] = React.useMemo(() => {
-    const totalG = result.conductanceSiemens;
-    const hasValidG = totalG !== null && totalG > 0;
-
-    return items.map((item) => {
-      const rawVal = item.value;
-
-      if (rawVal.length === 0) {
-        return {
-          hasValue: false,
-          ohms: null,
-          currentShare: null,
-          isShort: false,
-          animDuration: 1.4,
-          flowOpacity: 0.5,
-          flowStrokeWidth: 2,
-        };
-      }
-
-      const num = parseFloat(rawVal);
-
-      if (isNaN(num) || num < 0) {
-        return {
-          hasValue: false,
-          ohms: null,
-          currentShare: null,
-          isShort: false,
-          animDuration: 1.4,
-          flowOpacity: 0.5,
-          flowStrokeWidth: 2,
-        };
-      }
-
-      const multiplier = UNIT_MULTIPLIER_MAP[item.unit] ?? 1;
-      const ohms = num * multiplier;
-
-      if (ohms === 0) {
-        return {
-          hasValue: true,
-          ohms: 0,
-          currentShare: '100%',
-          isShort: true,
-          animDuration: 0.35,
-          flowOpacity: 1,
-          flowStrokeWidth: 3,
-        };
-      }
-
-      if (hasValidG) {
-        const branchConductance = 1 / ohms;
-        const share = (branchConductance / totalG) * 100;
-        const shareRatio = Math.max(0.005, Math.min(1, share / 100));
-        const animDuration = Math.max(0.42, Math.min(3.2, 0.45 / Math.pow(shareRatio, 0.45)));
-        const flowOpacity = Math.max(0.35, Math.min(0.95, 0.3 + 0.65 * Math.sqrt(shareRatio)));
-        const flowStrokeWidth = shareRatio > 0.35 ? 2.5 : shareRatio > 0.1 ? 2.0 : 1.5;
-
-        return {
-          hasValue: true,
-          ohms,
-          currentShare: share < 0.1 ? '<0.1%' : `${share.toFixed(1)}%`,
-          isShort: false,
-          animDuration,
-          flowOpacity,
-          flowStrokeWidth,
-        };
-      }
-
-      return {
-        hasValue: true,
-        ohms,
-        currentShare: null,
-        isShort: false,
-        animDuration: 1.4,
-        flowOpacity: 0.5,
-        flowStrokeWidth: 2,
-      };
-    });
-  }, [items, result.conductanceSiemens]);
+  // Delegate branch conductance and current share calculation to the domain layer
+  const branchStats: BranchStat[] = React.useMemo(
+    () => calculateParallelBranchStats(items, result.conductanceSiemens),
+    [items, result.conductanceSiemens]
+  );
 
   const handleHover = React.useCallback((idx: number | null) => {
     setHoveredIndex(idx);

@@ -52,11 +52,15 @@ export interface FilterCalculationResult {
 
 export interface StandardFilterPair {
   resistorOhms: number;
+  resistorValue: string;
+  resistorUnit: ResistanceUnit;
   resistorDisplay: string;
   reactiveOhmsOrValue: number;
   reactiveDisplay: string;
   reactiveUnit: string;
+  reactiveUnitCode: CapacitanceUnit | InductanceUnit;
   actualFc: number;
   displayActualFc: string;
   errorPct: number;
 }
+

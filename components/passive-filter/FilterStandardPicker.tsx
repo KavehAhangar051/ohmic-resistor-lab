@@ -8,7 +8,6 @@ import {
   CapacitanceUnit,
   InductanceUnit,
 } from '@/types/passive-filter';
-import { decomposeOhms } from '@/lib/voltage-divider-format';
 import { Badge } from '@/components/ui/badge';
 
 interface FilterStandardPickerProps {
@@ -23,18 +22,6 @@ interface FilterStandardPickerProps {
   ) => void;
 }
 
-function toReactiveUnit(unit: string): CapacitanceUnit | InductanceUnit {
-  if (unit === 'pF' || unit === 'nF' || unit === 'uF') return unit;
-
-  if (unit === 'µF') return 'uF';
-
-  if (unit === 'uH' || unit === 'mH' || unit === 'H') return unit;
-
-  if (unit === 'µH') return 'uH';
-
-  return 'nF';
-}
-
 export const FilterStandardPicker = React.memo(function FilterStandardPicker({
   pairs,
   topology,
@@ -44,11 +31,7 @@ export const FilterStandardPicker = React.memo(function FilterStandardPicker({
   const [appliedIdx, setAppliedIdx] = React.useState<number | null>(null);
 
   const handleApply = (pair: StandardFilterPair, idx: number) => {
-    const { value: rVal, unit: rUnit } = decomposeOhms(pair.resistorOhms);
-    const reactVal = pair.reactiveDisplay;
-    const reactUnit = toReactiveUnit(pair.reactiveUnit);
-
-    onApplyPair(rVal, rUnit, reactVal, reactUnit);
+    onApplyPair(pair.resistorValue, pair.resistorUnit, pair.reactiveDisplay, pair.reactiveUnitCode);
     setAppliedIdx(idx);
     setTimeout(() => setAppliedIdx(null), 1800);
   };

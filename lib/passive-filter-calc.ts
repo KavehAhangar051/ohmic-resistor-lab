@@ -3,13 +3,15 @@ import {
   FilterCalculationResult,
   BodePoint,
   StandardFilterPair,
+  CapacitanceUnit,
+  InductanceUnit,
 } from '@/types/passive-filter';
 import { formatPrecision } from './resistor-calc';
 import { E12_BASE_VALUES, E24_BASE_VALUES } from './e-series';
 import {
   RESISTOR_UNIT_MAP,
   FormattedMeasurement,
-  formatResistance,
+  decomposeOhms,
 } from './voltage-divider-format';
 
 export const RESISTANCE_MULTIPLIERS = RESISTOR_UNIT_MAP;
@@ -168,6 +170,7 @@ interface ReactiveCandidate {
   val: number;
   display: string;
   unit: string;
+  unitCode: CapacitanceUnit | InductanceUnit;
 }
 
 function getReactiveCandidates(topology: 'rc' | 'rl'): ReactiveCandidate[] {
@@ -181,11 +184,11 @@ function getReactiveCandidates(topology: 'rc' | 'rl'): ReactiveCandidate[] {
         if (val < 1e-11 || val > 1e-5) continue;
 
         if (val >= 1e-6) {
-          candidates.push({ val, display: `${Number((val * 1e6).toFixed(1))}`, unit: 'µF' });
+          candidates.push({ val, display: `${Number((val * 1e6).toFixed(1))}`, unit: 'µF', unitCode: 'uF' });
         } else if (val >= 1e-9) {
-          candidates.push({ val, display: `${Number((val * 1e9).toFixed(1))}`, unit: 'nF' });
+          candidates.push({ val, display: `${Number((val * 1e9).toFixed(1))}`, unit: 'nF', unitCode: 'nF' });
         } else {
-          candidates.push({ val, display: `${Number((val * 1e12).toFixed(0))}`, unit: 'pF' });
+          candidates.push({ val, display: `${Number((val * 1e12).toFixed(0))}`, unit: 'pF', unitCode: 'pF' });
         }
       }
     }
@@ -195,11 +198,11 @@ function getReactiveCandidates(topology: 'rc' | 'rl'): ReactiveCandidate[] {
         const val = b * dec;
 
         if (val >= 1) {
-          candidates.push({ val, display: `${Number(val.toFixed(2))}`, unit: 'H' });
+          candidates.push({ val, display: `${Number(val.toFixed(2))}`, unit: 'H', unitCode: 'H' });
         } else if (val >= 1e-3) {
-          candidates.push({ val, display: `${Number((val * 1e3).toFixed(1))}`, unit: 'mH' });
+          candidates.push({ val, display: `${Number((val * 1e3).toFixed(1))}`, unit: 'mH', unitCode: 'mH' });
         } else {
-          candidates.push({ val, display: `${Number((val * 1e6).toFixed(0))}`, unit: 'µH' });
+          candidates.push({ val, display: `${Number((val * 1e6).toFixed(0))}`, unit: 'µH', unitCode: 'uH' });
         }
       }
     }
@@ -237,14 +240,17 @@ export function findStandardFilterPairs(
       const err = Math.abs((actualFc - targetFcHz) / targetFcHz) * 100;
 
       if (err <= 8) {
-        const rFmt = formatResistance(r);
+        const rDec = decomposeOhms(r);
         const fcFmt = formatFrequency(actualFc);
         results.push({
           resistorOhms: r,
-          resistorDisplay: `${rFmt.value} ${rFmt.unit}`,
+          resistorValue: rDec.value,
+          resistorUnit: rDec.unit,
+          resistorDisplay: `${rDec.value} ${rDec.symbol}`,
           reactiveOhmsOrValue: react.val,
           reactiveDisplay: react.display,
           reactiveUnit: react.unit,
+          reactiveUnitCode: react.unitCode,
           actualFc,
           displayActualFc: `${fcFmt.value} ${fcFmt.unit}`,
           errorPct: parseFloat(err.toFixed(1)),
@@ -257,4 +263,5 @@ export function findStandardFilterPairs(
 
   return results.slice(0, maxResults);
 }
+
 

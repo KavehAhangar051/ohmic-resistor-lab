@@ -17,6 +17,7 @@ import {
   SortDirection,
 } from '@/types/voltage-divider';
 import { ResistorUnit } from '@/types/resistor';
+import { filterAndSortResistorPairs } from '@/lib/voltage-divider-pair-finder';
 import { DividerPairFilterBar } from './DividerPairFilterBar';
 import { DividerPairTableRow } from './DividerPairTableRow';
 import { TableSortHeader } from './DividerTableSortHeader';
@@ -56,20 +57,6 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
   const [currentFilter, setCurrentFilter] = React.useState<CurrentFilterOption>('all');
   const [pageSize, setPageSize] = React.useState<TablePageSize>(20);
 
-  // Filter pairs according to current constraints
-  const filteredPairs = React.useMemo(() => {
-    return pairs.filter((pair) => {
-      // Current filter
-      if (currentFilter === 'low' && pair.currentAmperes >= 100e-6) return false;
-
-      if (currentFilter === 'mid' && (pair.currentAmperes < 100e-6 || pair.currentAmperes > 5e-3)) return false;
-
-      if (currentFilter === 'high' && pair.currentAmperes <= 5e-3) return false;
-
-      return true;
-    });
-  }, [pairs, currentFilter]);
-
   // Atomic sort state to eliminate state desync and React StrictMode double-call side effects
   const [sortState, setSortState] = React.useState<{ key: PairTableSortKey; dir: SortDirection }>({
     key: 'score',
@@ -87,60 +74,11 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
     setCurrentFilter('all');
   }, []);
 
-  // Sort pairs according to selected column and direction with stable tie-breaker
-  const sortedPairs = React.useMemo(() => {
-    const indexed = filteredPairs.map((pair, originalIdx) => ({ pair, originalIdx }));
-
-    indexed.sort((a, b) => {
-      let diff = 0;
-
-      switch (sortState.key) {
-        case 'r1':
-          diff = a.pair.r1Ohms - b.pair.r1Ohms;
-          break;
-        case 'r2':
-          diff = a.pair.r2Ohms - b.pair.r2Ohms;
-          break;
-        case 'error':
-          diff = a.pair.errorPercentage - b.pair.errorPercentage;
-          break;
-        case 'vout':
-          diff = a.pair.actualVout - b.pair.actualVout;
-          break;
-        case 'ratio':
-          diff = a.pair.divisionRatio - b.pair.divisionRatio;
-          break;
-        case 'thevenin':
-          diff = a.pair.theveninOhms - b.pair.theveninOhms;
-          break;
-        case 'current':
-          diff = a.pair.currentAmperes - b.pair.currentAmperes;
-          break;
-        case 'power':
-          diff = a.pair.powerWatts - b.pair.powerWatts;
-          break;
-        case 'worst_case':
-          diff = a.pair.worstCaseErrorPct - b.pair.worstCaseErrorPct;
-          break;
-        case 'score':
-        default:
-          diff = a.originalIdx - b.originalIdx;
-          break;
-      }
-
-      if (Math.abs(diff) < 1e-9) {
-        diff = a.pair.errorPercentage - b.pair.errorPercentage;
-
-        if (Math.abs(diff) < 1e-9) {
-          diff = a.originalIdx - b.originalIdx;
-        }
-      }
-
-      return sortState.dir === 'asc' ? diff : -diff;
-    });
-
-    return indexed.map((item) => item.pair);
-  }, [filteredPairs, sortState]);
+  // Delegate domain filtering and multi-criterion sorting to the application layer
+  const sortedPairs = React.useMemo(
+    () => filterAndSortResistorPairs(pairs, currentFilter, sortState.key, sortState.dir),
+    [pairs, currentFilter, sortState]
+  );
 
   if (!pairs || pairs.length === 0) {
     return (

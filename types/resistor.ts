@@ -32,3 +32,14 @@ export interface ParallelCalculationResult {
   isShortCircuit: boolean;
   errorMessage: string | null;
 }
+
+export interface ParallelBranchStat {
+  hasValue: boolean;
+  ohms: number | null;
+  currentShare: string | null;
+  isShort: boolean;
+  animDuration: number;
+  flowOpacity: number;
+  flowStrokeWidth: number;
+}
+

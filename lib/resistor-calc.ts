@@ -1,4 +1,9 @@
-import { ResistorItem, ParallelCalculationResult, ResistorUnit } from '@/types/resistor';
+import {
+  ResistorItem,
+  ParallelCalculationResult,
+  ParallelBranchStat,
+  ResistorUnit,
+} from '@/types/resistor';
 
 const UNIT_MAP: Record<ResistorUnit, number> = {
   Ohm: 1,
@@ -306,5 +311,91 @@ export function getBranchResistance(item: ResistorItem): {
   }
 
   return { displayValue, displayUnit, rawOhms: branchOhms };
+}
+
+/**
+ * Calculates per-branch equivalent resistance, current share percentage (Gi / Gtotal),
+ * and visual flow velocity/opacity parameters for parallel resistor networks.
+ * Keeps circuit physics and conductance ratios inside the domain layer.
+ */
+export function calculateParallelBranchStats(
+  items: ResistorItem[],
+  totalConductanceSiemens: number | null
+): ParallelBranchStat[] {
+  const hasValidG = totalConductanceSiemens !== null && totalConductanceSiemens > 0;
+
+  return items.map((item) => {
+    const rawVal = item.value;
+
+    if (rawVal.length === 0) {
+      return {
+        hasValue: false,
+        ohms: null,
+        currentShare: null,
+        isShort: false,
+        animDuration: 1.4,
+        flowOpacity: 0.5,
+        flowStrokeWidth: 2,
+      };
+    }
+
+    const num = parseFloat(rawVal);
+
+    if (isNaN(num) || num < 0) {
+      return {
+        hasValue: false,
+        ohms: null,
+        currentShare: null,
+        isShort: false,
+        animDuration: 1.4,
+        flowOpacity: 0.5,
+        flowStrokeWidth: 2,
+      };
+    }
+
+    const multiplier = UNIT_MAP[item.unit] ?? 1;
+    const ohms = num * multiplier;
+
+    if (ohms === 0) {
+      return {
+        hasValue: true,
+        ohms: 0,
+        currentShare: '100%',
+        isShort: true,
+        animDuration: 0.35,
+        flowOpacity: 1,
+        flowStrokeWidth: 3,
+      };
+    }
+
+    if (hasValidG) {
+      const branchConductance = 1 / ohms;
+      const share = (branchConductance / totalConductanceSiemens) * 100;
+      const shareRatio = Math.max(0.005, Math.min(1, share / 100));
+      const animDuration = Math.max(0.42, Math.min(3.2, 0.45 / Math.pow(shareRatio, 0.45)));
+      const flowOpacity = Math.max(0.35, Math.min(0.95, 0.3 + 0.65 * Math.sqrt(shareRatio)));
+      const flowStrokeWidth = shareRatio > 0.35 ? 2.5 : shareRatio > 0.1 ? 2.0 : 1.5;
+
+      return {
+        hasValue: true,
+        ohms,
+        currentShare: share < 0.1 ? '<0.1%' : `${share.toFixed(1)}%`,
+        isShort: false,
+        animDuration,
+        flowOpacity,
+        flowStrokeWidth,
+      };
+    }
+
+    return {
+      hasValue: true,
+      ohms,
+      currentShare: null,
+      isShort: false,
+      animDuration: 1.4,
+      flowOpacity: 0.5,
+      flowStrokeWidth: 2,
+    };
+  });
 }
 

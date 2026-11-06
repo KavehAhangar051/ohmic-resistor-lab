@@ -4,6 +4,7 @@ import * as React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, Zap, Clock, Activity, Gauge, Compass } from 'lucide-react';
 import { FilterCalculationResult, FilterState } from '@/types/passive-filter';
+import { getResistorSymbol } from '@/lib/voltage-divider-format';
 import { cn } from '@/lib/utils';
 
 interface FilterResultDisplayProps {
@@ -101,7 +102,7 @@ export const FilterResultDisplay = React.memo(function FilterResultDisplay({
             <span>امپدانس در fc</span>
           </div>
           <div className="text-base font-mono font-bold text-amber-400 tabular-nums">
-            {state.resistance} <span className="text-xs font-normal text-zinc-400">{state.resistanceUnit === 'Ohm' ? 'Ω' : state.resistanceUnit === 'kOhm' ? 'kΩ' : 'MΩ'}</span>
+            {state.resistance} <span className="text-xs font-normal text-zinc-400">{getResistorSymbol(state.resistanceUnit)}</span>
           </div>
           <div className="text-[10px] text-zinc-500 font-mono">
             {isRC ? 'Xc = R' : 'Xl = R'}

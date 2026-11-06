@@ -3,6 +3,9 @@ import {
   PairSortCriterion,
   DividerApplicationMode,
   ResistorSeriesOption,
+  CurrentFilterOption,
+  PairTableSortKey,
+  SortDirection,
 } from '@/types/voltage-divider';
 import { formatPrecision } from './resistor-calc';
 import {
@@ -376,3 +379,79 @@ export function findBestE24Pairs(
 
   return results;
 }
+
+/**
+ * Filters and sorts standard commercial resistor pairs by current consumption constraint
+ * and multi-column engineering criteria with deterministic tie-breaking.
+ */
+export function filterAndSortResistorPairs(
+  pairs: StandardResistorPair[],
+  currentFilter: CurrentFilterOption = 'all',
+  sortKey: PairTableSortKey = 'score',
+  sortDir: SortDirection = 'asc'
+): StandardResistorPair[] {
+  const filtered = pairs.filter((pair) => {
+    if (currentFilter === 'low' && pair.currentAmperes >= 100e-6) return false;
+
+    if (currentFilter === 'mid' && (pair.currentAmperes < 100e-6 || pair.currentAmperes > 5e-3)) {
+      return false;
+    }
+
+    if (currentFilter === 'high' && pair.currentAmperes <= 5e-3) return false;
+
+    return true;
+  });
+
+  const indexed = filtered.map((pair, originalIdx) => ({ pair, originalIdx }));
+
+  indexed.sort((a, b) => {
+    let diff = 0;
+
+    switch (sortKey) {
+      case 'r1':
+        diff = a.pair.r1Ohms - b.pair.r1Ohms;
+        break;
+      case 'r2':
+        diff = a.pair.r2Ohms - b.pair.r2Ohms;
+        break;
+      case 'error':
+        diff = a.pair.errorPercentage - b.pair.errorPercentage;
+        break;
+      case 'vout':
+        diff = a.pair.actualVout - b.pair.actualVout;
+        break;
+      case 'ratio':
+        diff = a.pair.divisionRatio - b.pair.divisionRatio;
+        break;
+      case 'thevenin':
+        diff = a.pair.theveninOhms - b.pair.theveninOhms;
+        break;
+      case 'current':
+        diff = a.pair.currentAmperes - b.pair.currentAmperes;
+        break;
+      case 'power':
+        diff = a.pair.powerWatts - b.pair.powerWatts;
+        break;
+      case 'worst_case':
+        diff = a.pair.worstCaseErrorPct - b.pair.worstCaseErrorPct;
+        break;
+      case 'score':
+      default:
+        diff = a.originalIdx - b.originalIdx;
+        break;
+    }
+
+    if (Math.abs(diff) < 1e-9) {
+      diff = a.pair.errorPercentage - b.pair.errorPercentage;
+
+      if (Math.abs(diff) < 1e-9) {
+        diff = a.originalIdx - b.originalIdx;
+      }
+    }
+
+    return sortDir === 'asc' ? diff : -diff;
+  });
+
+  return indexed.map((item) => item.pair);
+}
+

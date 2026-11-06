@@ -6,7 +6,7 @@ import { AlertTriangle } from 'lucide-react';
 import { VoltageDividerResult, VoltageDividerState } from '@/types/voltage-divider';
 import { ResistorUnit } from '@/types/resistor';
 import { formatPrecision } from '@/lib/resistor-calc';
-import { formatCurrent, getResistorSymbol, toOhms, toVolts } from '@/lib/voltage-divider-format';
+import { getResistorSymbol } from '@/lib/voltage-divider-format';
 import { Badge } from '@/components/ui/badge';
 
 interface DividerResultDisplayProps {
@@ -22,38 +22,19 @@ export const DividerResultDisplay = React.memo(function DividerResultDisplay({
   const r1UnitSym = getResistorSymbol(state.r1Unit);
   const r2UnitSym = getResistorSymbol(state.r2Unit);
 
-  const targetVoutNum = parseFloat(state.vout || '0');
-  const actualVoutNum = result.voutVolts ?? 0;
-
-  const errorPct =
-    targetVoutNum > 0
-      ? Math.abs((actualVoutNum - targetVoutNum) / targetVoutNum) * 100
-      : 0;
-
+  const errorPct = result.targetErrorPct ?? 0;
   const appMode = state.appMode || 'sampling';
   const solveMode = state.solveMode || 'vout';
-  const rth = result.theveninResistanceOhms ?? 0;
+  const adcStatus = result.adcImpedanceStatus ?? 'direct';
+  const adcBadgeLabel = result.adcImpedanceBadgeLabel ?? 'مستقیم (ADC OK)';
 
-  // Output current capabilities from Vout
-  const r1Ohms = toOhms(state.r1 || '0', state.r1Unit);
-  const vinVolts = result.vinVolts ?? toVolts(state.vin || '0', state.vinUnit);
-  const voutVolts = result.voutVolts ?? 0;
+  const maxIscValue = result.displayMaxIscValue ?? '0';
+  const maxIscUnit = result.displayMaxIscUnit ?? 'mA';
+  const safeI5Value = result.displaySafeI5Value ?? '0';
+  const safeI5Unit = result.displaySafeI5Unit ?? 'mA';
 
-  // Absolute short-circuit current (Vout connected to ground)
-  const maxIsc = r1Ohms > 0 && vinVolts > 0 ? vinVolts / r1Ohms : 0;
-  const maxIscFmt = formatCurrent(maxIsc);
-
-  // Maximum recommended current to keep output voltage sag under 5%
-  const safeI5 = rth > 0 && voutVolts > 0 ? (0.05 * voutVolts) / rth : 0;
-  const safeI5Fmt = formatCurrent(safeI5);
-
-  // Sampling mode metrics
-  const ratioNum =
-    result.voutVolts && result.vinVolts && result.vinVolts > 0
-      ? result.voutVolts / result.vinVolts
-      : 0;
-
-  const dbAtten = ratioNum > 0 ? (20 * Math.log10(ratioNum)).toFixed(1) : '—';
+  const ratioNum = result.ratio ?? 0;
+  const dbAtten = result.dbAttenuation ?? '—';
 
   return (
     <div className="relative rounded-xl border border-zinc-800 bg-[#121215] p-5 sm:p-6 overflow-hidden">
@@ -194,7 +175,7 @@ export const DividerResultDisplay = React.memo(function DividerResultDisplay({
                 <span className="font-sans text-[11px]">ضریب مقیاس سیگنال (K):</span>
                 <div className="flex items-center gap-1.5" dir="ltr">
                   <span className="text-emerald-400 font-bold font-mono tabular-nums">{formatPrecision(ratioNum * 100, 1)}%</span>
-                  <span className="text-[10px] text-zinc-500 font-mono">({dbAtten} dB)</span>
+                  <span className="text-[10px] text-zinc-500 font-mono">({dbAtten})</span>
                 </div>
               </div>
 
@@ -203,11 +184,11 @@ export const DividerResultDisplay = React.memo(function DividerResultDisplay({
                 <div className="flex items-center gap-1.5" dir="ltr">
                   <span className="text-zinc-200 font-semibold font-mono tabular-nums">{result.displayRth} {result.displayRthUnit}</span>
                   <Badge
-                    variant={rth <= 10e3 ? 'success' : rth <= 50e3 ? 'subtle' : 'warning'}
+                    variant={adcStatus === 'direct' ? 'success' : adcStatus === 'buffered' ? 'subtle' : 'warning'}
                     size="sm"
                     className="font-sans text-[9px] py-0"
                   >
-                    {rth <= 10e3 ? 'مستقیم (ADC OK)' : rth <= 50e3 ? 'سرعت پایین' : 'نیاز به بافر'}
+                    {adcBadgeLabel}
                   </Badge>
                 </div>
               </div>
@@ -278,7 +259,7 @@ export const DividerResultDisplay = React.memo(function DividerResultDisplay({
             <div className="flex items-center justify-between text-zinc-200 font-medium">
               <span className="font-sans text-[11px]">جریان مجاز خروجی Vout:</span>
               <span className="font-mono text-xs text-emerald-400 font-bold" dir="ltr">
-                تا {safeI5Fmt.value} {safeI5Fmt.unit}
+                تا {safeI5Value} {safeI5Unit}
               </span>
             </div>
             
@@ -286,13 +267,13 @@ export const DividerResultDisplay = React.memo(function DividerResultDisplay({
               <div className="flex items-center justify-between">
                 <span>جریان خروجی برای حفظ ولتاژ (افت کمتر از ۵٪):</span>
                 <span className="font-mono text-zinc-200 tabular-nums" dir="ltr">
-                  {safeI5Fmt.value} {safeI5Fmt.unit}
+                  {safeI5Value} {safeI5Unit}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span>حداکثر جریان خروجی در اتصال کوتاه (Isc):</span>
                 <span className="font-mono text-zinc-400 tabular-nums" dir="ltr">
-                  {maxIscFmt.value} {maxIscFmt.unit}
+                  {maxIscValue} {maxIscUnit}
                 </span>
               </div>
               {state.hasLoad && (
@@ -329,7 +310,7 @@ export const DividerResultDisplay = React.memo(function DividerResultDisplay({
             </div>
 
             <p className="text-[10px] text-zinc-500 leading-relaxed pt-1.5 border-t border-zinc-800/80">
-              کشیدن جریان بیشتر از {safeI5Fmt.value} {safeI5Fmt.unit} باعث افت ولتاژ خروجی می‌شود؛ برای تأمین جریان بالاتر از بافر (Op-Amp) یا رگولاتور استفاده کنید.
+              کشیدن جریان بیشتر از {safeI5Value} {safeI5Unit} باعث افت ولتاژ خروجی می‌شود؛ برای تأمین جریان بالاتر از بافر (Op-Amp) یا رگولاتور استفاده کنید.
             </p>
           </div>
         </div>

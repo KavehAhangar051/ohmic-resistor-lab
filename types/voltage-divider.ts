@@ -143,6 +143,15 @@ export interface VoltageDividerResult {
   loadSagPercentage?: string;
   r2EffectiveOhms?: number | null;
   displayR2Effective?: string;
+  targetErrorPct?: number;
+  maxShortCircuitCurrentAmperes?: number;
+  displayMaxIscValue?: string;
+  displayMaxIscUnit?: string;
+  safeOutputCurrent5PctAmperes?: number;
+  displaySafeI5Value?: string;
+  displaySafeI5Unit?: string;
+  adcImpedanceStatus?: 'direct' | 'buffered' | 'high_impedance';
+  adcImpedanceBadgeLabel?: string;
 }
 
 export interface DividerPreset {
