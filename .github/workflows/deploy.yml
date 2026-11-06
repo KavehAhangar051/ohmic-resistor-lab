@@ -42,8 +42,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: ${{ steps.detect-package-manager.outputs.manager == 'npm' && 'npm' || '' }}
+          node-version: "22"
+          cache: "npm"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -52,6 +52,8 @@ jobs:
         run: npm install
 
       - name: Run Quality Checks (Typecheck & Lint)
+        env:
+          NODE_OPTIONS: "--experimental-strip-types"
         run: npm run check
 
       - name: Build with Next.js
