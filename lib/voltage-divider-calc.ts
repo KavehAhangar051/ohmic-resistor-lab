@@ -2,6 +2,10 @@ import { ResistorUnit } from '@/types/resistor';
 import {
   VoltageDividerState,
   VoltageDividerResult,
+  VoltageDividerWorkspaceEvaluation,
+  VoltageDividerPairSelection,
+  StandardResistorPair,
+  PairSortCriterion,
   DividerPreset,
 } from '@/types/voltage-divider';
 import { formatPrecision } from './resistor-calc';
@@ -9,9 +13,9 @@ import {
   solveR1,
   solveR2,
   solveVin,
-  findBestE24Pairs,
   getEffectiveR2,
 } from './voltage-divider-solver';
+import { findBestE24Pairs } from './voltage-divider-pair-finder';
 import {
   RESISTOR_UNIT_MAP,
   VOLTAGE_UNIT_MAP,
@@ -301,6 +305,86 @@ export function calculateVoltageDivider(state: VoltageDividerState): VoltageDivi
     displaySafeI5Unit: safeI5Fmt.unit,
     adcImpedanceStatus,
     adcImpedanceBadgeLabel,
+  };
+}
+
+/**
+ * Deep module entry point for the Voltage Divider workspace.
+ * Hides unit parsing, E24/E96 commercial pair search, active pair selection fallback,
+ * and loaded/unloaded circuit analysis behind a single high-leverage interface.
+ */
+export function evaluateVoltageDividerWorkspace(
+  state: VoltageDividerState,
+  criterion: PairSortCriterion = 'overall',
+  selectedPair: StandardResistorPair | null = null,
+  maxSuggestions = 20
+): VoltageDividerWorkspaceEvaluation {
+  const vinNum = toVolts(state.vin, state.vinUnit);
+  const targetVout = toVolts(state.vout || '0', state.voutUnit || 'V');
+
+  let suggestedPairs: StandardResistorPair[] = [];
+
+  if (!isNaN(vinNum) && !isNaN(targetVout) && vinNum > 0 && targetVout > 0) {
+    const rlNum =
+      state.hasLoad && state.rl.trim().length > 0
+        ? toOhms(state.rl, state.rlUnit)
+        : null;
+
+    suggestedPairs = findBestE24Pairs(
+      vinNum,
+      targetVout,
+      criterion,
+      maxSuggestions,
+      rlNum,
+      state.appMode,
+      state.series
+    );
+  }
+
+  const activePair = selectedPair ?? suggestedPairs[0] ?? null;
+
+  const effectiveState: VoltageDividerState = {
+    ...state,
+    r1: activePair?.r1Value ?? state.r1,
+    r1Unit: activePair?.r1Unit ?? state.r1Unit,
+    r2: activePair?.r2Value ?? state.r2,
+    r2Unit: activePair?.r2Unit ?? state.r2Unit,
+  };
+
+  const result = calculateVoltageDivider(effectiveState);
+
+  return {
+    effectiveState,
+    result,
+    suggestedPairs,
+  };
+}
+
+/**
+ * Resolves a user-selected R1/R2 pair against suggested commercial pairs or updates state directly.
+ */
+export function applySelectedPairToState(
+  state: VoltageDividerState,
+  suggestedPairs: StandardResistorPair[],
+  r1: string,
+  r1Unit: ResistorUnit,
+  r2: string,
+  r2Unit: ResistorUnit
+): VoltageDividerPairSelection {
+  const match = suggestedPairs.find(
+    (p) => p.r1Value === r1 && p.r1Unit === r1Unit && p.r2Value === r2 && p.r2Unit === r2Unit
+  );
+
+  if (match) {
+    return {
+      nextState: state,
+      selectedPair: match,
+    };
+  }
+
+  return {
+    nextState: { ...state, r1, r1Unit, r2, r2Unit },
+    selectedPair: null,
   };
 }
 

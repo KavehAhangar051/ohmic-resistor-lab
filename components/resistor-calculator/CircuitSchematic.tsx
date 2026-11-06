@@ -48,10 +48,10 @@ export function CircuitSchematic({ items, result }: CircuitSchematicProps) {
   const topBusY = 44;
   const bottomBusY = 168;
 
-  // Delegate branch conductance and current share calculation to the domain layer
+  // Consume branch telemetry directly from the deep module result
   const branchStats: BranchStat[] = React.useMemo(
-    () => calculateParallelBranchStats(items, result.conductanceSiemens),
-    [items, result.conductanceSiemens]
+    () => result.branchStats ?? calculateParallelBranchStats(items, result.conductanceSiemens),
+    [items, result.branchStats, result.conductanceSiemens]
   );
 
   const handleHover = React.useCallback((idx: number | null) => {

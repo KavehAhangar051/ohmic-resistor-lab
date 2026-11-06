@@ -154,6 +154,17 @@ export interface VoltageDividerResult {
   adcImpedanceBadgeLabel?: string;
 }
 
+export interface VoltageDividerWorkspaceEvaluation {
+  effectiveState: VoltageDividerState;
+  result: VoltageDividerResult;
+  suggestedPairs: StandardResistorPair[];
+}
+
+export interface VoltageDividerPairSelection {
+  nextState: VoltageDividerState;
+  selectedPair: StandardResistorPair | null;
+}
+
 export interface DividerPreset {
   id: string;
   title: string;

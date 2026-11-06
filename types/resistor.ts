@@ -31,6 +31,7 @@ export interface ParallelCalculationResult {
   uniqueValuesCount: number;
   isShortCircuit: boolean;
   errorMessage: string | null;
+  branchStats: ParallelBranchStat[];
 }
 
 export interface ParallelBranchStat {

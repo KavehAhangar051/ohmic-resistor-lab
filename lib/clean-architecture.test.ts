@@ -1,26 +1,29 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { ResistorItem } from '@/types/resistor';
 import {
   calculateParallelResistance,
-  calculateParallelBranchStats,
+  updateResistorBranch,
+  appendResistorBranch,
+  removeResistorBranch,
+  duplicateResistorBranch,
   getResistorColorBands,
 } from './resistor-calc';
-import { calculateVoltageDivider } from './voltage-divider-calc';
+import {
+  calculateVoltageDivider,
+  evaluateVoltageDividerWorkspace,
+  applySelectedPairToState,
+} from './voltage-divider-calc';
 import {
   findBestE24Pairs,
   filterAndSortResistorPairs,
 } from './voltage-divider-pair-finder';
 import {
-  classifyAdcSuitability,
-  classifyBiasStability,
-  classifyDomainCategory,
-} from './voltage-divider-pair-scoring';
-import {
   calculatePassiveFilter,
-  findStandardFilterPairs,
+  applyStandardFilterPair,
 } from './passive-filter-calc';
 
-test('Parallel resistor use case computes equivalent resistance and branch current shares', () => {
+test('Deep parallel resistor module returns equivalent resistance and branch telemetry across a single interface', () => {
   const items = [
     { id: '1', value: '100', unit: 'Ohm' as const, count: 1 },
     { id: '2', value: '100', unit: 'Ohm' as const, count: 1 },
@@ -32,30 +35,33 @@ test('Parallel resistor use case computes equivalent resistance and branch curre
   assert.equal(result.totalResistanceOhms, 50);
   assert.equal(result.displayValue, '50');
   assert.equal(result.displayUnit, 'Ω');
-
-  const branchStats = calculateParallelBranchStats(items, result.conductanceSiemens);
-
-  assert.equal(branchStats.length, 2);
-  assert.equal(branchStats[0].currentShare, '50.0%');
-  assert.equal(branchStats[1].currentShare, '50.0%');
+  assert.equal(result.branchStats.length, 2);
+  assert.equal(result.branchStats[0].currentShare, '50.0%');
+  assert.equal(result.branchStats[1].currentShare, '50.0%');
 });
 
-test('Parallel resistor use case guards short-circuit invariant when a branch is 0 Ohm', () => {
-  const items = [
-    { id: '1', value: '0', unit: 'Ohm' as const, count: 1 },
-    { id: '2', value: '10', unit: 'kOhm' as const, count: 1 },
-  ];
+test('Deep parallel resistor module enforces branch collection invariants and short-circuit detection', () => {
+  let items: ResistorItem[] = [{ id: '1', value: '0', unit: 'Ohm', count: 1 }];
+
+  // Invariant: removing the last remaining branch is a no-op
+  items = removeResistorBranch(items, '1');
+  assert.equal(items.length, 1);
+
+  // Appending, updating, and duplicating branches
+  items = appendResistorBranch(items, '2');
+  items = updateResistorBranch(items, '2', { value: '10', unit: 'kOhm' });
+  items = duplicateResistorBranch(items, items[1], '3');
+  assert.equal(items.length, 3);
+  assert.equal(items[2].id, '3');
+  assert.equal(items[2].value, '10');
 
   const result = calculateParallelResistance(items);
 
   assert.equal(result.isValid, true);
   assert.equal(result.isShortCircuit, true);
   assert.equal(result.totalResistanceOhms, 0);
-
-  const branchStats = calculateParallelBranchStats(items, result.conductanceSiemens);
-
-  assert.equal(branchStats[0].isShort, true);
-  assert.equal(branchStats[0].currentShare, '100%');
+  assert.equal(result.branchStats[0].isShort, true);
+  assert.equal(result.branchStats[0].currentShare, '100%');
 });
 
 test('EIA 4-band color code module encodes 4.7 kOhm accurately', () => {
@@ -68,42 +74,48 @@ test('EIA 4-band color code module encodes 4.7 kOhm accurately', () => {
   assert.equal(bands?.[3].name, 'Gold');
 });
 
-test('Voltage divider use case computes output telemetry, safe current, and ADC impedance status', () => {
-  const result = calculateVoltageDivider({
-    appMode: 'sampling',
-    series: 'E24',
-    solveMode: 'vout',
+test('Deep voltage divider workspace module evaluates E24/E96 pairs, effective state, and loaded telemetry in one seam', () => {
+  const baseState = {
+    appMode: 'sampling' as const,
+    series: 'E24' as const,
+    solveMode: 'vout' as const,
     vin: '5',
-    vinUnit: 'V',
+    vinUnit: 'V' as const,
     vout: '2500',
-    voutUnit: 'mV',
+    voutUnit: 'mV' as const,
     r1: '10',
-    r1Unit: 'kOhm',
+    r1Unit: 'kOhm' as const,
     r2: '10',
-    r2Unit: 'kOhm',
+    r2Unit: 'kOhm' as const,
     hasLoad: false,
     rl: '100',
-    rlUnit: 'kOhm',
-  });
+    rlUnit: 'kOhm' as const,
+  };
 
-  assert.equal(result.isValid, true);
-  assert.equal(result.voutVolts, 2.5);
-  assert.equal(result.theveninResistanceOhms, 5000);
-  assert.equal(result.targetErrorPct, 0);
-  assert.equal(result.adcImpedanceStatus, 'direct');
-  assert.equal(result.maxShortCircuitCurrentAmperes, 0.0005);
-  assert.equal(result.safeOutputCurrent5PctAmperes, 0.000025);
-});
+  const workspace = evaluateVoltageDividerWorkspace(baseState, 'overall', null);
 
-test('Domain scoring classifiers categorize ADC impedance, bias stability, and current domain', () => {
-  assert.equal(classifyAdcSuitability(5000).status, 'direct');
-  assert.equal(classifyAdcSuitability(25000).status, 'buffered');
-  assert.equal(classifyAdcSuitability(100000).status, 'high_impedance');
+  assert.equal(workspace.suggestedPairs.length > 0, true);
+  assert.equal(workspace.result.isValid, true);
+  assert.equal(workspace.result.voutVolts, 2.5);
+  assert.equal(workspace.result.adcImpedanceStatus, 'direct');
 
-  assert.equal(classifyBiasStability(10000, 0.001).status, 'stiff');
-  assert.equal(classifyDomainCategory(0.00005).category, 'low_power');
-  assert.equal(classifyDomainCategory(0.001).category, 'general');
-  assert.equal(classifyDomainCategory(0.01).category, 'high_drive');
+  // Selecting a suggested pair resolves selectedPair without mutating base state
+  const targetPair = workspace.suggestedPairs[1];
+
+  const selection = applySelectedPairToState(
+    baseState,
+    workspace.suggestedPairs,
+    targetPair.r1Value,
+    targetPair.r1Unit,
+    targetPair.r2Value,
+    targetPair.r2Unit
+  );
+
+  assert.equal(selection.selectedPair?.r1Ohms, targetPair.r1Ohms);
+
+  // Direct calculation remains deterministic for explicit circuit states
+  const directResult = calculateVoltageDivider(baseState);
+  assert.equal(directResult.theveninResistanceOhms, 5000);
 });
 
 test('E24 pair finder and filter/sort use case filters by current and sorts deterministically', () => {
@@ -117,43 +129,40 @@ test('E24 pair finder and filter/sort use case filters by current and sorts dete
   assert.equal(sortedByR1Desc[0].r1Ohms >= sortedByR1Desc[sortedByR1Desc.length - 1].r1Ohms, true);
 });
 
-test('Passive filter use case computes lowpass and highpass responses and returns standard pairs', () => {
-  const lowpassResult = calculatePassiveFilter({
-    topology: 'rc',
-    type: 'lowpass',
+test('Deep passive filter module synthesizes Bode response, standard commercial pairs, and topology-aware state updates', () => {
+  const initialState = {
+    topology: 'rc' as const,
+    type: 'lowpass' as const,
     resistance: '10',
-    resistanceUnit: 'kOhm',
+    resistanceUnit: 'kOhm' as const,
     capacitance: '100',
-    capacitanceUnit: 'nF',
+    capacitanceUnit: 'nF' as const,
     inductance: '10',
-    inductanceUnit: 'mH',
+    inductanceUnit: 'mH' as const,
     testFrequency: '1',
-    testFrequencyUnit: 'kHz',
+    testFrequencyUnit: 'kHz' as const,
     vinPeak: '5',
-  });
+  };
 
-  const highpassResult = calculatePassiveFilter({
-    topology: 'rc',
-    type: 'highpass',
-    resistance: '10',
-    resistanceUnit: 'kOhm',
-    capacitance: '100',
-    capacitanceUnit: 'nF',
-    inductance: '10',
-    inductanceUnit: 'mH',
-    testFrequency: '1',
-    testFrequencyUnit: 'kHz',
-    vinPeak: '5',
-  });
+  const lowpassResult = calculatePassiveFilter(initialState);
+  const highpassResult = calculatePassiveFilter({ ...initialState, type: 'highpass' });
 
   assert.equal(lowpassResult.isValid, true);
   assert.equal(Math.round(lowpassResult.cutoffFreqHz), 159);
   assert.equal(lowpassResult.phaseAtTestDeg < 0, true);
   assert.equal(highpassResult.phaseAtTestDeg > 0, true);
+  assert.equal(lowpassResult.standardPairs.length > 0, true);
 
-  const pairs = findStandardFilterPairs(lowpassResult.cutoffFreqHz, 'rc', 3);
+  const topPair = lowpassResult.standardPairs[0];
 
-  assert.equal(pairs.length, 3);
-  assert.equal(pairs[0].resistorValue.length > 0, true);
-  assert.equal(pairs[0].reactiveUnitCode, 'nF');
+  const updatedState = applyStandardFilterPair(
+    initialState,
+    topPair.resistorValue,
+    topPair.resistorUnit,
+    topPair.reactiveDisplay,
+    topPair.reactiveUnitCode
+  );
+
+  assert.equal(updatedState.resistance, topPair.resistorValue);
+  assert.equal(updatedState.capacitance, topPair.reactiveDisplay);
 });

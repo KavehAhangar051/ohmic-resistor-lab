@@ -4,6 +4,7 @@ import {
   FilterCalculationResult,
   BodePoint,
   StandardFilterPair,
+  ResistanceUnit,
   CapacitanceUnit,
   InductanceUnit,
 } from '@/types/passive-filter';
@@ -131,6 +132,7 @@ export function calculatePassiveFilter(state: FilterState): FilterCalculationRes
       attenuationPct: 0,
       reactanceAtCutoffOhms: 0,
       bodePoints: [],
+      standardPairs: [],
     };
   }
 
@@ -161,6 +163,7 @@ export function calculatePassiveFilter(state: FilterState): FilterCalculationRes
 
   const fcFmt = formatFrequency(fc);
   const tauFmt = formatTime(tau);
+  const standardPairs = findStandardFilterPairs(fc, state.topology, 5);
 
   return {
     isValid: true,
@@ -178,6 +181,47 @@ export function calculatePassiveFilter(state: FilterState): FilterCalculationRes
     attenuationPct: parseFloat(attenuationPct.toFixed(1)),
     reactanceAtCutoffOhms: rOhms,
     bodePoints,
+    standardPairs,
+  };
+}
+
+/**
+ * Applies a recommended commercial E24/E12 filter component pair onto FilterState,
+ * encapsulating the topology-specific reactive unit invariant (pF/nF/uF vs uH/mH/H).
+ */
+export function applyStandardFilterPair(
+  state: FilterState,
+  resistor: string,
+  resUnit: ResistanceUnit,
+  reactive: string,
+  reactiveUnit: CapacitanceUnit | InductanceUnit
+): FilterState {
+  if (state.topology === 'rc') {
+    const capUnit: CapacitanceUnit =
+      reactiveUnit === 'pF' || reactiveUnit === 'nF' || reactiveUnit === 'uF'
+        ? reactiveUnit
+        : 'nF';
+
+    return {
+      ...state,
+      resistance: resistor,
+      resistanceUnit: resUnit,
+      capacitance: reactive,
+      capacitanceUnit: capUnit,
+    };
+  }
+
+  const indUnit: InductanceUnit =
+    reactiveUnit === 'uH' || reactiveUnit === 'mH' || reactiveUnit === 'H'
+      ? reactiveUnit
+      : 'mH';
+
+  return {
+    ...state,
+    resistance: resistor,
+    resistanceUnit: resUnit,
+    inductance: reactive,
+    inductanceUnit: indUnit,
   };
 }
 

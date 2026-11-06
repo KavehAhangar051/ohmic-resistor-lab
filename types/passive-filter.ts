@@ -48,6 +48,7 @@ export interface FilterCalculationResult {
   attenuationPct: number;
   reactanceAtCutoffOhms: number;
   bodePoints: BodePoint[];
+  standardPairs: StandardFilterPair[];
 }
 
 export interface StandardFilterPair {

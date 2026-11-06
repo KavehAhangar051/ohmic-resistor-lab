@@ -92,6 +92,7 @@ export function calculateParallelResistance(
       uniqueValuesCount: 0,
       isShortCircuit: false,
       errorMessage: null,
+      branchStats: calculateParallelBranchStats(items, null),
     };
   }
 
@@ -107,6 +108,7 @@ export function calculateParallelResistance(
       uniqueValuesCount: validGroupCount,
       isShortCircuit: true,
       errorMessage: 'اتصال کوتاه: حداقل یکی از مقاومت‌های مدار ۰ اهم است. برای محاسبه مقاومت معادل، مقدار آن را بزرگتر از صفر وارد کنید.',
+      branchStats: calculateParallelBranchStats(items, null),
     };
   }
 
@@ -122,6 +124,7 @@ export function calculateParallelResistance(
       uniqueValuesCount: validGroupCount,
       isShortCircuit: false,
       errorMessage: 'مقادیر ورودی نامعتبر است. برای هر شاخه یک مقدار عددی مثبت وارد کنید.',
+      branchStats: calculateParallelBranchStats(items, 0),
     };
   }
 
@@ -157,6 +160,7 @@ export function calculateParallelResistance(
     uniqueValuesCount: validGroupCount,
     isShortCircuit: false,
     errorMessage: null,
+    branchStats: calculateParallelBranchStats(items, totalConductance),
   };
 }
 
@@ -164,14 +168,16 @@ export { getResistorColorBands } from './resistor-color-code';
 
 export type { ResistorColorBand } from './resistor-color-code';
 
-/**
- * Calculates individual branch equivalent resistance when count > 1
- */
-export function getBranchResistance(item: ResistorItem): {
+export interface BranchResistanceSummary {
   displayValue: string;
   displayUnit: string;
   rawOhms: number;
-} | null {
+}
+
+/**
+ * Calculates individual branch equivalent resistance when count > 1
+ */
+export function getBranchResistance(item: ResistorItem): BranchResistanceSummary | null {
   const raw = item.value;
 
   if (raw.length === 0) return null;
@@ -210,13 +216,12 @@ export function getBranchResistance(item: ResistorItem): {
 /**
  * Calculates per-branch equivalent resistance, current share percentage (Gi / Gtotal),
  * and visual flow velocity/opacity parameters for parallel resistor networks.
- * Keeps circuit physics and conductance ratios inside the domain layer.
  */
 export function calculateParallelBranchStats(
   items: ResistorItem[],
   totalConductanceSiemens: number | null
 ): ParallelBranchStat[] {
-  const hasValidG = totalConductanceSiemens !== null && totalConductanceSiemens > 0;
+  const hasValidG = totalConductanceSiemens !== null && totalConductanceSiemens > 0 && isFinite(totalConductanceSiemens);
 
   return items.map((item) => {
     const rawVal = item.value;
@@ -291,5 +296,51 @@ export function calculateParallelBranchStats(
       flowStrokeWidth: 2,
     };
   });
+}
+
+/**
+ * Updates a branch by id in a parallel resistor network without mutating the source array.
+ */
+export function updateResistorBranch(
+  items: ResistorItem[],
+  id: string,
+  updates: Partial<ResistorItem>
+): ResistorItem[] {
+  return items.map((item) => (item.id === id ? { ...item, ...updates } : item));
+}
+
+/**
+ * Appends a new empty branch to the parallel resistor network.
+ */
+export function appendResistorBranch(items: ResistorItem[], nextId: string): ResistorItem[] {
+  return [...items, { id: nextId, value: '', unit: 'Ohm', count: 1 }];
+}
+
+/**
+ * Removes a branch by id while enforcing the invariant that at least 1 branch remains.
+ */
+export function removeResistorBranch(items: ResistorItem[], id: string): ResistorItem[] {
+  if (items.length <= 1) return items;
+
+  return items.filter((item) => item.id !== id);
+}
+
+/**
+ * Duplicates a branch and inserts the clone immediately after the source branch.
+ */
+export function duplicateResistorBranch(
+  items: ResistorItem[],
+  sourceItem: ResistorItem,
+  nextId: string
+): ResistorItem[] {
+  const idx = items.findIndex((i) => i.id === sourceItem.id);
+  const clone: ResistorItem = { ...sourceItem, id: nextId };
+
+  if (idx === -1) return [...items, clone];
+
+  const next = [...items];
+  next.splice(idx + 1, 0, clone);
+
+  return next;
 }
 

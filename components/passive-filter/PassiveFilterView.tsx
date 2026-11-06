@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { motion } from 'motion/react';
 import { FilterState, ResistanceUnit, CapacitanceUnit, InductanceUnit, FrequencyUnit } from '@/types/passive-filter';
-import { calculatePassiveFilter, findStandardFilterPairs } from '@/lib/passive-filter-calc';
+import { calculatePassiveFilter, applyStandardFilterPair } from '@/lib/passive-filter-calc';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { FilterSchematic } from './FilterSchematic';
@@ -33,12 +33,6 @@ export function PassiveFilterView() {
     return calculatePassiveFilter(state);
   }, [state]);
 
-  const standardPairs = React.useMemo(() => {
-    if (!result.isValid || result.cutoffFreqHz <= 0) return [];
-
-    return findStandardFilterPairs(result.cutoffFreqHz, state.topology, 5);
-  }, [result.isValid, result.cutoffFreqHz, state.topology]);
-
   const updateField = React.useCallback(
     <K extends keyof FilterState>(field: K, value: FilterState[K]) => {
       setState((prev) => ({ ...prev, [field]: value }));
@@ -53,26 +47,7 @@ export function PassiveFilterView() {
       reactive: string,
       reactiveUnit: CapacitanceUnit | InductanceUnit
     ) => {
-      setState((prev) => ({
-        ...prev,
-        resistance: resistor,
-        resistanceUnit: resUnit,
-        ...(prev.topology === 'rc'
-          ? {
-              capacitance: reactive,
-              capacitanceUnit:
-                reactiveUnit === 'pF' || reactiveUnit === 'nF' || reactiveUnit === 'uF'
-                  ? reactiveUnit
-                  : 'nF',
-            }
-          : {
-              inductance: reactive,
-              inductanceUnit:
-                reactiveUnit === 'uH' || reactiveUnit === 'mH' || reactiveUnit === 'H'
-                  ? reactiveUnit
-                  : 'mH',
-            }),
-      }));
+      setState((prev) => applyStandardFilterPair(prev, resistor, resUnit, reactive, reactiveUnit));
     },
     []
   );
@@ -290,7 +265,7 @@ export function PassiveFilterView() {
 
       {/* Standard Commercial Component Recommendations */}
       <FilterStandardPicker
-        pairs={standardPairs}
+        pairs={result.standardPairs}
         topology={state.topology}
         targetFcDisplay={`${result.displayFc} ${result.displayFcUnit}`}
         onApplyPair={handleApplyStandardPair}

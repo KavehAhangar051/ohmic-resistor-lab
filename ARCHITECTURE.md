@@ -120,3 +120,17 @@
   ریل‌های اصلی ولتاژ بالا و پایین در نقطه اتصال آخرین شاخه ($X_{last}$) متوقف می‌شوند تا خط معلق در مدار وجود نداشته باشد.
 - **محاسبه توزیع جریان شاخه‌ها**:
   $$\text{Current Share } \% = \frac{G_i}{G_{\text{total}}} \times 100\%$$
+
+---
+
+## ۵. اصول طراحی ماژول‌های عمیق (Codebase Design & Deep Modules)
+
+طراحی ماژول‌های پروژه بر پایه اصول **Deep Modules** (رفتار غنی در پشت رابط کوچک، قرارگرفته در درز تمیز و قابل‌تست از طریق همان رابط) انجام شده است:
+
+- **Module & Interface**: هر ماژول دامنه (`lib/resistor-calc.ts`، `lib/voltage-divider-calc.ts`، `lib/passive-filter-calc.ts`) دارای یک **Interface** فشرده و پایدار است که تمامی قیدها (Invariants) و تبدیل واحدها را درون **Implementation** خود پنهان می‌کند.
+- **Depth, Leverage & Locality**:
+  - در ماژول مقسم ولتاژ، نقطه ورود عمیق `evaluateVoltageDividerWorkspace` تبدیل واحدها (`toVolts`، `toOhms`)، جستجوی سری‌های تجاری `E24`/`E96`، ادغام جفت منتخب با وضعیت پایه (`effectiveState`) و تحلیل تئونن/توان را در یک **Seam** واحد تجمیع کرده است.
+  - در ماژول شبکه موازی، `calculateParallelResistance` علاوه بر مقاومت معادل کل، آمار جریان و انیمیشن تک‌تک شاخه‌ها (`branchStats`) را در یک خروجی واحد تولید می‌کند و توابع خالص `updateResistorBranch`، `appendResistorBranch`، `removeResistorBranch` و `duplicateResistorBranch` قید «حداقل یک شاخه فعال» را درون ماژول حفظ می‌کنند.
+  - در ماژول فیلتر پسیو، `calculatePassiveFilter` پاسخ فرکانسی، نقاط نمودار بُد و پیشنهاد قطعات استاندارد تجاری (`standardPairs`) را یکجا برمی‌گرداند و `applyStandardFilterPair` منطق نگاشت واحدهای خازنی/سلفی (`RC`/`RL`) را درون ماژول کپسوله می‌کند.
+- **حذف لایه‌های عبوری (Deletion Test)**: صادرات مجدد عبوری (Pass-through re-exports) از `lib/voltage-divider-solver.ts` حذف شدند تا هر ماژول صرفاً مسئولیت واقعی خود را در معرض قرار دهد و تست‌های واحد در `lib/clean-architecture.test.ts` مستقیماً سطح رابط (Interface Seam) را بدون وابستگی به جزئیات پیاده‌سازی داخلی بیازمایند.
+

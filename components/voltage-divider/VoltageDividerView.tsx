@@ -10,9 +10,10 @@ import {
   StandardResistorPair,
 } from '@/types/voltage-divider';
 import { ResistorUnit } from '@/types/resistor';
-import { calculateVoltageDivider } from '@/lib/voltage-divider-calc';
-import { toOhms, toVolts } from '@/lib/voltage-divider-format';
-import { findBestE24Pairs } from '@/lib/voltage-divider-solver';
+import {
+  evaluateVoltageDividerWorkspace,
+  applySelectedPairToState,
+} from '@/lib/voltage-divider-calc';
 import { DividerSchematic } from './DividerSchematic';
 import { DividerResultDisplay } from './DividerResultDisplay';
 import { DividerParameterRow } from './DividerParameterRow';
@@ -42,39 +43,10 @@ export function VoltageDividerView() {
   const [pairCriterion, setPairCriterion] = React.useState<PairSortCriterion>('overall');
   const [selectedPair, setSelectedPair] = React.useState<StandardResistorPair | null>(null);
 
-  // Top recommended commercial E24 / E96 resistor pairs tailored to current appMode & series
-  const suggestedPairs = React.useMemo(() => {
-    const vinNum = toVolts(state.vin, state.vinUnit);
-    const targetVout = toVolts(state.vout || '0', state.voutUnit || 'V');
-
-    if (isNaN(vinNum) || isNaN(targetVout) || vinNum <= 0 || targetVout <= 0) {
-      return [];
-    }
-
-    const rlNum =
-      state.hasLoad && state.rl.trim().length > 0
-        ? toOhms(state.rl, state.rlUnit)
-        : null;
-
-    return findBestE24Pairs(vinNum, targetVout, pairCriterion, 20, rlNum, state.appMode, state.series);
-  }, [state.vin, state.vinUnit, state.vout, state.voutUnit, state.hasLoad, state.rl, state.rlUnit, state.appMode, state.series, pairCriterion]);
-
-  // Derived effective state: uses user-selected pair or defaults to top #1 suggested pair
-  const effectiveState = React.useMemo<VoltageDividerState>(() => {
-    const activePair = selectedPair ?? suggestedPairs[0] ?? null;
-
-    return {
-      ...state,
-      r1: activePair?.r1Value ?? state.r1,
-      r1Unit: activePair?.r1Unit ?? state.r1Unit,
-      r2: activePair?.r2Value ?? state.r2,
-      r2Unit: activePair?.r2Unit ?? state.r2Unit,
-    };
-  }, [state, selectedPair, suggestedPairs]);
-
-  const result = React.useMemo(() => {
-    return calculateVoltageDivider(effectiveState);
-  }, [effectiveState]);
+  const { effectiveState, result, suggestedPairs } = React.useMemo(
+    () => evaluateVoltageDividerWorkspace(state, pairCriterion, selectedPair),
+    [state, pairCriterion, selectedPair]
+  );
 
   const updateField = React.useCallback(
     <K extends keyof VoltageDividerState>(field: K, value: VoltageDividerState[K]) => {
@@ -89,16 +61,12 @@ export function VoltageDividerView() {
 
   const handleApplyPair = React.useCallback(
     (r1: string, r1Unit: ResistorUnit, r2: string, r2Unit: ResistorUnit) => {
-      const match = suggestedPairs.find(
-        (p) => p.r1Value === r1 && p.r1Unit === r1Unit && p.r2Value === r2 && p.r2Unit === r2Unit
-      );
+      setState((prev) => {
+        const selection = applySelectedPairToState(prev, suggestedPairs, r1, r1Unit, r2, r2Unit);
+        setSelectedPair(selection.selectedPair);
 
-      if (match) {
-        setSelectedPair(match);
-      } else {
-        setState((prev) => ({ ...prev, r1, r1Unit, r2, r2Unit }));
-        setSelectedPair(null);
-      }
+        return selection.nextState;
+      });
     },
     [suggestedPairs]
   );

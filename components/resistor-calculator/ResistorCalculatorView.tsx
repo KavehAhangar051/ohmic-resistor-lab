@@ -4,7 +4,13 @@ import * as React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Info } from 'lucide-react';
 import { ResistorItem } from '@/types/resistor';
-import { calculateParallelResistance } from '@/lib/resistor-calc';
+import {
+  calculateParallelResistance,
+  updateResistorBranch,
+  appendResistorBranch,
+  removeResistorBranch,
+  duplicateResistorBranch,
+} from '@/lib/resistor-calc';
 import { ResistorRow } from './ResistorRow';
 import { ResultDisplay } from './ResultDisplay';
 import { CircuitSchematic } from './CircuitSchematic';
@@ -45,37 +51,22 @@ export function ResistorCalculatorView() {
   }, []);
 
   const handleItemChange = React.useCallback((id: string, updates: Partial<ResistorItem>) => {
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
-    );
+    setItems((prev) => updateResistorBranch(prev, id, updates));
   }, []);
 
   const handleAddItem = React.useCallback(() => {
     const nextId = getNextId();
-    setItems((prev) => [...prev, { id: nextId, value: '', unit: 'Ohm', count: 1 }]);
+    setItems((prev) => appendResistorBranch(prev, nextId));
     scrollToBottom();
   }, [getNextId, scrollToBottom]);
 
   const handleDeleteItem = React.useCallback((id: string) => {
-    setItems((prev) => {
-      if (prev.length <= 1) return prev;
-
-      return prev.filter((item) => item.id !== id);
-    });
+    setItems((prev) => removeResistorBranch(prev, id));
   }, []);
 
   const handleDuplicateItem = React.useCallback((itemToDup: ResistorItem) => {
     const nextId = getNextId();
-    setItems((prev) => {
-      const idx = prev.findIndex((i) => i.id === itemToDup.id);
-      const clone = { ...itemToDup, id: nextId };
-
-      if (idx === -1) return [...prev, clone];
-      const next = [...prev];
-      next.splice(idx + 1, 0, clone);
-
-      return next;
-    });
+    setItems((prev) => duplicateResistorBranch(prev, itemToDup, nextId));
     scrollToBottom();
   }, [getNextId, scrollToBottom]);
 
