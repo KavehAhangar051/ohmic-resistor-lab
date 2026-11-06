@@ -174,8 +174,8 @@ export function ResistorCalculatorView() {
           <div className="rounded-lg border border-zinc-800/80 bg-zinc-950/40 p-3 flex items-start gap-2.5 text-zinc-400 text-xs leading-relaxed">
             <Info className="h-4 w-4 shrink-0 text-zinc-500 mt-0.5" />
             <div>
-              <span className="text-zinc-300 font-medium me-1">قاعده طلایی مدار موازی:</span>
-              مقاومت معادل در مدار موازی همواره از کوچک‌ترین مقاومت موجود در مدار کمتر است. همچنین هر شاخه جریان مستقل خود را عبور می‌دهد.
+              <span className="text-zinc-300 font-medium me-1">نکته مداری:</span>
+              مقاومت معادل همیشه از کوچک‌ترین شاخه هم کمتر می‌شود و جریان کل به نسبت عکس مقاومت هر شاخه تقسیم می‌گردد.
             </div>
           </div>
         </div>

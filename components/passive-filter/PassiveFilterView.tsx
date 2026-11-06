@@ -64,13 +64,13 @@ export function PassiveFilterView() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5 text-balance">
-              <span>آزمایشگاه فیلترهای پسیو فرکانسی</span>
+              <span>محاسبه‌گر فیلتر پسیو فرکانسی</span>
               <Badge variant="subtle" className="text-[11px] font-mono border-emerald-900/50 bg-emerald-950/40 text-emerald-400">
                 RC / RL Filter
               </Badge>
             </h1>
             <p className="mt-1 text-xs sm:text-sm text-zinc-400">
-              طراحی و تحلیل فرکانس قطع (-3dB)، ثابت زمانی، دیاگرام بُد (Bode Plot) و پاسخ دامنه‌ای فیلترهای پسیو
+              محاسبه فرکانس قطع (-3dB)، ثابت زمانی، پاسخ فاز و نمودار بُد برای فیلترهای مرتبه اول RC و RL.
             </p>
           </div>
 
