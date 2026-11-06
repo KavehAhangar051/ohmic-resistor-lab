@@ -27,7 +27,6 @@ export interface SchematicCardProps {
 
 export function SchematicCard({
   title,
-  subtitle,
   svgHeight = 220,
   minContentWidth = 460,
   symbolStandard,
@@ -43,25 +42,28 @@ export function SchematicCard({
   // ResizeObserver for zero-reflow layout responsiveness
   React.useEffect(() => {
     const el = containerRef.current;
+
     if (!el) return;
 
     setContainerWidth(el.clientWidth);
 
     const ro = new ResizeObserver((entries) => {
       const entry = entries[0];
+
       if (entry) {
         setContainerWidth(entry.contentRect.width);
       }
     });
 
     ro.observe(el);
+
     return () => ro.disconnect();
   }, []);
 
   const svgWidth = Math.max(containerWidth || 600, minContentWidth);
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-gradient-to-b from-[#0e0e11] to-[#09090b] shadow-xl overflow-hidden select-none transition-all">
+    <div className="rounded-xl border border-zinc-800 bg-gradient-to-b from-[#0e0e11] to-[#09090b] shadow-xl overflow-hidden select-none">
       {/* Precision Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-zinc-800/80 bg-zinc-950/70 backdrop-blur-md">
         {/* Left: Identity */}
@@ -84,7 +86,7 @@ export function SchematicCard({
               type="button"
               onClick={() => onSymbolStandardChange('ieee')}
               className={cn(
-                'relative z-10 px-2 py-0.5 rounded transition-colors active:scale-95 cursor-pointer',
+                'relative z-10 px-2 py-0.5 rounded transition-colors active:scale-[0.96] cursor-pointer',
                 symbolStandard === 'ieee' ? 'text-zinc-100 font-semibold' : 'text-zinc-400 hover:text-zinc-200'
               )}
               title="استاندارد آمریکایی (زیگزاگ ANSI/IEEE)"
@@ -102,7 +104,7 @@ export function SchematicCard({
               type="button"
               onClick={() => onSymbolStandardChange('iec')}
               className={cn(
-                'relative z-10 px-2 py-0.5 rounded transition-colors active:scale-95 cursor-pointer',
+                'relative z-10 px-2 py-0.5 rounded transition-colors active:scale-[0.96] cursor-pointer',
                 symbolStandard === 'iec' ? 'text-zinc-100 font-semibold' : 'text-zinc-400 hover:text-zinc-200'
               )}
               title="استاندارد بین‌المللی (مستطیل IEC)"
@@ -121,11 +123,11 @@ export function SchematicCard({
           {/* Current Flow Animation Toggle */}
           <motion.button
             whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.96 }}
             type="button"
             onClick={() => onAnimateFlowChange(!animateFlow)}
             className={cn(
-              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all cursor-pointer select-none',
+              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-[color,background-color,border-color,box-shadow] duration-150 ease-out cursor-pointer select-none',
               animateFlow
                 ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300 shadow-xs'
                 : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -176,9 +178,9 @@ export function SchematicCard({
         <div className="flex items-center gap-3 flex-wrap">
           {legendItems.map((item, idx) => (
             <div key={idx} className="flex items-center gap-1.5">
-              {item.shape === 'square' ? (
+              {item.marker === 'square' ? (
                 <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: item.color }} />
-              ) : item.shape === 'dash' ? (
+              ) : item.marker === 'dash' ? (
                 <span className="inline-block h-1.5 w-3 rounded-full" style={{ backgroundColor: item.color }} />
               ) : (
                 <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />

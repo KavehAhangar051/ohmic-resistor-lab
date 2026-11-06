@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { VoltageDividerState, VoltageDividerResult } from '@/types/voltage-divider';
+import { getResistorSymbol } from '@/lib/voltage-divider-format';
 import { SymbolStandard, SchematicLegendItem } from '../schematic-core/schematic-types';
 import { SchematicCard } from '../schematic-core/SchematicCard';
 import { SchematicPowerPort } from '../schematic-core/SchematicPowerPort';
@@ -16,11 +17,11 @@ interface DividerSchematicProps {
 }
 
 const DIVIDER_LEGEND: SchematicLegendItem[] = [
-  { label: 'منبع تغذیه VCC', color: '#10b981', shape: 'circle', textColor: 'text-zinc-300' },
-  { label: 'پروب خروجی Vout', color: '#34d399', shape: 'circle', textColor: 'text-emerald-400' },
-  { label: 'مقاومت‌های R1 / R2', color: '#f59e0b', shape: 'square', textColor: 'text-zinc-300' },
-  { label: 'زمین مرجع مدار GND', color: '#71717a', shape: 'circle', textColor: 'text-zinc-400' },
-  { label: 'شارش جریان (I)', color: '#10b981', shape: 'dash', textColor: 'text-emerald-400' },
+  { label: 'منبع تغذیه VCC', color: '#10b981', marker: 'circle', textColor: 'text-zinc-300' },
+  { label: 'پروب خروجی Vout', color: '#34d399', marker: 'circle', textColor: 'text-emerald-400' },
+  { label: 'مقاومت‌های R1 / R2', color: '#f59e0b', marker: 'square', textColor: 'text-zinc-300' },
+  { label: 'زمین مرجع مدار GND', color: '#71717a', marker: 'circle', textColor: 'text-zinc-400' },
+  { label: 'شارش جریان (I)', color: '#10b981', marker: 'dash', textColor: 'text-emerald-400' },
 ];
 
 export const DividerSchematic = React.memo(function DividerSchematic({
@@ -51,9 +52,9 @@ export const DividerSchematic = React.memo(function DividerSchematic({
   const minWidth = voutX + 100;
   const isShort = result.isShortCircuit;
 
-  const r1UnitText = state.r1Unit === 'Ohm' ? 'Ω' : state.r1Unit === 'kOhm' ? 'kΩ' : 'MΩ';
-  const r2UnitText = state.r2Unit === 'Ohm' ? 'Ω' : state.r2Unit === 'kOhm' ? 'kΩ' : 'MΩ';
-  const rlUnitText = state.rlUnit === 'Ohm' ? 'Ω' : state.rlUnit === 'kOhm' ? 'kΩ' : 'MΩ';
+  const r1UnitText = getResistorSymbol(state.r1Unit);
+  const r2UnitText = getResistorSymbol(state.r2Unit);
+  const rlUnitText = getResistorSymbol(state.rlUnit);
 
   return (
     <SchematicCard

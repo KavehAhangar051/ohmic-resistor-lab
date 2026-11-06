@@ -2,7 +2,6 @@ import { ResistorUnit } from '@/types/resistor';
 import {
   VoltageDividerState,
   VoltageDividerResult,
-  VoltageUnit,
   DividerPreset,
 } from '@/types/voltage-divider';
 import { formatPrecision } from './resistor-calc';
@@ -11,82 +10,81 @@ import {
   solveR2,
   solveVin,
   findBestE24Pairs,
+  getEffectiveR2,
 } from './voltage-divider-solver';
+import {
+  RESISTOR_UNIT_MAP,
+  VOLTAGE_UNIT_MAP,
+  toOhms,
+  toVolts,
+  decomposeOhms,
+  formatVoltage,
+  formatCurrent,
+  formatPower,
+  formatResistance,
+  getResistorSymbol,
+} from './voltage-divider-format';
 
-export const RESISTOR_UNIT_MAP: Record<ResistorUnit, number> = {
-  Ohm: 1,
-  kOhm: 1e3,
-  MOhm: 1e6,
+export {
+  RESISTOR_UNIT_MAP,
+  VOLTAGE_UNIT_MAP,
+  formatCurrent,
+  formatPower,
+  formatResistance,
 };
 
-export const VOLTAGE_UNIT_MAP: Record<VoltageUnit, number> = {
-  V: 1,
-  mV: 1e-3,
-  kV: 1e3,
+const EMPTY_DIVIDER_RESULT: VoltageDividerResult = {
+  isValid: false,
+  vinVolts: null,
+  voutVolts: null,
+  displayVout: '—',
+  displayVoutUnit: 'V',
+  ratio: null,
+  ratioPercentage: '—',
+  dbAttenuation: null,
+  currentTotalAmperes: null,
+  displayCurrent: '—',
+  displayCurrentUnit: 'mA',
+  currentLoadAmperes: null,
+  displayCurrentLoad: '—',
+  powerR1Watts: null,
+  displayPowerR1: '—',
+  powerR2Watts: null,
+  displayPowerR2: '—',
+  powerLoadWatts: null,
+  displayPowerLoad: '—',
+  powerTotalWatts: null,
+  displayPowerTotal: '—',
+  theveninResistanceOhms: null,
+  displayRth: '—',
+  displayRthUnit: 'Ω',
+  isShortCircuit: false,
+  errorMessage: null,
 };
-
-export { formatCurrent, formatPower, formatResistance } from './voltage-divider-format';
-import { formatCurrent, formatPower, formatResistance } from './voltage-divider-format';
 
 /**
  * Calculates voltage divider output, quiescent currents, power dissipation,
- * and Thevenin equivalent resistance.
+ * and Thevenin equivalent resistance across forward and inverse solve modes.
  */
 export function calculateVoltageDivider(state: VoltageDividerState): VoltageDividerResult {
-  const vinNum = parseFloat(state.vin);
-  const r1Num = parseFloat(state.r1);
-  const r2Num = parseFloat(state.r2);
-
-  const emptyResult: VoltageDividerResult = {
-    isValid: false,
-    vinVolts: null,
-    voutVolts: null,
-    displayVout: '—',
-    displayVoutUnit: 'V',
-    ratio: null,
-    ratioPercentage: '—',
-    dbAttenuation: null,
-    currentTotalAmperes: null,
-    displayCurrent: '—',
-    displayCurrentUnit: 'mA',
-    currentLoadAmperes: null,
-    displayCurrentLoad: '—',
-    powerR1Watts: null,
-    displayPowerR1: '—',
-    powerR2Watts: null,
-    displayPowerR2: '—',
-    powerLoadWatts: null,
-    displayPowerLoad: '—',
-    powerTotalWatts: null,
-    displayPowerTotal: '—',
-    theveninResistanceOhms: null,
-    displayRth: '—',
-    displayRthUnit: 'Ω',
-    isShortCircuit: false,
-    errorMessage: null,
-    solvedField: undefined,
-    solvedValueFormatted: undefined,
-    solvedValue: undefined,
-    solvedResistorUnit: undefined,
-    suggestedPairs: undefined,
-  };
-
   const solveMode = state.solveMode || 'vout';
 
   let rlOhms: number | null = null;
+
   if (state.hasLoad) {
-    const rlNum = parseFloat(state.rl);
-    if (!isNaN(rlNum) && rlNum >= 0) {
-      rlOhms = rlNum * (RESISTOR_UNIT_MAP[state.rlUnit] ?? 1);
+    const parsedRl = toOhms(state.rl, state.rlUnit);
+
+    if (!isNaN(parsedRl) && parsedRl >= 0) {
+      rlOhms = parsedRl;
     }
   }
 
-  let vinVolts = parseFloat(state.vin) * (VOLTAGE_UNIT_MAP[state.vinUnit] ?? 1);
-  let voutTargetVolts = parseFloat(state.vout || '0') * (VOLTAGE_UNIT_MAP[state.voutUnit || 'V'] ?? 1);
-  let r1Ohms = parseFloat(state.r1) * (RESISTOR_UNIT_MAP[state.r1Unit] ?? 1);
-  let r2Ohms = parseFloat(state.r2) * (RESISTOR_UNIT_MAP[state.r2Unit] ?? 1);
+  let vinVolts = toVolts(state.vin, state.vinUnit);
+  const voutTargetVolts = toVolts(state.vout || '0', state.voutUnit || 'V');
+  let r1Ohms = toOhms(state.r1, state.r1Unit);
+  let r2Ohms = toOhms(state.r2, state.r2Unit);
 
-  let solvedField: 'vout' | 'r1' | 'r2' | 'vin' | 'pair' = solveMode;
+  const solvedField: 'vout' | 'r1' | 'r2' | 'vin' | 'pair' = solveMode;
   let solvedValueFormatted: string | undefined;
   let solvedValue: string | undefined;
   let solvedResistorUnit: ResistorUnit | undefined;
@@ -94,86 +92,88 @@ export function calculateVoltageDivider(state: VoltageDividerState): VoltageDivi
 
   if (solveMode === 'r1') {
     if (isNaN(vinVolts) || isNaN(voutTargetVolts) || isNaN(r2Ohms)) {
-      return emptyResult;
+      return EMPTY_DIVIDER_RESULT;
     }
+
     const sol = solveR1(vinVolts, voutTargetVolts, r2Ohms, rlOhms);
+
     if (sol.error || sol.r1Ohms === null) {
-      return { ...emptyResult, errorMessage: sol.error || 'محاسبه R1 امکان‌پذیر نیست.' };
+      return { ...EMPTY_DIVIDER_RESULT, errorMessage: sol.error || 'محاسبه R1 امکان‌پذیر نیست.' };
     }
+
     r1Ohms = sol.r1Ohms;
-    const r1Fmt = formatResistance(r1Ohms);
-    solvedValue = r1Fmt.value;
-    solvedResistorUnit = r1Fmt.unit === 'kΩ' ? 'kOhm' : r1Fmt.unit === 'MΩ' ? 'MOhm' : 'Ohm';
-    solvedValueFormatted = `${r1Fmt.value} ${r1Fmt.unit}`;
+    const r1Dec = decomposeOhms(r1Ohms);
+    solvedValue = r1Dec.value;
+    solvedResistorUnit = r1Dec.unit;
+    solvedValueFormatted = `${r1Dec.value} ${r1Dec.symbol}`;
   } else if (solveMode === 'r2') {
     if (isNaN(vinVolts) || isNaN(voutTargetVolts) || isNaN(r1Ohms)) {
-      return emptyResult;
+      return EMPTY_DIVIDER_RESULT;
     }
+
     const sol = solveR2(vinVolts, voutTargetVolts, r1Ohms, rlOhms);
+
     if (sol.error || sol.r2Ohms === null) {
-      return { ...emptyResult, errorMessage: sol.error || 'محاسبه R2 امکان‌پذیر نیست.' };
+      return { ...EMPTY_DIVIDER_RESULT, errorMessage: sol.error || 'محاسبه R2 امکان‌پذیر نیست.' };
     }
+
     r2Ohms = sol.r2Ohms;
-    const r2Fmt = formatResistance(r2Ohms);
-    solvedValue = r2Fmt.value;
-    solvedResistorUnit = r2Fmt.unit === 'kΩ' ? 'kOhm' : r2Fmt.unit === 'MΩ' ? 'MOhm' : 'Ohm';
-    solvedValueFormatted = `${r2Fmt.value} ${r2Fmt.unit}`;
+    const r2Dec = decomposeOhms(r2Ohms);
+    solvedValue = r2Dec.value;
+    solvedResistorUnit = r2Dec.unit;
+    solvedValueFormatted = `${r2Dec.value} ${r2Dec.symbol}`;
   } else if (solveMode === 'vin') {
     if (isNaN(voutTargetVolts) || isNaN(r1Ohms) || isNaN(r2Ohms)) {
-      return emptyResult;
+      return EMPTY_DIVIDER_RESULT;
     }
+
     const sol = solveVin(voutTargetVolts, r1Ohms, r2Ohms, rlOhms);
+
     if (sol.error || sol.vinVolts === null) {
-      return { ...emptyResult, errorMessage: sol.error || 'محاسبه Vin امکان‌پذیر نیست.' };
+      return { ...EMPTY_DIVIDER_RESULT, errorMessage: sol.error || 'محاسبه Vin امکان‌پذیر نیست.' };
     }
+
     vinVolts = sol.vinVolts;
     solvedValue = formatPrecision(vinVolts, 2);
     solvedValueFormatted = `${solvedValue} V`;
   } else if (solveMode === 'pair') {
     if (isNaN(vinVolts) || isNaN(voutTargetVolts) || vinVolts <= 0 || voutTargetVolts <= 0) {
-      return emptyResult;
+      return EMPTY_DIVIDER_RESULT;
     }
+
     if (voutTargetVolts >= vinVolts) {
-      return { ...emptyResult, errorMessage: 'در مدار پسیو، Vout باید کمتر از Vin باشد.' };
+      return {
+        ...EMPTY_DIVIDER_RESULT,
+        errorMessage: 'در مقسم ولتاژ پسیو، ولتاژ خروجی (Vout) باید کمتر از ولتاژ ورودی (Vin) باشد. مقدار Vout را کاهش دهید.',
+      };
     }
+
     suggestedPairs = findBestE24Pairs(vinVolts, voutTargetVolts, 'overall', 10);
+
     if (suggestedPairs.length > 0) {
       const best = suggestedPairs[0];
-      r1Ohms = parseFloat(best.r1Value) * (RESISTOR_UNIT_MAP[best.r1Unit] ?? 1);
-      r2Ohms = parseFloat(best.r2Value) * (RESISTOR_UNIT_MAP[best.r2Unit] ?? 1);
-      const r1Sym = best.r1Unit === 'kOhm' ? 'kΩ' : best.r1Unit === 'MOhm' ? 'MΩ' : 'Ω';
-      const r2Sym = best.r2Unit === 'kOhm' ? 'kΩ' : best.r2Unit === 'MOhm' ? 'MΩ' : 'Ω';
-      solvedValueFormatted = `R1: ${best.r1Value} ${r1Sym} | R2: ${best.r2Value} ${r2Sym}`;
+      r1Ohms = best.r1Ohms;
+      r2Ohms = best.r2Ohms;
+      solvedValueFormatted = `R1: ${best.r1Value} ${getResistorSymbol(best.r1Unit)} | R2: ${best.r2Value} ${getResistorSymbol(best.r2Unit)}`;
     }
-  } else {
-    // Standard vout solve mode
-    if (isNaN(vinVolts) || isNaN(r1Ohms) || isNaN(r2Ohms) || r1Ohms < 0 || r2Ohms < 0) {
-      return emptyResult;
-    }
+  } else if (isNaN(vinVolts) || isNaN(r1Ohms) || isNaN(r2Ohms) || r1Ohms < 0 || r2Ohms < 0) {
+    return EMPTY_DIVIDER_RESULT;
   }
 
-  let r2Equivalent = r2Ohms;
-  if (state.hasLoad && rlOhms !== null) {
-    if (rlOhms === 0 || r2Ohms === 0) {
-      r2Equivalent = 0;
-    } else {
-      r2Equivalent = (r2Ohms * rlOhms) / (r2Ohms + rlOhms);
-    }
-  }
-
+  const r2Equivalent = state.hasLoad ? getEffectiveR2(r2Ohms, rlOhms) : r2Ohms;
   const totalOhms = r1Ohms + r2Equivalent;
 
   // Short circuit check
   if (totalOhms === 0) {
     return {
-      ...emptyResult,
+      ...EMPTY_DIVIDER_RESULT,
       isValid: true,
       vinVolts,
       voutVolts: 0,
       displayVout: '0.00',
       displayVoutUnit: 'V',
       isShortCircuit: true,
-      errorMessage: 'اتصال کوتاه (Short Circuit): مجموع مقاومت‌های مدار صفر است!',
+      errorMessage: 'اتصال کوتاه: مجموع مقاومت‌های مدار صفر است. حداقل مقدار یکی از مقاومت‌ها را بزرگتر از صفر تعیین کنید.',
     };
   }
 
@@ -183,6 +183,7 @@ export function calculateVoltageDivider(state: VoltageDividerState): VoltageDivi
   const ratioPct = `${formatPrecision(ratio * 100, 2)}%`;
 
   let dbAttenuation: string | null = null;
+
   if (vinVolts > 0 && voutVolts > 0) {
     const db = 20 * Math.log10(voutVolts / vinVolts);
     dbAttenuation = `${formatPrecision(db, 2)} dB`;
@@ -196,6 +197,7 @@ export function calculateVoltageDivider(state: VoltageDividerState): VoltageDivi
 
   let currentLoadAmperes: number | null = null;
   let displayCurrentLoad = '—';
+
   if (state.hasLoad && rlOhms !== null && rlOhms > 0) {
     currentLoadAmperes = voutVolts / rlOhms;
     const cLoadFmt = formatCurrent(currentLoadAmperes);
@@ -207,33 +209,29 @@ export function calculateVoltageDivider(state: VoltageDividerState): VoltageDivi
   const powerR1Watts = r1Ohms > 0 ? (vr1 * vr1) / r1Ohms : 0;
   const powerR2Watts = r2Ohms > 0 ? (voutVolts * voutVolts) / r2Ohms : 0;
   let powerLoadWatts: number | null = null;
+
   if (state.hasLoad && rlOhms !== null) {
     powerLoadWatts = rlOhms > 0 ? (voutVolts * voutVolts) / rlOhms : 0;
   }
+
   const powerTotalWatts = powerR1Watts + powerR2Watts + (powerLoadWatts ?? 0);
 
   // Thevenin equivalent resistance: Rth = R1 || R2
   const rthOhms = r1Ohms + r2Ohms > 0 ? (r1Ohms * r2Ohms) / (r1Ohms + r2Ohms) : 0;
   const rthFormatted = formatResistance(rthOhms);
-
-  // Auto-scale Vout display
-  let displayVout = formatPrecision(voutVolts, 2);
-  let displayVoutUnit = 'V';
-  if (Math.abs(voutVolts) >= 1000) {
-    displayVout = formatPrecision(voutVolts / 1000, 2);
-    displayVoutUnit = 'kV';
-  } else if (Math.abs(voutVolts) < 0.1 && Math.abs(voutVolts) > 0) {
-    displayVout = formatPrecision(voutVolts * 1000, 2);
-    displayVoutUnit = 'mV';
-  }
+  const voutFormatted = formatVoltage(voutVolts);
+  const displayVout = voutFormatted.value;
+  const displayVoutUnit = voutFormatted.unit;
 
   // Load sag and unloaded Vout calculations
   const sumUnloaded = r1Ohms + r2Ohms;
   const voutNoLoad = sumUnloaded > 0 ? vinVolts * (r2Ohms / sumUnloaded) : 0;
   const loadSag = state.hasLoad && rlOhms !== null ? Math.max(0, voutNoLoad - voutVolts) : 0;
+
   const loadSagPct = state.hasLoad && rlOhms !== null && voutNoLoad > 0
     ? `${formatPrecision((loadSag / voutNoLoad) * 100, 1)}%`
     : '۰٪';
+
   const r2EffectiveFmt = formatResistance(r2Equivalent);
 
   return {

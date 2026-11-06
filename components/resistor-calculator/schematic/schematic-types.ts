@@ -1,6 +1,10 @@
-import { ResistorUnit } from '@/types/resistor';
+import { SymbolStandard } from '@/components/schematic-core/schematic-types';
+import {
+  RESISTOR_SYMBOL_MAP,
+  RESISTOR_UNIT_MAP,
+} from '@/lib/voltage-divider-format';
 
-export type SymbolStandard = 'ieee' | 'iec';
+export type { SymbolStandard };
 
 export interface BranchStat {
   hasValue: boolean;
@@ -12,15 +16,6 @@ export interface BranchStat {
   flowStrokeWidth: number;
 }
 
-// V8 Performance: Static O(1) property lookup tables to avoid Array.prototype.find in render loops
-export const UNIT_SYMBOL_MAP: Record<ResistorUnit, string> = {
-  Ohm: 'Ω',
-  kOhm: 'kΩ',
-  MOhm: 'MΩ',
-};
+export const UNIT_SYMBOL_MAP = RESISTOR_SYMBOL_MAP;
+export const UNIT_MULTIPLIER_MAP = RESISTOR_UNIT_MAP;
 
-export const UNIT_MULTIPLIER_MAP: Record<ResistorUnit, number> = {
-  Ohm: 1,
-  kOhm: 1e3,
-  MOhm: 1e6,
-};

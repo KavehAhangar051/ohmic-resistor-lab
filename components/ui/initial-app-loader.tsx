@@ -35,6 +35,7 @@ export function InitialAppLoader({
   useEffect(() => {
     if (!enabled) {
       markAppLoaded();
+
       return;
     }
 
@@ -59,6 +60,7 @@ export function InitialAppLoader({
 
     return () => {
       window.removeEventListener('load', finishLoading);
+
       if (timerId !== null) {
         clearTimeout(timerId);
       }

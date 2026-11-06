@@ -6,7 +6,7 @@ import { AlertTriangle } from 'lucide-react';
 import { VoltageDividerResult, VoltageDividerState } from '@/types/voltage-divider';
 import { ResistorUnit } from '@/types/resistor';
 import { formatPrecision } from '@/lib/resistor-calc';
-import { formatCurrent } from '@/lib/voltage-divider-format';
+import { formatCurrent, getResistorSymbol, toOhms, toVolts } from '@/lib/voltage-divider-format';
 import { Badge } from '@/components/ui/badge';
 
 interface DividerResultDisplayProps {
@@ -18,13 +18,13 @@ interface DividerResultDisplayProps {
 export const DividerResultDisplay = React.memo(function DividerResultDisplay({
   state,
   result,
-  onApplyResistor,
 }: DividerResultDisplayProps) {
-  const r1UnitSym = state.r1Unit === 'kOhm' ? 'kΩ' : state.r1Unit === 'MOhm' ? 'MΩ' : 'Ω';
-  const r2UnitSym = state.r2Unit === 'kOhm' ? 'kΩ' : state.r2Unit === 'MOhm' ? 'MΩ' : 'Ω';
+  const r1UnitSym = getResistorSymbol(state.r1Unit);
+  const r2UnitSym = getResistorSymbol(state.r2Unit);
 
   const targetVoutNum = parseFloat(state.vout || '0');
   const actualVoutNum = result.voutVolts ?? 0;
+
   const errorPct =
     targetVoutNum > 0
       ? Math.abs((actualVoutNum - targetVoutNum) / targetVoutNum) * 100
@@ -35,11 +35,8 @@ export const DividerResultDisplay = React.memo(function DividerResultDisplay({
   const rth = result.theveninResistanceOhms ?? 0;
 
   // Output current capabilities from Vout
-  const r1Ohms =
-    parseFloat(state.r1 || '0') * (state.r1Unit === 'kOhm' ? 1e3 : state.r1Unit === 'MOhm' ? 1e6 : 1);
-  const vinVolts =
-    result.vinVolts ??
-    parseFloat(state.vin || '0') * (state.vinUnit === 'mV' ? 1e-3 : state.vinUnit === 'kV' ? 1e3 : 1);
+  const r1Ohms = toOhms(state.r1 || '0', state.r1Unit);
+  const vinVolts = result.vinVolts ?? toVolts(state.vin || '0', state.vinUnit);
   const voutVolts = result.voutVolts ?? 0;
 
   // Absolute short-circuit current (Vout connected to ground)
@@ -55,10 +52,11 @@ export const DividerResultDisplay = React.memo(function DividerResultDisplay({
     result.voutVolts && result.vinVolts && result.vinVolts > 0
       ? result.voutVolts / result.vinVolts
       : 0;
+
   const dbAtten = ratioNum > 0 ? (20 * Math.log10(ratioNum)).toFixed(1) : '—';
 
   return (
-    <div className="relative rounded-xl border border-zinc-800 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 p-5 sm:p-6 shadow-xl transition-all duration-200 overflow-hidden">
+    <div className="relative rounded-xl border border-zinc-800 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 p-5 sm:p-6 shadow-xl transition-[border-color,box-shadow] duration-200 overflow-hidden">
       {/* Top subtle hairline glow */}
       <motion.div
         key={`${state.r1}-${state.r2}-${appMode}-${solveMode}`}
@@ -110,40 +108,23 @@ export const DividerResultDisplay = React.memo(function DividerResultDisplay({
         </div>
       )}
 
-      {solveMode === 'r1' && (
+      {(solveMode === 'r1' || solveMode === 'r2') && (
         <div className="flex flex-col items-center justify-center text-center w-full">
           <span className="text-[11px] font-mono text-zinc-400 font-semibold mb-1">
-            مقاومت بالایی محاسبه‌شده (R1 تئوری)
+            {solveMode === 'r1'
+              ? 'مقاومت بالایی محاسبه‌شده (R1 تئوری)'
+              : 'مقاومت پایینی محاسبه‌شده (R2 تئوری)'}
           </span>
           <div className="flex items-baseline gap-2 my-1 font-mono" dir="ltr">
             <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white tabular-nums">
               {result.solvedValue ?? result.solvedValueFormatted ?? '—'}
             </span>
             <span className="text-lg font-bold text-emerald-400">
-              {result.solvedResistorUnit === 'kOhm' ? 'kΩ' : result.solvedResistorUnit === 'MOhm' ? 'MΩ' : 'Ω'}
+              {getResistorSymbol(result.solvedResistorUnit)}
             </span>
           </div>
           <div className="text-[10px] font-mono text-zinc-500">
-            THEORETICAL UPPER RESISTOR
-          </div>
-        </div>
-      )}
-
-      {solveMode === 'r2' && (
-        <div className="flex flex-col items-center justify-center text-center w-full">
-          <span className="text-[11px] font-mono text-zinc-400 font-semibold mb-1">
-            مقاومت پایینی محاسبه‌شده (R2 تئوری)
-          </span>
-          <div className="flex items-baseline gap-2 my-1 font-mono" dir="ltr">
-            <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white tabular-nums">
-              {result.solvedValue ?? result.solvedValueFormatted ?? '—'}
-            </span>
-            <span className="text-lg font-bold text-emerald-400">
-              {result.solvedResistorUnit === 'kOhm' ? 'kΩ' : result.solvedResistorUnit === 'MOhm' ? 'MΩ' : 'Ω'}
-            </span>
-          </div>
-          <div className="text-[10px] font-mono text-zinc-500">
-            THEORETICAL LOWER RESISTOR
+            {solveMode === 'r1' ? 'THEORETICAL UPPER RESISTOR' : 'THEORETICAL LOWER RESISTOR'}
           </div>
         </div>
       )}
@@ -323,7 +304,7 @@ export const DividerResultDisplay = React.memo(function DividerResultDisplay({
                 </span>
               </div>
               {state.hasLoad && (
-                <div className="pt-2 mt-2 border-t border-zinc-850/90 space-y-1.5 text-[11px]">
+                <div className="pt-2 mt-2 border-t border-zinc-800/90 space-y-1.5 text-[11px]">
                   <div className="flex items-center justify-between text-zinc-300 font-medium">
                     <span className="text-emerald-400 font-semibold">تحلیل اثر بارگذاری (Loading Effect):</span>
                   </div>
@@ -355,7 +336,7 @@ export const DividerResultDisplay = React.memo(function DividerResultDisplay({
               )}
             </div>
 
-            <p className="text-[10px] text-zinc-500 leading-relaxed pt-1.5 border-t border-zinc-850/80">
+            <p className="text-[10px] text-zinc-500 leading-relaxed pt-1.5 border-t border-zinc-800/80">
               کشیدن جریان بیشتر از {safeI5Fmt.value} {safeI5Fmt.unit} باعث افت ولتاژ خروجی می‌شود؛ برای تأمین جریان بالاتر از بافر (Op-Amp) یا رگولاتور استفاده کنید.
             </p>
           </div>

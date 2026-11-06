@@ -53,6 +53,15 @@ export const SchematicDefs = React.memo(function SchematicDefs({
             transform-origin: ${terminalPulseOrigin.x}px ${terminalPulseOrigin.y}px;
             animation: terminalAura 2.6s ease-in-out infinite;
           }
+          @media (prefers-reduced-motion: reduce) {
+            .electron-top,
+            .electron-down,
+            .electron-bottom,
+            .terminal-aura {
+              animation: none !important;
+              stroke-dasharray: none !important;
+            }
+          }
         `}
       </style>
     </defs>

@@ -46,6 +46,7 @@ export function useHardwareCursorListeners({ cursorRef, innerRef, enabled = true
 
     const updateInnerTransform = (velX = 0) => {
       const inner = innerRef.current;
+
       if (!inner) return;
 
       // 3D Secondary Feedback (Disney Squash/Anticipation & Follow-Through)
@@ -78,6 +79,7 @@ export function useHardwareCursorListeners({ cursorRef, innerRef, enabled = true
       currentY += dy * LERP_FACTOR;
 
       const cursor = cursorRef.current;
+
       if (cursor) {
         // Fast numeric rounding avoids Number.prototype.toFixed string allocation overhead
         const rx = (currentX * 100 | 0) / 100;
@@ -92,6 +94,7 @@ export function useHardwareCursorListeners({ cursorRef, innerRef, enabled = true
 
       // Keep loop running only while cursor is still settling toward target
       const distSq = dx * dx + dy * dy;
+
       if (distSq > 0.005) {
         rafId = requestAnimationFrame(animate);
       } else {
@@ -106,6 +109,7 @@ export function useHardwareCursorListeners({ cursorRef, innerRef, enabled = true
     const startLoop = () => {
       if (!isLoopRunning) {
         isLoopRunning = true;
+
         if (rafId) cancelAnimationFrame(rafId);
         rafId = requestAnimationFrame(animate);
       }
@@ -114,26 +118,31 @@ export function useHardwareCursorListeners({ cursorRef, innerRef, enabled = true
     const onPointerMove = (e: PointerEvent) => {
       targetX = e.clientX;
       targetY = e.clientY;
+
       if (!isVisible) {
         isVisible = true;
         currentX = targetX;
         currentY = targetY;
         const cursor = cursorRef.current;
+
         if (cursor) {
           cursor.style.opacity = '1';
           cursor.style.transform = `translate3d(${targetX}px,${targetY}px,0)`;
         }
       }
+
       startLoop();
     };
 
     const onPointerLeave = () => {
       isVisible = false;
       isLoopRunning = false;
+
       if (rafId) {
         cancelAnimationFrame(rafId);
         rafId = null;
       }
+
       if (cursorRef.current) {
         cursorRef.current.style.opacity = '0';
       }
@@ -146,10 +155,12 @@ export function useHardwareCursorListeners({ cursorRef, innerRef, enabled = true
       currentX = targetX;
       currentY = targetY;
       const cursor = cursorRef.current;
+
       if (cursor) {
         cursor.style.opacity = '1';
         cursor.style.transform = `translate3d(${targetX}px,${targetY}px,0)`;
       }
+
       startLoop();
     };
 
@@ -165,7 +176,7 @@ export function useHardwareCursorListeners({ cursorRef, innerRef, enabled = true
 
     const onMouseOver = (e: MouseEvent) => {
       if (isScrolling) return;
-      const target = e.target as HTMLElement | null;
+      const target = e.target instanceof HTMLElement ? e.target : null;
       const clickable = checkClickable(target);
       const textHover = checkHoveringText(target, clickable);
 
@@ -183,6 +194,7 @@ export function useHardwareCursorListeners({ cursorRef, innerRef, enabled = true
         isHoveringText = false;
         updateInnerTransform();
       }
+
       if (scrollTimeout) clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
         isScrolling = false;
@@ -206,6 +218,7 @@ export function useHardwareCursorListeners({ cursorRef, innerRef, enabled = true
       window.removeEventListener('pointerup', onPointerUp);
       document.removeEventListener('mouseover', onMouseOver);
       window.removeEventListener('scroll', onScroll);
+
       if (scrollTimeout) clearTimeout(scrollTimeout);
     };
   }, [cursorRef, innerRef, enabled]);

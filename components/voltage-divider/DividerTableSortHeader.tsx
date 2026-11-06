@@ -26,6 +26,7 @@ export function TableSortHeader({
   className,
 }: TableSortHeaderProps) {
   const isSorted = sortKey === columnKey;
+
   return (
     <th
       scope="col"
@@ -40,7 +41,7 @@ export function TableSortHeader({
       }}
       className={cn(
         'py-2.5 px-3 cursor-pointer transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-emerald-500/50 select-none group',
-        isSorted ? 'text-zinc-100 font-semibold bg-zinc-800/40' : 'text-zinc-400 font-medium hover:text-zinc-200 hover:bg-zinc-850/30',
+        isSorted ? 'text-zinc-100 font-semibold bg-zinc-800/40' : 'text-zinc-400 font-medium hover:text-zinc-200 hover:bg-zinc-800/30',
         align === 'center' ? 'text-center' : align === 'left' ? 'text-left' : 'text-right',
         className
       )}
@@ -70,6 +71,7 @@ function SortIndicator({
   if (activeKey !== currentKey) {
     return <ArrowUpDown className="h-3 w-3 text-zinc-600 opacity-60" />;
   }
+
   return dir === 'asc' ? (
     <ArrowUp className="h-3 w-3 text-emerald-400" />
   ) : (

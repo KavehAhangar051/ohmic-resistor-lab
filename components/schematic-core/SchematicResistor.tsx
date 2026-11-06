@@ -5,8 +5,11 @@ export interface SchematicResistorProps {
   x: number;
   topY: number;
   bottomY: number;
+  bodyTopY?: number;
+  bodyBottomY?: number;
   tag: string;
   valueText: string;
+  isPlaceholder?: boolean;
   metricBadge?: ResistorMetricBadge | null;
   symbolStandard?: SymbolStandard;
   isHovered?: boolean;
@@ -19,12 +22,20 @@ export interface SchematicResistorProps {
   onHover?: (hovered: boolean) => void;
 }
 
+/**
+ * Deep EDA schematic resistor module encapsulating IEEE zigzag and IEC rectangular
+ * representations, lead wires, electron flow animations, hover hit-targets, and
+ * telemetry badges.
+ */
 export const SchematicResistor = React.memo(function SchematicResistor({
   x,
   topY,
   bottomY,
+  bodyTopY,
+  bodyBottomY,
   tag,
   valueText,
+  isPlaceholder = false,
   metricBadge,
   symbolStandard = 'ieee',
   isHovered = false,
@@ -37,10 +48,9 @@ export const SchematicResistor = React.memo(function SchematicResistor({
   onHover,
 }: SchematicResistorProps) {
   const totalH = bottomY - topY;
-  // Standard lead spacing: leads take ~10-14px total, body takes remainder
   const leadH = Math.max(5, Math.min(8, Math.round(totalH * 0.12)));
-  const rTopY = topY + leadH;
-  const rBottomY = bottomY - leadH;
+  const rTopY = bodyTopY ?? topY + leadH;
+  const rBottomY = bodyBottomY ?? bottomY - leadH;
   const bodyH = rBottomY - rTopY;
 
   // Symmetrical IEEE Zigzag pitch calculation
@@ -56,12 +66,13 @@ export const SchematicResistor = React.memo(function SchematicResistor({
   const badgeText = metricBadge?.text || '';
   const badgeWidth = metricBadge?.width ?? Math.max(46, Math.round(badgeText.length * 5.6 + 10));
   const cardBackingWidth = Math.max(104, 38 + badgeWidth + 6);
+  const showFlow = animateFlow && !isShort && !isPlaceholder;
 
   return (
     <g
       onMouseEnter={() => onHover?.(true)}
       onMouseLeave={() => onHover?.(false)}
-      className="cursor-pointer transition-all duration-150"
+      className="cursor-pointer transition-[opacity,fill,stroke] duration-150 ease-out"
     >
       {/* Generous Hit-Target & Hover Backing Pill */}
       <rect
@@ -76,7 +87,7 @@ export const SchematicResistor = React.memo(function SchematicResistor({
         strokeWidth="1"
         strokeOpacity={isHovered ? 1 : 0}
         pointerEvents="all"
-        className="transition-all duration-150"
+        className="transition-[opacity,fill,stroke] duration-150 ease-out"
       />
 
       {/* Visual Circuit Elements (pointer-events-none to prevent micro-jitter) */}
@@ -93,7 +104,7 @@ export const SchematicResistor = React.memo(function SchematicResistor({
         />
 
         {/* Animated Flow Down Top Lead */}
-        {animateFlow && !isShort && (
+        {showFlow && (
           <line
             x1={x}
             y1={topY}
@@ -183,7 +194,7 @@ export const SchematicResistor = React.memo(function SchematicResistor({
         />
 
         {/* Animated Flow Down Bottom Lead */}
-        {animateFlow && !isShort && (
+        {showFlow && (
           <line
             x1={x}
             y1={rBottomY}
@@ -217,9 +228,9 @@ export const SchematicResistor = React.memo(function SchematicResistor({
         <text
           x={textStartX}
           y={rTopY + 30}
-          fill={isShort ? '#ef4444' : '#e4e4e7'}
+          fill={isPlaceholder ? '#71717a' : isShort ? '#ef4444' : '#e4e4e7'}
           fontSize="11"
-          fontWeight="600"
+          fontWeight={isPlaceholder ? 'normal' : '600'}
           fontFamily="monospace"
           textAnchor="start"
           style={{ direction: 'ltr', unicodeBidi: 'isolate' }}

@@ -1,8 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, ArrowRightLeft, Check, CheckCircle2 } from 'lucide-react';
+import { Sparkles, ArrowRightLeft, Check } from 'lucide-react';
 import { findBestDividerPairs, DividerPairRecommendation } from '@/lib/e-series';
 import { VoltageUnit } from '@/types/voltage-divider';
 import { ResistorUnit } from '@/types/resistor';
@@ -29,9 +28,13 @@ export function ReverseDividerSolver({
   // Convert input Vin to Volts
   const vinVolts = React.useMemo(() => {
     const raw = parseFloat(vin);
+
     if (isNaN(raw) || raw <= 0) return 5;
+
     if (vinUnit === 'mV') return raw * 1e-3;
+
     if (vinUnit === 'kV') return raw * 1e3;
+
     return raw;
   }, [vin, vinUnit]);
 
@@ -39,15 +42,16 @@ export function ReverseDividerSolver({
 
   const recommendations = React.useMemo(() => {
     if (targetVolts <= 0 || targetVolts >= vinVolts) return [];
+
     return findBestDividerPairs(vinVolts, targetVolts, selectedSeries, 4);
   }, [vinVolts, targetVolts, selectedSeries]);
 
   const handleApply = (rec: DividerPairRecommendation, idx: number) => {
     onApplyPair(
       rec.r1.displayValue,
-      rec.r1.unit as ResistorUnit,
+      rec.r1.unit,
       rec.r2.displayValue,
-      rec.r2.unit as ResistorUnit
+      rec.r2.unit
     );
     setAppliedIndex(idx);
     setTimeout(() => setAppliedIndex(null), 2000);
@@ -55,7 +59,7 @@ export function ReverseDividerSolver({
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4 space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-850 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 pb-3">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/40 text-emerald-400">
             <Sparkles className="h-4 w-4" />
@@ -132,16 +136,17 @@ export function ReverseDividerSolver({
       <div className="space-y-2">
         {targetVolts >= vinVolts ? (
           <div className="p-3 rounded-lg border border-amber-900/40 bg-amber-950/20 text-amber-300 text-xs">
-            ولتاژ خروجی در مدار تقسیم ولتاژ پسیو باید همیشه کمتر از ولتاژ ورودی ({vinVolts} V) باشد.
+            در مقسم ولتاژ پسیو، ولتاژ خروجی باید کمتر از ولتاژ ورودی ({vinVolts} V) باشد. مقدار Vout را کاهش دهید.
           </div>
         ) : recommendations.length === 0 ? (
           <div className="p-3 rounded-lg border border-zinc-800 bg-zinc-900/40 text-zinc-400 text-xs text-center">
-            مقداری معتبر برای خروجی وارد کنید تا جفت‌های پیشنهادی استخراج شوند.
+            مقداری عددی بزرگتر از صفر برای خروجی وارد کنید تا جفت‌های پیشنهادی استخراج شوند.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {recommendations.map((rec, idx) => {
               const isApplied = appliedIndex === idx;
+
               const formattedCurrent = rec.currentAmps >= 1e-3
                 ? `${(rec.currentAmps * 1e3).toFixed(2)} mA`
                 : `${(rec.currentAmps * 1e6).toFixed(1)} µA`;
@@ -180,7 +185,7 @@ export function ReverseDividerSolver({
                     size="sm"
                     onClick={() => handleApply(rec, idx)}
                     className={cn(
-                      'text-xs font-mono shrink-0 cursor-pointer transition-all',
+                      'text-xs font-mono shrink-0 cursor-pointer',
                       isApplied
                         ? 'bg-emerald-600 text-white'
                         : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white'

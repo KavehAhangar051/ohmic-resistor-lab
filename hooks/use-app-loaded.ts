@@ -29,7 +29,9 @@ export function markAppLoaded(): void {
 
 function subscribeAppLoaded(callback: () => void): () => void {
   if (typeof window === 'undefined') return () => {};
+
   window.addEventListener(APP_LOADED_EVENT, callback);
+
   return () => {
     window.removeEventListener(APP_LOADED_EVENT, callback);
   };
@@ -37,6 +39,7 @@ function subscribeAppLoaded(callback: () => void): () => void {
 
 function getAppLoadedClientSnapshot(): boolean {
   if (typeof window === 'undefined') return false;
+
   return Boolean(window.__appLoaded);
 }
 

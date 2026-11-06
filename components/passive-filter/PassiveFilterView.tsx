@@ -2,8 +2,7 @@
 
 import * as React from 'react';
 import { motion } from 'motion/react';
-import { Activity, Sliders, Waves, Layers } from 'lucide-react';
-import { FilterState, FilterTopology, FilterType, ResistanceUnit, CapacitanceUnit, InductanceUnit, FrequencyUnit } from '@/types/passive-filter';
+import { FilterState, ResistanceUnit, CapacitanceUnit, InductanceUnit, FrequencyUnit } from '@/types/passive-filter';
 import { calculatePassiveFilter, findStandardFilterPairs } from '@/lib/passive-filter-calc';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +35,7 @@ export function PassiveFilterView() {
 
   const standardPairs = React.useMemo(() => {
     if (!result.isValid || result.cutoffFreqHz <= 0) return [];
+
     return findStandardFilterPairs(result.cutoffFreqHz, state.topology, 5);
   }, [result.isValid, result.cutoffFreqHz, state.topology]);
 
@@ -47,14 +47,31 @@ export function PassiveFilterView() {
   );
 
   const handleApplyStandardPair = React.useCallback(
-    (resistor: string, resUnit: string, reactive: string, reactiveUnit: string) => {
+    (
+      resistor: string,
+      resUnit: ResistanceUnit,
+      reactive: string,
+      reactiveUnit: CapacitanceUnit | InductanceUnit
+    ) => {
       setState((prev) => ({
         ...prev,
         resistance: resistor,
-        resistanceUnit: resUnit as ResistanceUnit,
+        resistanceUnit: resUnit,
         ...(prev.topology === 'rc'
-          ? { capacitance: reactive, capacitanceUnit: reactiveUnit as CapacitanceUnit }
-          : { inductance: reactive, inductanceUnit: reactiveUnit as InductanceUnit }),
+          ? {
+              capacitance: reactive,
+              capacitanceUnit:
+                reactiveUnit === 'pF' || reactiveUnit === 'nF' || reactiveUnit === 'uF'
+                  ? reactiveUnit
+                  : 'nF',
+            }
+          : {
+              inductance: reactive,
+              inductanceUnit:
+                reactiveUnit === 'uH' || reactiveUnit === 'mH' || reactiveUnit === 'H'
+                  ? reactiveUnit
+                  : 'mH',
+            }),
       }));
     },
     []
@@ -71,7 +88,7 @@ export function PassiveFilterView() {
       <div className="border-b border-zinc-800/80 pb-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5 text-balance">
               <span>آزمایشگاه فیلترهای پسیو فرکانسی</span>
               <Badge variant="subtle" className="text-[11px] font-mono border-emerald-900/50 bg-emerald-950/40 text-emerald-400">
                 RC / RL Filter
@@ -152,7 +169,10 @@ export function PassiveFilterView() {
             />
             <select
               value={state.resistanceUnit}
-              onChange={(e) => updateField('resistanceUnit', e.target.value as ResistanceUnit)}
+              onChange={(e) => {
+                // SAFETY: <select> options are strictly 'Ohm' | 'kOhm' | 'MOhm'
+                updateField('resistanceUnit', e.target.value as ResistanceUnit);
+              }}
               className="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs rounded-md h-9 px-2 font-mono cursor-pointer"
             >
               <option value="Ohm">Ω</option>
@@ -184,7 +204,10 @@ export function PassiveFilterView() {
             {state.topology === 'rc' ? (
               <select
                 value={state.capacitanceUnit}
-                onChange={(e) => updateField('capacitanceUnit', e.target.value as CapacitanceUnit)}
+                onChange={(e) => {
+                  // SAFETY: <select> options are strictly 'pF' | 'nF' | 'uF'
+                  updateField('capacitanceUnit', e.target.value as CapacitanceUnit);
+                }}
                 className="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs rounded-md h-9 px-2 font-mono cursor-pointer"
               >
                 <option value="pF">pF</option>
@@ -194,7 +217,10 @@ export function PassiveFilterView() {
             ) : (
               <select
                 value={state.inductanceUnit}
-                onChange={(e) => updateField('inductanceUnit', e.target.value as InductanceUnit)}
+                onChange={(e) => {
+                  // SAFETY: <select> options are strictly 'uH' | 'mH' | 'H'
+                  updateField('inductanceUnit', e.target.value as InductanceUnit);
+                }}
                 className="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs rounded-md h-9 px-2 font-mono cursor-pointer"
               >
                 <option value="uH">µH</option>
@@ -220,7 +246,10 @@ export function PassiveFilterView() {
             />
             <select
               value={state.testFrequencyUnit}
-              onChange={(e) => updateField('testFrequencyUnit', e.target.value as FrequencyUnit)}
+              onChange={(e) => {
+                // SAFETY: <select> options are strictly 'Hz' | 'kHz' | 'MHz'
+                updateField('testFrequencyUnit', e.target.value as FrequencyUnit);
+              }}
               className="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs rounded-md h-9 px-2 font-mono cursor-pointer"
             >
               <option value="Hz">Hz</option>

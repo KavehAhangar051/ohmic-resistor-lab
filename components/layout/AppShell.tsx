@@ -43,7 +43,7 @@ const TOOLS_LIST: ToolItem[] = [
   },
   {
     id: 'voltage-divider',
-    name: 'تقسیم ولتاژ',
+    name: 'مقسم ولتاژ',
     enName: 'Voltage Divider',
     icon: Sliders,
     active: true,
@@ -93,7 +93,7 @@ export function AppShell({
           <button
             type="button"
             onClick={() => setIsSidebarCollapsed((prev) => !prev)}
-            className="hidden md:flex items-center justify-center h-8 w-8 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-850 rounded-md border border-zinc-800 transition-colors cursor-pointer"
+            className="hidden md:flex items-center justify-center h-8 w-8 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-md border border-zinc-800 transition-colors cursor-pointer"
             title={isSidebarCollapsed ? 'باز کردن منو' : 'بستن منو (افزایش عرض فضای کار)'}
             aria-label={isSidebarCollapsed ? 'باز کردن منو' : 'بستن منو'}
           >
@@ -113,7 +113,7 @@ export function AppShell({
             </span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-500 mr-2">
+          <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-500 ms-2">
             <span>/</span>
             <span className="text-zinc-400">تحلیل مدار</span>
             <span>/</span>
@@ -130,7 +130,7 @@ export function AppShell({
         {/* Left Sidebar (Desktop) */}
         <aside
           className={cn(
-            'hidden md:flex flex-col border-l border-zinc-850 bg-[#09090b] shrink-0 transition-all duration-300 ease-in-out overflow-hidden',
+            'hidden md:flex flex-col border-l border-zinc-800 bg-[#09090b] shrink-0 transition-[width,padding,opacity] duration-300 ease-in-out overflow-hidden',
             isSidebarCollapsed ? 'w-0 p-0 border-l-0 opacity-0 pointer-events-none' : 'w-64 p-4 opacity-100'
           )}
         >
@@ -144,6 +144,7 @@ export function AppShell({
             {TOOLS_LIST.map((tool) => {
               const Icon = tool.icon;
               const isSelected = activeToolId === tool.id;
+
               return (
                 <button
                   key={tool.id}
@@ -157,9 +158,9 @@ export function AppShell({
                   disabled={!tool.active}
                   className={`w-full group flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors text-right focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${
                     isSelected
-                      ? 'bg-zinc-850/90 text-white border border-zinc-700/80 shadow-xs'
+                      ? 'bg-zinc-800/90 text-white border border-zinc-700/80 shadow-xs'
                       : tool.active
-                      ? 'text-zinc-300 hover:text-white hover:bg-zinc-850/50 cursor-pointer'
+                      ? 'text-zinc-300 hover:text-white hover:bg-zinc-800/50 cursor-pointer'
                       : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50 cursor-not-allowed opacity-60'
                   }`}
                 >
@@ -180,8 +181,8 @@ export function AppShell({
             })}
           </nav>
 
-          <div className="mt-auto pt-6 border-t border-zinc-850">
-            <div className="rounded-md border border-zinc-850 bg-zinc-900/30 p-3">
+          <div className="mt-auto pt-6 border-t border-zinc-800">
+            <div className="rounded-md border border-zinc-800 bg-zinc-900/30 p-3">
               <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
                 <Compass className="h-3.5 w-3.5 text-zinc-400" />
                 <span>راهنمای کاربری</span>
@@ -212,6 +213,7 @@ export function AppShell({
                 {TOOLS_LIST.map((tool, idx) => {
                   const Icon = tool.icon;
                   const isSelected = activeToolId === tool.id;
+
                   return (
                     <motion.div
                       key={tool.id}
@@ -226,9 +228,9 @@ export function AppShell({
                       }}
                       className={`flex items-center justify-between px-3.5 py-2.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                         isSelected
-                          ? 'bg-zinc-850 text-white border border-zinc-700'
+                          ? 'bg-zinc-800 text-white border border-zinc-700'
                           : tool.active
-                          ? 'text-zinc-300 hover:text-white hover:bg-zinc-850/50'
+                          ? 'text-zinc-300 hover:text-white hover:bg-zinc-800/50'
                           : 'text-zinc-400 opacity-60 cursor-not-allowed'
                       }`}
                     >
@@ -252,10 +254,10 @@ export function AppShell({
         </AnimatePresence>
 
         {/* Content Viewport */}
-        <main className="flex-1 p-4 sm:p-8 min-w-0 transition-all duration-300">
+        <main className="flex-1 p-4 sm:p-8 min-w-0 transition-[padding] duration-300">
           <div
             className={cn(
-              'mx-auto transition-all duration-300',
+              'mx-auto transition-[max-width] duration-300',
               isSidebarCollapsed ? 'max-w-7xl' : 'max-w-6xl'
             )}
           >
@@ -265,7 +267,7 @@ export function AppShell({
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-850 bg-[#09090b] py-4 px-6 text-center text-xs text-zinc-400 font-mono">
+      <footer className="border-t border-zinc-800 bg-[#09090b] py-4 px-6 text-center text-xs text-zinc-400 font-mono">
         <span suppressHydrationWarning>OHMIC &copy; {new Date().getFullYear()} &middot; Park UI Dark System</span>
       </footer>
     </div>

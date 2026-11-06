@@ -11,7 +11,7 @@ interface ResultDisplayProps {
 
 export function ResultDisplay({ result }: ResultDisplayProps) {
   return (
-    <div className="relative rounded-xl border border-zinc-800 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 p-5 sm:p-6 shadow-xl transition-all duration-200 overflow-hidden">
+    <div className="relative rounded-xl border border-zinc-800 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 p-5 sm:p-6 shadow-xl transition-[border-color,box-shadow] duration-200 overflow-hidden">
       {/* Top subtle hairline glow - Secondary feedback pulse when calculation updates */}
       <motion.div
         key={result.displayValue}
@@ -52,7 +52,7 @@ export function ResultDisplay({ result }: ResultDisplayProps) {
       {/* Main Result Display Content */}
       <div className="flex flex-col items-center justify-center text-center">
         <div className="flex items-baseline justify-center gap-2 my-2 select-all" dir="ltr">
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="popLayout" initial={false}>
             <motion.span
               key={result.displayValue}
               initial={{ opacity: 0.3, y: -6, scale: 0.98 }}
@@ -65,7 +65,7 @@ export function ResultDisplay({ result }: ResultDisplayProps) {
             </motion.span>
           </AnimatePresence>
 
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="popLayout" initial={false}>
             <motion.span
               key={result.displayUnit}
               initial={{ opacity: 0.4, scale: 0.92 }}

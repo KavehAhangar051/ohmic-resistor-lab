@@ -34,7 +34,7 @@ export const FilterBodePlot = React.memo(function FilterBodePlot({
   if (!isValid || bodePoints.length === 0) {
     return (
       <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-6 text-center text-xs text-zinc-500 font-mono">
-        مقادیر نامعتبر برای فیلتر — برای رسم دیاگرام بُد مقادیر معتبر وارد کنید.
+        برای رسم دیاگرام بُد، مقادیر عددی بزرگتر از صفر برای قطعات فیلتر وارد کنید.
       </div>
     );
   }
@@ -48,24 +48,29 @@ export const FilterBodePlot = React.memo(function FilterBodePlot({
   const freqToX = (f: number) => {
     const logF = Math.log10(Math.max(f, minFreq));
     const normalized = (logF - logMin) / (logMax - logMin);
+
     return padLeft + normalized * plotWidth;
   };
 
   // Magnitude Y range: 0 dB to -40 dB
   const minDb = -40;
   const maxDb = 0;
+
   const dbToY = (db: number) => {
     const clamped = Math.max(minDb, Math.min(maxDb, db));
     const normalized = (clamped - minDb) / (maxDb - minDb);
+
     return padTop + (1 - normalized) * plotHeight;
   };
 
   // Phase Y range: -90 deg to +90 deg
   const minPhase = -90;
   const maxPhase = 90;
+
   const phaseToY = (ph: number) => {
     const clamped = Math.max(minPhase, Math.min(maxPhase, ph));
     const normalized = (clamped - minPhase) / (maxPhase - minPhase);
+
     return padTop + (1 - normalized) * plotHeight;
   };
 
@@ -73,12 +78,14 @@ export const FilterBodePlot = React.memo(function FilterBodePlot({
   const magPath = bodePoints.reduce((acc, pt, idx) => {
     const x = freqToX(pt.freq);
     const y = dbToY(pt.gainDb);
+
     return idx === 0 ? `M ${x} ${y}` : `${acc} L ${x} ${y}`;
   }, '');
 
   const phasePath = bodePoints.reduce((acc, pt, idx) => {
     const x = freqToX(pt.freq);
     const y = phaseToY(pt.phaseDeg);
+
     return idx === 0 ? `M ${x} ${y}` : `${acc} L ${x} ${y}`;
   }, '');
 
@@ -86,6 +93,7 @@ export const FilterBodePlot = React.memo(function FilterBodePlot({
   const decadeTicks: { freq: number; label: string; x: number }[] = [];
   const startDecade = Math.ceil(logMin);
   const endDecade = Math.floor(logMax);
+
   for (let d = startDecade; d <= endDecade; d++) {
     const f = Math.pow(10, d);
     decadeTicks.push({
@@ -162,6 +170,7 @@ export const FilterBodePlot = React.memo(function FilterBodePlot({
           {activePlot === 'magnitude' ? (
             [-10, -20, -30, -40].map((db) => {
               const y = dbToY(db);
+
               return (
                 <g key={db}>
                   <line x1={padLeft} y1={y} x2={padLeft + plotWidth} y2={y} stroke="#18181b" strokeWidth="1" strokeDasharray="2 4" />
@@ -174,6 +183,7 @@ export const FilterBodePlot = React.memo(function FilterBodePlot({
           ) : (
             [-90, -45, 0, 45, 90].map((ph) => {
               const y = phaseToY(ph);
+
               return (
                 <g key={ph}>
                   <line x1={padLeft} y1={y} x2={padLeft + plotWidth} y2={y} stroke="#18181b" strokeWidth="1" strokeDasharray="2 4" />
@@ -255,6 +265,7 @@ export const FilterBodePlot = React.memo(function FilterBodePlot({
           {/* Hover interactive invisible hit bars across points */}
           {bodePoints.map((pt) => {
             const px = freqToX(pt.freq);
+
             return (
               <rect
                 key={pt.freq}

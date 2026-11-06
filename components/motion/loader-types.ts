@@ -13,7 +13,7 @@ export type LoaderVariant =
   | 'ascii-blocks'
   | 'ascii-bounce';
 
-export const ASCII_SETS: Record<string, string[]> = {
+export const ASCII_SETS: Partial<Record<LoaderVariant, string[]>> = {
   ascii: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'],
   'ascii-line': ['|', '/', '-', '\\'],
   'ascii-braille': ['⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷'],

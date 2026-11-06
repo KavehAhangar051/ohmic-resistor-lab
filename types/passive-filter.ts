@@ -1,9 +1,13 @@
 export type FilterTopology = 'rc' | 'rl';
+
 export type FilterType = 'lowpass' | 'highpass';
 
 export type ResistanceUnit = 'Ohm' | 'kOhm' | 'MOhm';
+
 export type CapacitanceUnit = 'pF' | 'nF' | 'uF';
+
 export type InductanceUnit = 'uH' | 'mH' | 'H';
+
 export type FrequencyUnit = 'Hz' | 'kHz' | 'MHz';
 
 export interface FilterState {

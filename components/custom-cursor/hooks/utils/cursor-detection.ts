@@ -48,9 +48,11 @@ const TEXT_CACHE = new WeakMap<Element, boolean>();
  */
 export function isTouchDevice(): boolean {
   if (typeof window === 'undefined') return true;
+
   if (!cachedCoarseMql) {
     cachedCoarseMql = window.matchMedia('(pointer: coarse)');
   }
+
   return cachedCoarseMql.matches;
 }
 
@@ -64,14 +66,18 @@ export function isTouchDevice(): boolean {
 export function checkClickable(target: HTMLElement | null): boolean {
   if (!target) return false;
   const cached = CLICKABLE_CACHE.get(target);
+
   if (cached !== undefined) return cached;
 
   // Direct tag check bypasses DOM tree traversal
   let isClick = DIRECT_CLICKABLE_TAGS.has(target.tagName);
-  if (!isClick && typeof target.closest === 'function') {
+
+  if (!isClick) {
     isClick = target.closest(CLICKABLE_SELECTOR) !== null;
   }
+
   CLICKABLE_CACHE.set(target, isClick);
+
   return isClick;
 }
 
@@ -86,12 +92,16 @@ export function checkClickable(target: HTMLElement | null): boolean {
 export function checkHoveringText(target: HTMLElement | null, isClickable: boolean): boolean {
   if (!target || isClickable) return false;
   const cached = TEXT_CACHE.get(target);
+
   if (cached !== undefined) return cached;
 
   let isText = DIRECT_TEXT_TAGS.has(target.tagName);
-  if (!isText && typeof target.closest === 'function') {
+
+  if (!isText) {
     isText = target.closest(TEXT_SELECTOR) !== null;
   }
+
   TEXT_CACHE.set(target, isText);
+
   return isText;
 }

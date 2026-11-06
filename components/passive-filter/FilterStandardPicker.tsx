@@ -2,14 +2,37 @@
 
 import * as React from 'react';
 import { Check, Sparkles } from 'lucide-react';
-import { StandardFilterPair } from '@/types/passive-filter';
+import {
+  StandardFilterPair,
+  ResistanceUnit,
+  CapacitanceUnit,
+  InductanceUnit,
+} from '@/types/passive-filter';
+import { decomposeOhms } from '@/lib/voltage-divider-format';
 import { Badge } from '@/components/ui/badge';
 
 interface FilterStandardPickerProps {
   pairs: StandardFilterPair[];
   topology: 'rc' | 'rl';
   targetFcDisplay: string;
-  onApplyPair: (resistor: string, resUnit: string, reactive: string, reactiveUnit: string) => void;
+  onApplyPair: (
+    resistor: string,
+    resUnit: ResistanceUnit,
+    reactive: string,
+    reactiveUnit: CapacitanceUnit | InductanceUnit
+  ) => void;
+}
+
+function toReactiveUnit(unit: string): CapacitanceUnit | InductanceUnit {
+  if (unit === 'pF' || unit === 'nF' || unit === 'uF') return unit;
+
+  if (unit === 'µF') return 'uF';
+
+  if (unit === 'uH' || unit === 'mH' || unit === 'H') return unit;
+
+  if (unit === 'µH') return 'uH';
+
+  return 'nF';
 }
 
 export const FilterStandardPicker = React.memo(function FilterStandardPicker({
@@ -21,21 +44,9 @@ export const FilterStandardPicker = React.memo(function FilterStandardPicker({
   const [appliedIdx, setAppliedIdx] = React.useState<number | null>(null);
 
   const handleApply = (pair: StandardFilterPair, idx: number) => {
-    // Parse resistor
-    const rOhms = pair.resistorOhms;
-    let rVal = `${rOhms}`;
-    let rUnit = 'Ohm';
-    if (rOhms >= 1e6) {
-      rVal = `${rOhms / 1e6}`;
-      rUnit = 'MOhm';
-    } else if (rOhms >= 1e3) {
-      rVal = `${rOhms / 1e3}`;
-      rUnit = 'kOhm';
-    }
-
-    // Reactive value
+    const { value: rVal, unit: rUnit } = decomposeOhms(pair.resistorOhms);
     const reactVal = pair.reactiveDisplay;
-    const reactUnit = pair.reactiveUnit === 'µF' || pair.reactiveUnit === 'uF' ? 'uF' : pair.reactiveUnit;
+    const reactUnit = toReactiveUnit(pair.reactiveUnit);
 
     onApplyPair(rVal, rUnit, reactVal, reactUnit);
     setAppliedIdx(idx);
@@ -48,7 +59,7 @@ export const FilterStandardPicker = React.memo(function FilterStandardPicker({
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4 space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-850 pb-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 pb-2.5">
         <div className="flex items-center gap-2">
           <div className="p-1 rounded-lg bg-emerald-950/70 border border-emerald-800/40 text-emerald-400">
             <Sparkles className="h-4 w-4" />
@@ -78,9 +89,10 @@ export const FilterStandardPicker = React.memo(function FilterStandardPicker({
               <th scope="col" className="py-2 px-3 text-center w-24">اعمال</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-850/70 font-mono text-zinc-200">
+          <tbody className="divide-y divide-zinc-800/70 font-mono text-zinc-200">
             {pairs.map((pair, idx) => {
               const isApplied = appliedIdx === idx;
+
               return (
                 <tr key={idx} className="hover:bg-zinc-900/40 transition-colors">
                   <td className="py-2 px-3 font-bold text-zinc-100">{pair.resistorDisplay}</td>
@@ -103,7 +115,7 @@ export const FilterStandardPicker = React.memo(function FilterStandardPicker({
                           <span className="text-emerald-400">اعمال شد</span>
                         </>
                       ) : (
-                        'انتخاب'
+                        'اعمال در مدار'
                       )}
                     </button>
                   </td>

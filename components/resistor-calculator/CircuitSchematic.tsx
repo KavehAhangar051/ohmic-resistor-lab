@@ -19,10 +19,10 @@ interface CircuitSchematicProps {
 }
 
 const PARALLEL_LEGEND: SchematicLegendItem[] = [
-  { label: 'ریل تغذیه A (+)', color: '#10b981', shape: 'circle', textColor: 'text-zinc-300' },
-  { label: 'ریل مشترک B (-)', color: '#71717a', shape: 'circle', textColor: 'text-zinc-400' },
-  { label: 'شاخه مقاومت', color: '#f59e0b', shape: 'square', textColor: 'text-zinc-300' },
-  { label: 'شارش متناسب جریان (I)', color: '#10b981', shape: 'dash', textColor: 'text-emerald-400' },
+  { label: 'ریل تغذیه A (+)', color: '#10b981', marker: 'circle', textColor: 'text-zinc-300' },
+  { label: 'ریل مشترک B (-)', color: '#71717a', marker: 'circle', textColor: 'text-zinc-400' },
+  { label: 'شاخه مقاومت', color: '#f59e0b', marker: 'square', textColor: 'text-zinc-300' },
+  { label: 'شارش متناسب جریان (I)', color: '#10b981', marker: 'dash', textColor: 'text-emerald-400' },
 ];
 
 export function CircuitSchematic({ items, result }: CircuitSchematicProps) {
@@ -55,6 +55,7 @@ export function CircuitSchematic({ items, result }: CircuitSchematicProps) {
 
     return items.map((item) => {
       const rawVal = item.value;
+
       if (rawVal.length === 0) {
         return {
           hasValue: false,
@@ -68,6 +69,7 @@ export function CircuitSchematic({ items, result }: CircuitSchematicProps) {
       }
 
       const num = parseFloat(rawVal);
+
       if (isNaN(num) || num < 0) {
         return {
           hasValue: false,

@@ -10,7 +10,8 @@ import {
   StandardResistorPair,
 } from '@/types/voltage-divider';
 import { ResistorUnit } from '@/types/resistor';
-import { calculateVoltageDivider, VOLTAGE_UNIT_MAP } from '@/lib/voltage-divider-calc';
+import { calculateVoltageDivider } from '@/lib/voltage-divider-calc';
+import { toOhms, toVolts } from '@/lib/voltage-divider-format';
 import { findBestE24Pairs } from '@/lib/voltage-divider-solver';
 import { DividerSchematic } from './DividerSchematic';
 import { DividerResultDisplay } from './DividerResultDisplay';
@@ -43,21 +44,25 @@ export function VoltageDividerView() {
 
   // Top recommended commercial E24 / E96 resistor pairs tailored to current appMode & series
   const suggestedPairs = React.useMemo(() => {
-    const vinNum = parseFloat(state.vin) * (VOLTAGE_UNIT_MAP[state.vinUnit] ?? 1);
-    const targetVout = parseFloat(state.vout || '0') * (VOLTAGE_UNIT_MAP[state.voutUnit || 'V'] ?? 1);
+    const vinNum = toVolts(state.vin, state.vinUnit);
+    const targetVout = toVolts(state.vout || '0', state.voutUnit || 'V');
+
     if (isNaN(vinNum) || isNaN(targetVout) || vinNum <= 0 || targetVout <= 0) {
       return [];
     }
+
     const rlNum =
       state.hasLoad && state.rl.trim().length > 0
-        ? parseFloat(state.rl) * (state.rlUnit === 'kOhm' ? 1e3 : state.rlUnit === 'MOhm' ? 1e6 : 1)
+        ? toOhms(state.rl, state.rlUnit)
         : null;
+
     return findBestE24Pairs(vinNum, targetVout, pairCriterion, 20, rlNum, state.appMode, state.series);
   }, [state.vin, state.vinUnit, state.vout, state.voutUnit, state.hasLoad, state.rl, state.rlUnit, state.appMode, state.series, pairCriterion]);
 
   // Derived effective state: uses user-selected pair or defaults to top #1 suggested pair
   const effectiveState = React.useMemo<VoltageDividerState>(() => {
     const activePair = selectedPair ?? suggestedPairs[0] ?? null;
+
     return {
       ...state,
       r1: activePair?.r1Value ?? state.r1,
@@ -74,6 +79,7 @@ export function VoltageDividerView() {
   const updateField = React.useCallback(
     <K extends keyof VoltageDividerState>(field: K, value: VoltageDividerState[K]) => {
       setState((prev) => ({ ...prev, [field]: value }));
+
       if (field === 'vin' || field === 'vout' || field === 'hasLoad' || field === 'rl' || field === 'rlUnit') {
         setSelectedPair(null);
       }
@@ -86,6 +92,7 @@ export function VoltageDividerView() {
       const match = suggestedPairs.find(
         (p) => p.r1Value === r1 && p.r1Unit === r1Unit && p.r2Value === r2 && p.r2Unit === r2Unit
       );
+
       if (match) {
         setSelectedPair(match);
       } else {
@@ -105,9 +112,9 @@ export function VoltageDividerView() {
     >
       {/* Title & Scope Header */}
       <div className="border-b border-zinc-800/80 pb-4">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5 text-balance">
           <Sliders className="h-6 w-6 text-emerald-400" />
-          <span>محاسبه‌گر تقسیم ولتاژ</span>
+          <span>محاسبه‌گر مقسم ولتاژ</span>
           <Badge variant="subtle" className="text-[11px] font-mono border-emerald-900/50 bg-emerald-950/40 text-emerald-400 pt-1 pb-0.5 leading-none">
             Voltage Divider
           </Badge>
@@ -132,7 +139,10 @@ export function VoltageDividerView() {
                   unitType="voltage"
                   placeholder="5 یا 12"
                   onChangeValue={(val) => updateField('vin', val)}
-                  onChangeUnit={(unit) => updateField('vinUnit', unit as VoltageUnit)}
+                  onChangeUnit={(unit) => {
+                    // SAFETY: unitType="voltage" restricts options to VoltageUnit
+                    updateField('vinUnit', unit as VoltageUnit);
+                  }}
                   showColorCode={false}
                 />
 
@@ -146,7 +156,10 @@ export function VoltageDividerView() {
                   unitType="voltage"
                   placeholder="2.5 یا 3.3"
                   onChangeValue={(val) => updateField('vout', val)}
-                  onChangeUnit={(unit) => updateField('voutUnit', unit as VoltageUnit)}
+                  onChangeUnit={(unit) => {
+                    // SAFETY: unitType="voltage" restricts options to VoltageUnit
+                    updateField('voutUnit', unit as VoltageUnit);
+                  }}
                   showColorCode={false}
                 />
 
@@ -164,7 +177,10 @@ export function VoltageDividerView() {
                       canDelete={true}
                       onDelete={() => updateField('hasLoad', false)}
                       onChangeValue={(val) => updateField('rl', val)}
-                      onChangeUnit={(unit) => updateField('rlUnit', unit as ResistorUnit)}
+                      onChangeUnit={(unit) => {
+                        // SAFETY: unitType="resistor" restricts options to ResistorUnit
+                        updateField('rlUnit', unit as ResistorUnit);
+                      }}
                       showColorCode={true}
                     />
                   )}
@@ -174,18 +190,16 @@ export function VoltageDividerView() {
               {/* Add Load Resistor Button */}
               {!state.hasLoad && (
                 <div className="pt-1">
-                  <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
-                    <Button
-                      type="button"
-                      variant="solid"
-                      size="md"
-                      onClick={() => updateField('hasLoad', true)}
-                      className="w-full justify-center text-xs font-medium bg-zinc-100 hover:bg-white text-zinc-950 shadow-sm transition-all group cursor-pointer"
-                    >
-                      <Plus className="h-4 w-4 ml-1.5 transition-transform duration-200 group-hover:rotate-90" />
-                      <span>افزودن مقاومت بار (RL) به مدار</span>
-                    </Button>
-                  </motion.div>
+                  <Button
+                    type="button"
+                    variant="solid"
+                    size="md"
+                    onClick={() => updateField('hasLoad', true)}
+                    className="w-full justify-center text-xs font-medium bg-zinc-100 hover:bg-white text-zinc-950 shadow-sm group cursor-pointer"
+                  >
+                    <Plus className="h-4 w-4 ms-1.5 transition-transform duration-200 group-hover:rotate-90" />
+                    <span>افزودن مقاومت بار (RL) به مدار</span>
+                  </Button>
                 </div>
               )}
             </div>

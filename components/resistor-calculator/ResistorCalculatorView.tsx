@@ -26,8 +26,10 @@ export function ResistorCalculatorView() {
   }, [items]);
 
   const idCounterRef = React.useRef(10);
+
   const getNextId = React.useCallback(() => {
     idCounterRef.current += 1;
+
     return `resistor-${idCounterRef.current}`;
   }, []);
 
@@ -57,6 +59,7 @@ export function ResistorCalculatorView() {
   const handleDeleteItem = React.useCallback((id: string) => {
     setItems((prev) => {
       if (prev.length <= 1) return prev;
+
       return prev.filter((item) => item.id !== id);
     });
   }, []);
@@ -66,9 +69,11 @@ export function ResistorCalculatorView() {
     setItems((prev) => {
       const idx = prev.findIndex((i) => i.id === itemToDup.id);
       const clone = { ...itemToDup, id: nextId };
+
       if (idx === -1) return [...prev, clone];
       const next = [...prev];
       next.splice(idx + 1, 0, clone);
+
       return next;
     });
     scrollToBottom();
@@ -85,7 +90,7 @@ export function ResistorCalculatorView() {
       <div className="border-b border-zinc-800/80 pb-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5 text-balance">
               <span>محاسبه‌گر مقاومت موازی</span>
               <Badge variant="subtle" className="text-[11px] font-mono border-emerald-900/50 bg-emerald-950/40 text-emerald-400">
                 Parallel Network
@@ -162,25 +167,23 @@ export function ResistorCalculatorView() {
 
           {/* Add Branch Area with Tactile Micro-interaction */}
           <div className="pt-1">
-            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                type="button"
-                variant="solid"
-                size="md"
-                onClick={handleAddItem}
-                className="w-full justify-center text-xs font-medium bg-zinc-100 hover:bg-white text-zinc-950 shadow-sm transition-all group"
-              >
-                <Plus className="h-4 w-4 ml-1.5 transition-transform duration-200 group-hover:rotate-90" />
-                <span>افزودن شاخه جدید</span>
-              </Button>
-            </motion.div>
+            <Button
+              type="button"
+              variant="solid"
+              size="md"
+              onClick={handleAddItem}
+              className="w-full justify-center text-xs font-medium bg-zinc-100 hover:bg-white text-zinc-950 shadow-sm group"
+            >
+              <Plus className="h-4 w-4 ms-1.5 transition-transform duration-200 group-hover:rotate-90" />
+              <span>افزودن شاخه جدید</span>
+            </Button>
           </div>
 
           {/* Helpful Circuit Theory Hint */}
-          <div className="rounded-lg border border-zinc-850/80 bg-zinc-950/40 p-3 flex items-start gap-2.5 text-zinc-400 text-xs leading-relaxed">
+          <div className="rounded-lg border border-zinc-800/80 bg-zinc-950/40 p-3 flex items-start gap-2.5 text-zinc-400 text-xs leading-relaxed">
             <Info className="h-4 w-4 shrink-0 text-zinc-500 mt-0.5" />
             <div>
-              <span className="text-zinc-300 font-medium ml-1">قاعده طلایی مدار موازی:</span>
+              <span className="text-zinc-300 font-medium me-1">قاعده طلایی مدار موازی:</span>
               مقاومت معادل در مدار موازی همواره از کوچک‌ترین مقاومت موجود در مدار کمتر است. همچنین هر شاخه جریان مستقل خود را عبور می‌دهد.
             </div>
           </div>

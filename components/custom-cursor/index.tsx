@@ -8,16 +8,21 @@ let coarsePointerMql: MediaQueryList | null = null;
 
 function getCoarsePointerMql(): MediaQueryList | null {
   if (typeof window === 'undefined') return null;
+
   if (!coarsePointerMql) {
     coarsePointerMql = window.matchMedia('(pointer: coarse)');
   }
+
   return coarsePointerMql;
 }
 
 const subscribePointerMedia = (callback: () => void) => {
   const mql = getCoarsePointerMql();
+
   if (!mql) return () => {};
+
   mql.addEventListener('change', callback);
+
   return () => mql.removeEventListener('change', callback);
 };
 

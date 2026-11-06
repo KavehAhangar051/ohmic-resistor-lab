@@ -11,6 +11,7 @@ import {
   TablePageSize,
 } from '@/types/voltage-divider';
 import { ResistorUnit } from '@/types/resistor';
+import { getResistorSymbol } from '@/lib/voltage-divider-format';
 import { cn } from '@/lib/utils';
 
 interface DividerPairFilterBarProps {
@@ -69,6 +70,9 @@ const CURRENT_OPTIONS: { id: CurrentFilterOption; label: string }[] = [
   { id: 'high', label: '> ۵mA' },
 ];
 
+const SERIES_OPTIONS: ResistorSeriesOption[] = ['E24', 'E96'];
+const PAGE_SIZE_OPTIONS: TablePageSize[] = [10, 20];
+
 export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
   appMode,
   onChangeAppMode,
@@ -88,7 +92,7 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
   filteredCount,
   totalCount,
 }: DividerPairFilterBarProps) {
-  const rlSym = rlUnit === 'kOhm' ? 'kΩ' : rlUnit === 'MOhm' ? 'MΩ' : 'Ω';
+  const rlSym = getResistorSymbol(rlUnit);
 
   return (
     <div className="space-y-3.5 p-3.5 sm:p-4 rounded-xl border border-zinc-800/90 bg-gradient-to-b from-zinc-900/80 via-zinc-900/40 to-zinc-950/90 text-xs shadow-md">
@@ -99,13 +103,14 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
           {APP_MODES.map((mode) => {
             const isSelected = appMode === mode.id;
             const Icon = mode.icon;
+
             return (
               <button
                 key={mode.id}
                 type="button"
                 onClick={() => onChangeAppMode(mode.id)}
                 className={cn(
-                  'relative flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer select-none shrink-0',
+                  'relative flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-[color,background-color] duration-150 ease-out cursor-pointer select-none shrink-0',
                   isSelected
                     ? 'text-white font-semibold shadow-xs'
                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
@@ -129,8 +134,9 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Resistor Series (E24 5% vs E96 1%) */}
           <div className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg select-none" dir="ltr">
-            {(['E24', 'E96'] as ResistorSeriesOption[]).map((s) => {
+            {SERIES_OPTIONS.map((s) => {
               const isSelected = series === s;
+
               return (
                 <button
                   key={s}
@@ -190,6 +196,7 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
             <div className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg select-none">
               {CRITERIA_OPTIONS.map((opt) => {
                 const isSelected = criterion === opt.id;
+
                 return (
                   <button
                     key={opt.id}
@@ -205,7 +212,7 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
                     {isSelected && (
                       <motion.span
                         layoutId="active-criterion-pill"
-                        className="absolute inset-0 rounded bg-zinc-850 border border-zinc-700/60 shadow-xs -z-10"
+                        className="absolute inset-0 rounded bg-zinc-800 border border-zinc-700/60 shadow-xs -z-10"
                         transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                       />
                     )}
@@ -227,6 +234,7 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
             >
               {CURRENT_OPTIONS.map((opt) => {
                 const isSelected = currentFilter === opt.id;
+
                 return (
                   <button
                     key={opt.id}
@@ -263,13 +271,14 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
 
           {/* Capacity Toggle */}
           <div className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg select-none" dir="ltr">
-            {[10, 20].map((size) => {
+            {PAGE_SIZE_OPTIONS.map((size) => {
               const isSelected = pageSize === size;
+
               return (
                 <button
                   key={size}
                   type="button"
-                  onClick={() => onChangePageSize(size as TablePageSize)}
+                  onClick={() => onChangePageSize(size)}
                   className={cn(
                     'relative px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1',
                     isSelected
@@ -295,11 +304,11 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
             <button
               type="button"
               onClick={onResetFilters}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-850 transition-colors cursor-pointer border border-zinc-800"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer border border-zinc-800"
               title="بازنشانی فیلترها"
             >
               <RotateCcw className="h-3 w-3" />
-              <span>بازنشانی</span>
+              <span>بازنشانی فیلترها</span>
             </button>
           )}
         </div>

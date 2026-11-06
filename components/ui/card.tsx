@@ -16,6 +16,7 @@ const CardRoot = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef
     />
   )
 );
+
 CardRoot.displayName = 'CardRoot';
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef<typeof ark.div>>(
@@ -27,6 +28,7 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutR
     />
   )
 );
+
 CardHeader.displayName = 'CardHeader';
 
 const CardTitle = React.forwardRef<HTMLHeadingElement, React.ComponentPropsWithoutRef<typeof ark.h3>>(
@@ -41,6 +43,7 @@ const CardTitle = React.forwardRef<HTMLHeadingElement, React.ComponentPropsWitho
     />
   )
 );
+
 CardTitle.displayName = 'CardTitle';
 
 const CardDescription = React.forwardRef<HTMLParagraphElement, React.ComponentPropsWithoutRef<typeof ark.p>>(
@@ -52,6 +55,7 @@ const CardDescription = React.forwardRef<HTMLParagraphElement, React.ComponentPr
     />
   )
 );
+
 CardDescription.displayName = 'CardDescription';
 
 const CardBody = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef<typeof ark.div>>(
@@ -59,6 +63,7 @@ const CardBody = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef
     <ark.div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
   )
 );
+
 CardBody.displayName = 'CardBody';
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef<typeof ark.div>>(
@@ -70,6 +75,7 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutR
     />
   )
 );
+
 CardFooter.displayName = 'CardFooter';
 
 export const Card = {

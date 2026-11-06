@@ -15,11 +15,11 @@ interface FilterSchematicProps {
 }
 
 const FILTER_LEGEND: SchematicLegendItem[] = [
-  { label: 'سیگنال متناوب Vin', color: '#10b981', shape: 'circle', textColor: 'text-zinc-300' },
-  { label: 'پروب خروجی فیلتر Vout', color: '#34d399', shape: 'circle', textColor: 'text-emerald-400' },
-  { label: 'المان‌های پسیو (R, C, L)', color: '#f59e0b', shape: 'square', textColor: 'text-zinc-300' },
-  { label: 'زمین مرجع مدار GND', color: '#71717a', shape: 'circle', textColor: 'text-zinc-400' },
-  { label: 'شارش جریان متناوب (AC)', color: '#10b981', shape: 'dash', textColor: 'text-emerald-400' },
+  { label: 'سیگنال متناوب Vin', color: '#10b981', marker: 'circle', textColor: 'text-zinc-300' },
+  { label: 'پروب خروجی فیلتر Vout', color: '#34d399', marker: 'circle', textColor: 'text-emerald-400' },
+  { label: 'المان‌های پسیو (R, C, L)', color: '#f59e0b', marker: 'square', textColor: 'text-zinc-300' },
+  { label: 'زمین مرجع مدار GND', color: '#71717a', marker: 'circle', textColor: 'text-zinc-400' },
+  { label: 'شارش جریان متناوب (AC)', color: '#10b981', marker: 'dash', textColor: 'text-emerald-400' },
 ];
 
 export const FilterSchematic = React.memo(function FilterSchematic({

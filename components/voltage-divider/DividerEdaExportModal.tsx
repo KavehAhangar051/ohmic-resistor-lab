@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, Copy, Download, Layers, X, Code2 } from 'lucide-react';
+import { Check, Copy, X, Code2 } from 'lucide-react';
 import { StandardResistorPair, VoltageDividerState } from '@/types/voltage-divider';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -158,13 +158,14 @@ R2,${r2ValStr},${r2ValStr},${tolStr},SMD 0805,${state.appMode === 'sampling' ? '
               ] as const
             ).map((tab) => {
               const isSel = activeTab === tab.id;
+
               return (
                 <button
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    'px-3 py-1.5 rounded-md text-xs font-mono font-medium transition-all cursor-pointer select-none',
+                    'px-3 py-1.5 rounded-md text-xs font-mono font-medium transition-[color,background-color,border-color] duration-150 ease-out cursor-pointer select-none',
                     isSel
                       ? 'bg-zinc-800 text-white font-bold border border-zinc-700 shadow-xs'
                       : 'text-zinc-400 hover:text-zinc-200'
@@ -186,7 +187,7 @@ R2,${r2ValStr},${r2ValStr},${tolStr},SMD 0805,${state.appMode === 'sampling' ? '
           {/* Action Buttons */}
           <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
             <Badge variant="subtle" className="text-[11px] font-mono text-zinc-400">
-              فرمت آماده Import مستقیم در EDA
+              فرمت آماده درون‌ریزی در نرم‌افزارهای EDA
             </Badge>
 
             <div className="flex items-center gap-2">
@@ -201,17 +202,17 @@ R2,${r2ValStr},${r2ValStr},${tolStr},SMD 0805,${state.appMode === 'sampling' ? '
               <button
                 type="button"
                 onClick={handleCopy}
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
+                className="inline-flex items-center gap-1.5 ps-4 pe-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-xs transition-[background-color,transform] duration-150 ease-out cursor-pointer active:scale-[0.96]"
               >
                 {copied ? (
                   <>
                     <Check className="h-3.5 w-3.5" />
-                    <span>کپی شد!</span>
+                    <span>کپی شد</span>
                   </>
                 ) : (
                   <>
                     <Copy className="h-3.5 w-3.5" />
-                    <span>کپی در کلیپ‌بورد</span>
+                    <span>کپی کد مدار</span>
                   </>
                 )}
               </button>

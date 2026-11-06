@@ -1,11 +1,11 @@
 'use client';
 
 import * as React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { X, Trash2 } from 'lucide-react';
-import { ResistorUnit, RESISTOR_UNITS } from '@/types/resistor';
-import { VoltageUnit, VOLTAGE_UNITS } from '@/types/voltage-divider';
-import { getResistorColorBands } from '@/lib/resistor-calc';
+import { RESISTOR_UNITS } from '@/types/resistor';
+import { VOLTAGE_UNITS } from '@/types/voltage-divider';
+import { ResistorColorCodeFooter } from './ResistorColorCodeBadge';
 import { Input } from '@/components/ui/input';
 import { IconButton } from '@/components/ui/icon-button';
 import { cn, sanitizeNumericInput } from '@/lib/utils';
@@ -54,16 +54,6 @@ export const DividerParameterRow = React.memo(function DividerParameterRow({
     onChangeValue('');
   };
 
-  const colorBands = React.useMemo(() => {
-    if (!showColorCode || unitType !== 'resistor') return null;
-    return getResistorColorBands({
-      id,
-      value,
-      unit: unit as ResistorUnit,
-      count: 1,
-    });
-  }, [showColorCode, unitType, id, value, unit]);
-
   return (
     <motion.div
       layout
@@ -84,7 +74,7 @@ export const DividerParameterRow = React.memo(function DividerParameterRow({
       className="overflow-hidden shrink-0 w-full"
     >
       <div className={cn(
-        "group relative rounded-xl border p-3.5 sm:p-4 transition-all duration-200",
+        "group relative rounded-xl border p-3.5 sm:p-4 transition-[border-color,box-shadow,background-color] duration-200",
         isCalculated
           ? "border-emerald-600/70 bg-gradient-to-b from-emerald-950/20 to-zinc-950/70 shadow-emerald-950/20 shadow-lg"
           : "border-zinc-800/90 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 hover:border-zinc-700 hover:shadow-lg hover:shadow-zinc-950/40"
@@ -101,8 +91,8 @@ export const DividerParameterRow = React.memo(function DividerParameterRow({
           <div className="flex items-center justify-between lg:justify-start gap-2.5 shrink-0">
             <div className="flex items-center gap-2.5">
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
                 className={cn(
                   "flex h-8 w-11 shrink-0 items-center justify-center rounded-lg border font-mono text-xs font-bold shadow-inner select-none",
                   isCalculated
@@ -161,7 +151,7 @@ export const DividerParameterRow = React.memo(function DividerParameterRow({
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileTap={{ scale: 0.96 }}
                   type="button"
                   onClick={handleClear}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-zinc-500 hover:text-zinc-200 transition-colors rounded cursor-pointer"
@@ -184,6 +174,7 @@ export const DividerParameterRow = React.memo(function DividerParameterRow({
             {unitType === 'voltage'
               ? VOLTAGE_UNITS.map((u) => {
                   const isSelected = unit === u.value;
+
                   return (
                     <button
                       key={u.value}
@@ -192,7 +183,7 @@ export const DividerParameterRow = React.memo(function DividerParameterRow({
                       aria-checked={isSelected}
                       onClick={() => onChangeUnit(u.value)}
                       className={cn(
-                        'relative inline-flex items-center justify-center cursor-pointer rounded-md px-2.5 py-1 text-xs font-mono font-medium transition-colors select-none z-10 active:scale-95',
+                        'relative inline-flex items-center justify-center cursor-pointer rounded-md px-2.5 py-1 text-xs font-mono font-medium transition-colors select-none z-10 active:scale-[0.96]',
                         isSelected ? 'text-white font-semibold' : 'text-zinc-400 hover:text-zinc-200'
                       )}
                       title={u.label}
@@ -210,6 +201,7 @@ export const DividerParameterRow = React.memo(function DividerParameterRow({
                 })
               : RESISTOR_UNITS.map((u) => {
                   const isSelected = unit === u.value;
+
                   return (
                     <button
                       key={u.value}
@@ -218,7 +210,7 @@ export const DividerParameterRow = React.memo(function DividerParameterRow({
                       aria-checked={isSelected}
                       onClick={() => onChangeUnit(u.value)}
                       className={cn(
-                        'relative inline-flex items-center justify-center cursor-pointer rounded-md px-2.5 py-1 text-xs font-mono font-medium transition-colors select-none z-10 active:scale-95',
+                        'relative inline-flex items-center justify-center cursor-pointer rounded-md px-2.5 py-1 text-xs font-mono font-medium transition-colors select-none z-10 active:scale-[0.96]',
                         isSelected ? 'text-white font-semibold' : 'text-zinc-400 hover:text-zinc-200'
                       )}
                       title={u.label}
@@ -239,7 +231,7 @@ export const DividerParameterRow = React.memo(function DividerParameterRow({
           {/* Desktop Delete Action */}
           {canDelete && onDelete && (
             <div className="hidden lg:flex items-center shrink-0">
-              <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}>
+              <motion.div whileTap={{ scale: 0.96 }}>
                 <IconButton
                   type="button"
                   variant="ghost"
@@ -257,43 +249,11 @@ export const DividerParameterRow = React.memo(function DividerParameterRow({
         </div>
 
         {/* Mini Resistor Color Code Visualizer */}
-        <AnimatePresence>
-          {colorBands && (
-            <motion.div
-              initial={{ opacity: 0, height: 0, marginTop: 0 }}
-              animate={{ opacity: 1, height: 'auto', marginTop: 10 }}
-              exit={{ opacity: 0, height: 0, marginTop: 0 }}
-              transition={{ duration: 0.18, ease: [0.2, 0, 0, 1] }}
-              className="overflow-hidden"
-            >
-              <div className="pt-2 border-t border-zinc-800/40 flex items-center justify-end text-xs">
-                <div
-                  className="flex items-center gap-1.5 bg-zinc-950/80 border border-zinc-800/80 px-2 py-1 rounded-md shadow-xs"
-                  title="کد رنگی استاندارد مقاومت (EIA 4-Band)"
-                >
-                  <span className="text-[10px] text-zinc-400 font-medium">کد رنگ:</span>
-                  <div className="flex items-center">
-                    <div className="w-1.5 h-0.5 bg-zinc-500" />
-                    <div className="flex items-center h-3.5 bg-[#d8c3a5] px-1 rounded-xs gap-1 border border-[#b8a082] shadow-xs">
-                      {colorBands.map((band, idx) => (
-                        <motion.span
-                          key={idx}
-                          initial={{ scaleY: 0 }}
-                          animate={{ scaleY: 1 }}
-                          transition={{ delay: idx * 0.03, duration: 0.15 }}
-                          className="inline-block h-3.5 w-1 rounded-[1px] shadow-xs origin-center"
-                          style={{ backgroundColor: band.color }}
-                          title={`${band.nameFa} (${band.name})`}
-                        />
-                      ))}
-                    </div>
-                    <div className="w-1.5 h-0.5 bg-zinc-500" />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <ResistorColorCodeFooter
+          value={value}
+          unit={unit === 'kOhm' || unit === 'MOhm' ? unit : 'Ohm'}
+          show={showColorCode && unitType === 'resistor'}
+        />
       </div>
     </motion.div>
   );

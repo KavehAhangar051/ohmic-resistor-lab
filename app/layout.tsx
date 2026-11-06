@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css'; // Global styles with local bundled fonts
 import { CustomCursor } from '@/components/custom-cursor';
 import { InitialAppLoader } from '@/components/ui/initial-app-loader';
+import { DisableThemeTransitions } from '@/components/ui/disable-theme-transitions';
 
 export const metadata: Metadata = {
   title: 'Ohmic - Parallel Resistor Lab',
@@ -39,6 +40,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         />
       </head>
       <body className="antialiased" suppressHydrationWarning>
+        <DisableThemeTransitions />
         <InitialAppLoader />
         <CustomCursor />
         {children}

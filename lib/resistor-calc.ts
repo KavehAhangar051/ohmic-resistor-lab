@@ -1,4 +1,4 @@
-import { ResistorItem, RESISTOR_UNITS, ParallelCalculationResult, ResistorUnit } from '@/types/resistor';
+import { ResistorItem, ParallelCalculationResult, ResistorUnit } from '@/types/resistor';
 
 const UNIT_MAP: Record<ResistorUnit, number> = {
   Ohm: 1,
@@ -11,6 +11,7 @@ const FORMATTER_CACHE = new Map<number, Intl.NumberFormat>();
 
 function getNumberFormatter(maxDecimals: number): Intl.NumberFormat {
   let fmt = FORMATTER_CACHE.get(maxDecimals);
+
   if (!fmt) {
     fmt = new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
@@ -19,6 +20,7 @@ function getNumberFormatter(maxDecimals: number): Intl.NumberFormat {
     });
     FORMATTER_CACHE.set(maxDecimals, fmt);
   }
+
   return fmt;
 }
 
@@ -28,9 +30,12 @@ function getNumberFormatter(maxDecimals: number): Intl.NumberFormat {
  */
 export function formatPrecision(num: number, maxDecimals: number = 2): string {
   if (isNaN(num) || !isFinite(num)) return '0';
+
   if (num === 0) return '0';
+
   if (Number.isInteger(num)) return num.toString();
   const effectiveDecimals = Math.min(maxDecimals, 2);
+
   return getNumberFormatter(effectiveDecimals).format(num);
 }
 
@@ -47,9 +52,11 @@ export function calculateParallelResistance(
 
   for (const item of items) {
     const rawVal = item.value;
+
     if (rawVal.length === 0) continue;
 
     const numVal = parseFloat(rawVal);
+
     if (isNaN(numVal) || numVal < 0) continue;
 
     const count = item.count > 1 ? (item.count | 0) : 1;
@@ -94,7 +101,7 @@ export function calculateParallelResistance(
       totalResistorsCount: totalCount,
       uniqueValuesCount: validGroupCount,
       isShortCircuit: true,
-      errorMessage: 'اتصال کوتاه (Short Circuit): یکی از مقاومت‌ها ۰ اهم است.',
+      errorMessage: 'اتصال کوتاه: حداقل یکی از مقاومت‌های مدار ۰ اهم است. برای محاسبه مقاومت معادل، مقدار آن را بزرگتر از صفر وارد کنید.',
     };
   }
 
@@ -109,7 +116,7 @@ export function calculateParallelResistance(
       totalResistorsCount: totalCount,
       uniqueValuesCount: validGroupCount,
       isShortCircuit: false,
-      errorMessage: 'مقادیر وارد شده نامعتبر هستند.',
+      errorMessage: 'مقادیر ورودی نامعتبر است. برای هر شاخه یک مقدار عددی مثبت وارد کنید.',
     };
   }
 
@@ -175,36 +182,44 @@ const SILVER_BAND: ResistorColorBand = { color: '#94a3b8', name: 'Silver', nameF
 const COLOR_BAND_CACHE = new Map<string, ResistorColorBand[] | null>();
 const MAX_COLOR_CACHE_SIZE = 64;
 
+function setColorCache(key: string, value: ResistorColorBand[] | null): ResistorColorBand[] | null {
+  if (COLOR_BAND_CACHE.size >= MAX_COLOR_CACHE_SIZE) {
+    COLOR_BAND_CACHE.delete(COLOR_BAND_CACHE.keys().next().value!);
+  }
+
+  COLOR_BAND_CACHE.set(key, value);
+
+  return value;
+}
+
 /**
- * Calculates the standard 4-band EIA color code for a resistor.
- * Optimized for V8 fast path with zero string allocations, pure numeric logarithms,
- * and bounded memoization to reuse arrays across identical resistor inputs.
+ * Calculates the standard 4-band EIA color code for a resistor value and unit.
+ * Accepts any object with { value, unit } so callers do not need to fabricate
+ * branch IDs or counts.
  */
-export function getResistorColorBands(item: ResistorItem): ResistorColorBand[] | null {
+export function getResistorColorBands(
+  item: Pick<ResistorItem, 'value' | 'unit'>
+): ResistorColorBand[] | null {
   const raw = item.value;
+
   if (raw.length === 0) return null;
 
   const cacheKey = `${raw}_${item.unit}`;
   const cached = COLOR_BAND_CACHE.get(cacheKey);
+
   if (cached !== undefined) return cached;
 
   const num = parseFloat(raw);
+
   if (isNaN(num) || num <= 0) {
-    if (COLOR_BAND_CACHE.size >= MAX_COLOR_CACHE_SIZE) {
-      COLOR_BAND_CACHE.delete(COLOR_BAND_CACHE.keys().next().value!);
-    }
-    COLOR_BAND_CACHE.set(cacheKey, null);
-    return null;
+    return setColorCache(cacheKey, null);
   }
 
   const multiplier = UNIT_MAP[item.unit] ?? 1;
   const ohms = num * multiplier;
+
   if (!isFinite(ohms) || ohms < 0.1 || ohms > 99e6) {
-    if (COLOR_BAND_CACHE.size >= MAX_COLOR_CACHE_SIZE) {
-      COLOR_BAND_CACHE.delete(COLOR_BAND_CACHE.keys().next().value!);
-    }
-    COLOR_BAND_CACHE.set(cacheKey, null);
-    return null;
+    return setColorCache(cacheKey, null);
   }
 
   // Pure numeric computation of significant digits & exponent (no string allocations)
@@ -212,25 +227,24 @@ export function getResistorColorBands(item: ResistorItem): ResistorColorBand[] |
   let normalized = ohms / Math.pow(10, expVal);
   // Round to nearest tenth to eliminate floating point imprecision
   normalized = Math.round(normalized * 10) / 10;
+
   if (normalized >= 10) {
     normalized /= 10;
     expVal += 1;
   }
+
   const d1 = Math.floor(normalized);
   const d2 = Math.round((normalized - d1) * 10);
 
   if (d1 < 1 || d1 > 9 || d2 < 0 || d2 > 9) {
-    if (COLOR_BAND_CACHE.size >= MAX_COLOR_CACHE_SIZE) {
-      COLOR_BAND_CACHE.delete(COLOR_BAND_CACHE.keys().next().value!);
-    }
-    COLOR_BAND_CACHE.set(cacheKey, null);
-    return null;
+    return setColorCache(cacheKey, null);
   }
 
   // Multiplier power is expVal - 1
   const multPower = expVal - 1;
 
   let multBand: ResistorColorBand | null = null;
+
   if (multPower === -1) {
     multBand = GOLD_BAND;
   } else if (multPower === -2) {
@@ -238,11 +252,7 @@ export function getResistorColorBands(item: ResistorItem): ResistorColorBand[] |
   } else if (multPower >= 0 && multPower <= 9) {
     multBand = DIGIT_COLORS[multPower];
   } else {
-    if (COLOR_BAND_CACHE.size >= MAX_COLOR_CACHE_SIZE) {
-      COLOR_BAND_CACHE.delete(COLOR_BAND_CACHE.keys().next().value!);
-    }
-    COLOR_BAND_CACHE.set(cacheKey, null);
-    return null;
+    return setColorCache(cacheKey, null);
   }
 
   const bands: ResistorColorBand[] = [
@@ -252,11 +262,7 @@ export function getResistorColorBands(item: ResistorItem): ResistorColorBand[] |
     GOLD_BAND, // Standard 5% tolerance band
   ];
 
-  if (COLOR_BAND_CACHE.size >= MAX_COLOR_CACHE_SIZE) {
-    COLOR_BAND_CACHE.delete(COLOR_BAND_CACHE.keys().next().value!);
-  }
-  COLOR_BAND_CACHE.set(cacheKey, bands);
-  return bands;
+  return setColorCache(cacheKey, bands);
 }
 
 /**
@@ -268,8 +274,10 @@ export function getBranchResistance(item: ResistorItem): {
   rawOhms: number;
 } | null {
   const raw = item.value;
+
   if (raw.length === 0) return null;
   const num = parseFloat(raw);
+
   if (isNaN(num) || num < 0) return null;
 
   const count = item.count > 1 ? (item.count | 0) : 1;

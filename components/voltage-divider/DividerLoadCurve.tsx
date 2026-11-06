@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { LineChart, Activity, Info } from 'lucide-react';
+import { LineChart, Info } from 'lucide-react';
 import { VoltageDividerState, VoltageDividerResult } from '@/types/voltage-divider';
 import { Badge } from '@/components/ui/badge';
 
@@ -16,23 +16,32 @@ export function DividerLoadCurve({ state, result }: DividerLoadCurveProps) {
   // Calculate R1 and R2 in pure Ohms
   const r1Ohms = React.useMemo(() => {
     const raw = parseFloat(state.r1) || 10;
+
     if (state.r1Unit === 'kOhm') return raw * 1e3;
+
     if (state.r1Unit === 'MOhm') return raw * 1e6;
+
     return raw;
   }, [state.r1, state.r1Unit]);
 
   const r2Ohms = React.useMemo(() => {
     const raw = parseFloat(state.r2) || 10;
+
     if (state.r2Unit === 'kOhm') return raw * 1e3;
+
     if (state.r2Unit === 'MOhm') return raw * 1e6;
+
     return raw;
   }, [state.r2, state.r2Unit]);
 
   const rlOhms = React.useMemo(() => {
     if (!state.hasLoad) return null;
     const raw = parseFloat(state.rl) || 100;
+
     if (state.rlUnit === 'kOhm') return raw * 1e3;
+
     if (state.rlUnit === 'MOhm') return raw * 1e6;
+
     return raw;
   }, [state.hasLoad, state.rl, state.rlUnit]);
 
@@ -71,11 +80,13 @@ export function DividerLoadCurve({ state, result }: DividerLoadCurveProps) {
       const y = padTop + plotH - (v / Math.max(0.1, voutNoLoad * 1.1)) * plotH;
       pts.push({ rl: rlVal, vout: v, x, y });
     }
+
     return pts;
   }, [vin, r1Ohms, r2Ohms, voutNoLoad, plotW, plotH, padLeft, padTop]);
 
   const pathD = React.useMemo(() => {
     if (points.length === 0) return '';
+
     return points.reduce((acc, pt, idx) => {
       return idx === 0 ? `M ${pt.x} ${pt.y}` : `${acc} L ${pt.x} ${pt.y}`;
     }, '');
@@ -90,12 +101,13 @@ export function DividerLoadCurve({ state, result }: DividerLoadCurveProps) {
     const fraction = Math.max(0, Math.min(1, (currentLog - minLog) / (maxLog - minLog)));
     const x = padLeft + fraction * plotW;
     const y = padTop + plotH - (voutLoaded / Math.max(0.1, voutNoLoad * 1.1)) * plotH;
+
     return { x, y };
   }, [rlOhms, r2Ohms, voutLoaded, voutNoLoad, plotW, plotH, padLeft, padTop]);
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4 space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-850 pb-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 pb-2.5">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-emerald-950/50 border border-emerald-800/40 text-emerald-400">
             <LineChart className="h-4 w-4" />

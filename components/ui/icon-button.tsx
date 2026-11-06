@@ -6,18 +6,18 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 export const iconButtonVariants = cva(
-  'inline-flex items-center justify-center rounded-lg transition-all select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 disabled:pointer-events-none disabled:opacity-40 cursor-pointer active:scale-[0.96]',
+  'inline-flex items-center justify-center rounded-lg transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 disabled:pointer-events-none disabled:opacity-40 cursor-pointer active:scale-[0.96]',
   {
     variants: {
       variant: {
         solid:
           'bg-zinc-100 text-zinc-950 shadow-xs hover:bg-white active:bg-zinc-200 border border-transparent',
         outline:
-          'border border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-850 hover:text-white hover:border-zinc-700 active:bg-zinc-800 shadow-2xs',
+          'border border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-800 hover:text-white hover:border-zinc-700 active:bg-zinc-800/80 shadow-2xs',
         ghost:
-          'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-850 active:bg-zinc-800',
+          'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 active:bg-zinc-800/80',
         subtle:
-          'bg-zinc-900 border border-zinc-800/60 text-zinc-300 hover:bg-zinc-850 hover:text-white hover:border-zinc-700 active:bg-zinc-800',
+          'bg-zinc-900 border border-zinc-800/60 text-zinc-300 hover:bg-zinc-800 hover:text-white hover:border-zinc-700 active:bg-zinc-800/80',
         danger:
           'border border-red-950/80 bg-red-950/30 text-red-400 hover:bg-red-950/60 hover:text-red-200 hover:border-red-900 active:bg-red-900/40',
       },
@@ -40,17 +40,19 @@ export interface IconButtonProps
   extends React.ComponentPropsWithoutRef<typeof ark.button>,
     VariantProps<typeof iconButtonVariants> {
   asChild?: boolean;
+  static?: boolean;
 }
 
 export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ className, variant, size, ...props }, ref) => {
+  ({ className, variant, size, static: isStatic, ...props }, ref) => {
     return (
       <ark.button
         ref={ref}
-        className={cn(iconButtonVariants({ variant, size, className }))}
+        className={cn(iconButtonVariants({ variant, size }), isStatic && 'active:scale-100', className)}
         {...props}
       />
     );
   }
 );
+
 IconButton.displayName = 'IconButton';

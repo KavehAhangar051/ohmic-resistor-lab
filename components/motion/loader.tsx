@@ -27,11 +27,13 @@ function Ascii({
 
   useEffect(() => {
     const count = frames.length;
+
     if (count === 0) return;
 
     let idx = 0;
     const step = (((speed) / count) * 1000) | 0;
     const el = spanRef.current;
+
     if (!el) return;
 
     // Bitwise mask fast path when length is a power of 2 (e.g. 4 for ascii-line)
@@ -68,7 +70,7 @@ export function Loader({
   className,
 }: LoaderProps): React.JSX.Element {
   const effectiveSpeed = speed ?? (variant === 'ascii-line' ? 0.8 : 1);
-  const asciiFrames = ASCII_SETS[variant] || ASCII_SETS['ascii-line'];
+  const asciiFrames = ASCII_SETS[variant] ?? ['|', '/', '-', '\\'];
 
   return (
     <span

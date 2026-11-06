@@ -30,7 +30,7 @@ export const SchematicDcSource = React.memo(function SchematicDcSource({
 
   return (
     <g
-      className="cursor-pointer transition-all duration-150"
+      className="cursor-pointer transition-[opacity,fill,stroke] duration-150 ease-out"
       onMouseEnter={() => onHover?.(true)}
       onMouseLeave={() => onHover?.(false)}
     >
@@ -47,7 +47,7 @@ export const SchematicDcSource = React.memo(function SchematicDcSource({
         strokeWidth="1"
         strokeOpacity={isHovered ? 0.8 : 0}
         pointerEvents="all"
-        className="transition-all duration-150"
+        className="transition-[opacity,fill,stroke] duration-150 ease-out"
       />
 
       <g className="pointer-events-none">

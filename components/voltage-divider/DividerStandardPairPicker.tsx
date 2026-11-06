@@ -4,6 +4,7 @@ import * as React from 'react';
 import { motion } from 'motion/react';
 import {
   Info,
+  RotateCcw,
 } from 'lucide-react';
 import {
   StandardResistorPair,
@@ -60,7 +61,9 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
     return pairs.filter((pair) => {
       // Current filter
       if (currentFilter === 'low' && pair.currentAmperes >= 100e-6) return false;
+
       if (currentFilter === 'mid' && (pair.currentAmperes < 100e-6 || pair.currentAmperes > 5e-3)) return false;
+
       if (currentFilter === 'high' && pair.currentAmperes <= 5e-3) return false;
 
       return true;
@@ -80,12 +83,17 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
     }));
   }, []);
 
+  const handleResetFilters = React.useCallback(() => {
+    setCurrentFilter('all');
+  }, []);
+
   // Sort pairs according to selected column and direction with stable tie-breaker
   const sortedPairs = React.useMemo(() => {
     const indexed = filteredPairs.map((pair, originalIdx) => ({ pair, originalIdx }));
 
     indexed.sort((a, b) => {
       let diff = 0;
+
       switch (sortState.key) {
         case 'r1':
           diff = a.pair.r1Ohms - b.pair.r1Ohms;
@@ -119,12 +127,15 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
           diff = a.originalIdx - b.originalIdx;
           break;
       }
+
       if (Math.abs(diff) < 1e-9) {
         diff = a.pair.errorPercentage - b.pair.errorPercentage;
+
         if (Math.abs(diff) < 1e-9) {
           diff = a.originalIdx - b.originalIdx;
         }
       }
+
       return sortState.dir === 'asc' ? diff : -diff;
     });
 
@@ -133,8 +144,9 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
 
   if (!pairs || pairs.length === 0) {
     return (
-      <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-5 text-center text-xs text-zinc-400 font-mono">
-        مقادیر معتبری برای Vin و Vout وارد کنید تا ۲۰ جفت مقاومت استاندارد تجاری E24 استخراج شوند.
+      <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-5 text-center text-xs text-zinc-400">
+        <p className="font-semibold text-zinc-300 mb-1">جدول جفت مقاومت‌های استاندارد تجاری (E24 / E96)</p>
+        <p className="text-zinc-500">برای استخراج نزدیک‌ترین مقادیر استاندارد بازار، مقادیر معتبر ولتاژ ورودی و خروجی را وارد کنید.</p>
       </div>
     );
   }
@@ -146,7 +158,7 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-      className="relative rounded-xl border border-zinc-800 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 p-5 sm:p-6 shadow-xl transition-all duration-200 overflow-hidden space-y-4"
+      className="relative rounded-xl border border-zinc-800 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 p-5 sm:p-6 shadow-xl transition-[border-color,box-shadow] duration-200 overflow-hidden space-y-4"
     >
       {/* Top subtle hairline glow - pulse on mode change */}
       <motion.div
@@ -172,9 +184,7 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
         hasLoad={hasLoad}
         rlValue={rlValue}
         rlUnit={rlUnit}
-        onResetFilters={() => {
-          setCurrentFilter('all');
-        }}
+        onResetFilters={handleResetFilters}
         hasActiveFilters={hasActiveFilters}
         filteredCount={sortedPairs.length}
         totalCount={pairs.length}
@@ -291,8 +301,20 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
           <tbody className="divide-y divide-zinc-800/60">
             {sortedPairs.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-6 text-center text-zinc-500 font-sans text-xs">
-                  هیچ جفتی با فیلترهای انتخابی مطابقت ندارد. فیلترها را بازنشانی کنید.
+                <td colSpan={7} className="py-8 text-center text-zinc-400 font-sans text-xs">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <p>هیچ جفت مقاومت استانداردی با معیارهای فیلتر فعلی مطابقت ندارد.</p>
+                    {hasActiveFilters && (
+                      <button
+                        type="button"
+                        onClick={handleResetFilters}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-emerald-400 bg-emerald-950/40 border border-emerald-800/50 hover:bg-emerald-950/70 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        <span>بازنشانی فیلترها</span>
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ) : (

@@ -43,6 +43,7 @@ export const SchematicPowerPort = React.memo(function SchematicPowerPort({
   if (direction === 'left') {
     // Horizontal power port from the left
     const portX = x - stemLength;
+
     return (
       <g
         className={className}

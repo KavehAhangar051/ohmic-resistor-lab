@@ -23,7 +23,7 @@ export const FilterResultDisplay = React.memo(function FilterResultDisplay({
   return (
     <div className="rounded-xl border border-zinc-800 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 p-4 sm:p-5 shadow-xl space-y-4">
       {/* Top Main Result: Cutoff Frequency Hero */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-850 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
         <div>
           <span className="text-xs text-zinc-400 font-medium flex items-center gap-1.5">
             <Activity className="h-3.5 w-3.5 text-emerald-400" />
@@ -54,7 +54,7 @@ export const FilterResultDisplay = React.memo(function FilterResultDisplay({
       {/* Grid of Key Operating Metrics at Test Frequency */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Metric 1: Vout at Test Frequency */}
-        <div className="p-3 rounded-lg border border-zinc-850 bg-zinc-950/60 space-y-1">
+        <div className="p-3 rounded-lg border border-zinc-800 bg-zinc-950/60 space-y-1">
           <div className="text-[11px] text-zinc-400 flex items-center gap-1">
             <Zap className="h-3 w-3 text-cyan-400" />
             <span>دامنه خروجی (Vout)</span>
@@ -68,7 +68,7 @@ export const FilterResultDisplay = React.memo(function FilterResultDisplay({
         </div>
 
         {/* Metric 2: Gain in dB */}
-        <div className="p-3 rounded-lg border border-zinc-850 bg-zinc-950/60 space-y-1">
+        <div className="p-3 rounded-lg border border-zinc-800 bg-zinc-950/60 space-y-1">
           <div className="text-[11px] text-zinc-400 flex items-center gap-1">
             <Gauge className="h-3 w-3 text-emerald-400" />
             <span>ضریب بهره (Gain)</span>
@@ -82,7 +82,7 @@ export const FilterResultDisplay = React.memo(function FilterResultDisplay({
         </div>
 
         {/* Metric 3: Phase Shift */}
-        <div className="p-3 rounded-lg border border-zinc-850 bg-zinc-950/60 space-y-1">
+        <div className="p-3 rounded-lg border border-zinc-800 bg-zinc-950/60 space-y-1">
           <div className="text-[11px] text-zinc-400 flex items-center gap-1">
             <Compass className="h-3 w-3 text-cyan-400" />
             <span>اختلاف فاز (Phase)</span>
@@ -96,7 +96,7 @@ export const FilterResultDisplay = React.memo(function FilterResultDisplay({
         </div>
 
         {/* Metric 4: Reactance at Cutoff */}
-        <div className="p-3 rounded-lg border border-zinc-850 bg-zinc-950/60 space-y-1">
+        <div className="p-3 rounded-lg border border-zinc-800 bg-zinc-950/60 space-y-1">
           <div className="text-[11px] text-zinc-400 flex items-center gap-1">
             <span>امپدانس در fc</span>
           </div>

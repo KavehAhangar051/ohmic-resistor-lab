@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Check } from 'lucide-react';
 import { StandardResistorPair, DividerApplicationMode } from '@/types/voltage-divider';
 import { ResistorUnit } from '@/types/resistor';
+import { getResistorSymbol } from '@/lib/voltage-divider-format';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { ResistorColorCodeBadge } from './ResistorColorCodeBadge';
@@ -24,8 +25,8 @@ export const DividerPairTableRow = React.memo(function DividerPairTableRow({
   onApplyPair,
 }: DividerPairTableRowProps) {
   const isExact = pair.errorPercentage <= 0.05;
-  const r1UnitSym = pair.r1Unit === 'kOhm' ? 'kΩ' : pair.r1Unit === 'MOhm' ? 'MΩ' : 'Ω';
-  const r2UnitSym = pair.r2Unit === 'kOhm' ? 'kΩ' : pair.r2Unit === 'MOhm' ? 'MΩ' : 'Ω';
+  const r1UnitSym = getResistorSymbol(pair.r1Unit);
+  const r2UnitSym = getResistorSymbol(pair.r2Unit);
 
   return (
     <tr
@@ -33,7 +34,7 @@ export const DividerPairTableRow = React.memo(function DividerPairTableRow({
         'transition-colors duration-150 text-[11px]',
         isActive
           ? 'bg-emerald-950/25 border-r-2 border-emerald-500'
-          : 'hover:bg-zinc-850/40'
+          : 'hover:bg-zinc-800/40'
       )}
     >
       {/* Rank & Badge */}
@@ -193,11 +194,11 @@ export const DividerPairTableRow = React.memo(function DividerPairTableRow({
             type="button"
             onClick={() => onApplyPair(pair.r1Value, pair.r1Unit, pair.r2Value, pair.r2Unit)}
             aria-label={`اعمال جفت مقاومت R1=${pair.r1Value}${r1UnitSym} و R2=${pair.r2Value}${r2UnitSym}`}
-            className="w-full inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-md border border-zinc-700/80 bg-zinc-900 hover:bg-zinc-850 hover:border-zinc-600 hover:text-white text-zinc-200 text-xs font-medium transition-all cursor-pointer shadow-xs active:scale-[0.97] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-emerald-500/50"
+            className="w-full inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-md border border-zinc-700/80 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-600 hover:text-white text-zinc-200 text-xs font-medium transition-[color,background-color,border-color,transform] duration-150 ease-out cursor-pointer shadow-xs active:scale-[0.96] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-emerald-500/50"
             title="اعمال این جفت روی مدار و شماتیک"
           >
             <Check className="h-3 w-3 text-zinc-400" />
-            <span className="font-sans">اعمال</span>
+            <span className="font-sans">اعمال در مدار</span>
           </button>
         )}
       </td>

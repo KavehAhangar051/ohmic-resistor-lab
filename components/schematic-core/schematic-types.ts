@@ -11,6 +11,6 @@ export interface ResistorMetricBadge {
 export interface SchematicLegendItem {
   label: string;
   color: string;
-  shape?: 'circle' | 'square' | 'dash';
+  marker?: 'circle' | 'square' | 'dash';
   textColor?: string;
 }

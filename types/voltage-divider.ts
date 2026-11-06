@@ -36,9 +36,13 @@ export type PairTableSortKey =
   | 'ratio';
 
 export type SortDirection = 'asc' | 'desc';
+
 export type PowerFilterOption = 'all' | '10mw' | '50mw' | '250mw';
+
 export type CurrentFilterOption = 'all' | 'low' | 'mid' | 'high';
+
 export type DomainFilterOption = 'all' | 'low_power' | 'general' | 'high_drive';
+
 export type TablePageSize = 10 | 20;
 
 export interface StandardResistorPair {
@@ -157,6 +161,7 @@ export interface DividerPreset {
 }
 
 export type PotentiometerTaper = 'linear' | 'audio';
+
 export type PotentiometerTurnType = 'single' | 'multi';
 
 export interface PotentiometerState {

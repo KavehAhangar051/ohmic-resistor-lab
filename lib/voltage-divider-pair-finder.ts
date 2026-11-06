@@ -5,13 +5,17 @@ import {
   ResistorSeriesOption,
 } from '@/types/voltage-divider';
 import { formatPrecision } from './resistor-calc';
-import { formatCurrent, formatPower, formatResistance } from './voltage-divider-format';
+import {
+  formatCurrent,
+  formatPower,
+  formatResistance,
+  decomposeOhms,
+} from './voltage-divider-format';
 import {
   COMMON_E24_OHMS,
   COMMON_E96_OHMS,
   OHMS_DECOMPOSED_MAP,
-  decomposeOhms,
-} from './voltage-divider-solver';
+} from './e-series';
 
 interface RawCandidate {
   r1: number;
@@ -47,6 +51,9 @@ const MAX_PAIR_CACHE = 64;
  * 1. Signal / ADC Voltage Sampling
  * 2. Transistor Voltage-Divider Biasing (BJT / MOSFET)
  * 3. Precision Reference Voltage Generation
+ *
+ * Uses general-case effective resistance (R2_eff = R2 || RL when loaded, or R2 when unloaded)
+ * so loaded and unloaded circuits share a single mathematical path without branching duplication.
  */
 export function findBestE24Pairs(
   vinVolts: number,
@@ -61,9 +68,10 @@ export function findBestE24Pairs(
     return [];
   }
 
-  const hasLoad = typeof rlOhms === 'number' && rlOhms > 0;
+  const hasLoad = rlOhms !== null && rlOhms !== undefined && rlOhms > 0;
   const cacheKey = `${vinVolts}_${targetVoutVolts}_${criterion}_${maxResults}_${rlOhms ?? 0}_${appMode}_${series}`;
   const cached = PAIR_CACHE.get(cacheKey);
+
   if (cached !== undefined) return cached;
 
   const ohmsList = series === 'E96' ? COMMON_E96_OHMS : COMMON_E24_OHMS;
@@ -75,73 +83,48 @@ export function findBestE24Pairs(
 
   for (let i = 0; i < len; i++) {
     const r1 = ohmsList[i];
+    const r1Max = r1 * tolHigh;
+    const r1Min = r1 * tolLow;
+
     for (let j = 0; j < len; j++) {
       const r2 = ohmsList[j];
+      const r2Min = r2 * tolLow;
+      const r2Max = r2 * tolHigh;
 
-      let actualVout: number;
-      let current: number;
-      let thevenin: number;
-      let powerR1: number;
-      let powerR2: number;
-      let power: number;
-      let stiffnessRatio: number | undefined;
-      let stiffnessStatus: 'excellent' | 'good' | 'poor' | 'unloaded' = 'unloaded';
+      const r2Eff = hasLoad && rlOhms ? (r2 * rlOhms) / (r2 + rlOhms) : r2;
+      const sum = r1 + r2Eff;
 
-      let wcVoutMin: number;
-      let wcVoutMax: number;
+      if (sum <= 0) continue;
 
-      if (hasLoad && rlOhms) {
-        const r2Eff = (r2 * rlOhms) / (r2 + rlOhms);
-        const sum = r1 + r2Eff;
-        if (sum <= 0) continue;
-        current = vinVolts / sum;
-        actualVout = vinVolts * (r2Eff / sum);
-        const vR1 = vinVolts - actualVout;
-        powerR1 = (vR1 * vR1) / r1;
-        powerR2 = (actualVout * actualVout) / r2;
-        power = powerR1 + powerR2;
-        thevenin = (r1 * r2) / (r1 + r2);
-
-        stiffnessRatio = rlOhms / (thevenin > 0 ? thevenin : 1);
-        if (stiffnessRatio >= 50) {
-          stiffnessStatus = 'excellent';
-        } else if (stiffnessRatio >= 10) {
-          stiffnessStatus = 'good';
-        } else {
-          stiffnessStatus = 'poor';
-        }
-
-        const r1Max = r1 * tolHigh;
-        const r1Min = r1 * tolLow;
-        const r2Min = r2 * tolLow;
-        const r2Max = r2 * tolHigh;
-        const r2EffMin = (r2Min * rlOhms) / (r2Min + rlOhms);
-        const r2EffMax = (r2Max * rlOhms) / (r2Max + rlOhms);
-        wcVoutMin = vinVolts * (r2EffMin / (r1Max + r2EffMin));
-        wcVoutMax = vinVolts * (r2EffMax / (r1Min + r2EffMax));
-      } else {
-        const sum = r1 + r2;
-        current = vinVolts / sum;
-        actualVout = vinVolts * (r2 / sum);
-        const vR1 = vinVolts - actualVout;
-        powerR1 = (vR1 * vR1) / r1;
-        powerR2 = (actualVout * actualVout) / r2;
-        power = powerR1 + powerR2;
-        thevenin = (r1 * r2) / sum;
-
-        const r1Max = r1 * tolHigh;
-        const r1Min = r1 * tolLow;
-        const r2Min = r2 * tolLow;
-        const r2Max = r2 * tolHigh;
-        wcVoutMin = vinVolts * (r2Min / (r1Max + r2Min));
-        wcVoutMax = vinVolts * (r2Max / (r1Min + r2Max));
-      }
+      const current = vinVolts / sum;
 
       if (current < 1e-6 || current > 100e-3) continue;
 
+      const actualVout = vinVolts * (r2Eff / sum);
       const errorPct = Math.abs((actualVout - targetVoutVolts) / targetVoutVolts) * 100;
       const maxAllowedErr = series === 'E96' ? 4.0 : 8.0;
+
       if (errorPct > maxAllowedErr) continue;
+
+      const vR1 = vinVolts - actualVout;
+      const powerR1 = (vR1 * vR1) / r1;
+      const powerR2 = (actualVout * actualVout) / r2;
+      const power = powerR1 + powerR2;
+      const thevenin = (r1 * r2) / (r1 + r2);
+
+      let stiffnessRatio: number | undefined;
+      let stiffnessStatus: 'excellent' | 'good' | 'poor' | 'unloaded' = 'unloaded';
+
+      if (hasLoad && rlOhms) {
+        stiffnessRatio = rlOhms / (thevenin > 0 ? thevenin : 1);
+        stiffnessStatus =
+          stiffnessRatio >= 50 ? 'excellent' : stiffnessRatio >= 10 ? 'good' : 'poor';
+      }
+
+      const r2EffMin = hasLoad && rlOhms ? (r2Min * rlOhms) / (r2Min + rlOhms) : r2Min;
+      const r2EffMax = hasLoad && rlOhms ? (r2Max * rlOhms) / (r2Max + rlOhms) : r2Max;
+      const wcVoutMin = vinVolts * (r2EffMin / (r1Max + r2EffMin));
+      const wcVoutMax = vinVolts * (r2EffMax / (r1Min + r2EffMax));
 
       const wcErrMin = Math.abs((wcVoutMin - targetVoutVolts) / targetVoutVolts) * 100;
       const wcErrMax = Math.abs((wcVoutMax - targetVoutVolts) / targetVoutVolts) * 100;
@@ -150,6 +133,7 @@ export function findBestE24Pairs(
 
       let adcSuitability: 'direct' | 'buffered' | 'high_impedance';
       let adcSuitabilityLabel: string;
+
       if (thevenin <= 10e3) {
         adcSuitability = 'direct';
         adcSuitabilityLabel = 'سازگار مستقیم (بدون بافر)';
@@ -163,6 +147,7 @@ export function findBestE24Pairs(
 
       let biasStability: 'stiff' | 'moderate' | 'soft';
       let biasStabilityLabel: string;
+
       if (thevenin <= 20e3 && current >= 0.8e-3) {
         biasStability = 'stiff';
         biasStabilityLabel = 'بایاس سفت و پایدار (Stiff)';
@@ -176,6 +161,7 @@ export function findBestE24Pairs(
 
       let domainCategory: 'low_power' | 'general' | 'high_drive';
       let domainCategoryLabel: string;
+
       if (current < 100e-6) {
         domainCategory = 'low_power';
         domainCategoryLabel = 'کم‌مصرف (سنسور/باتری)';
@@ -189,11 +175,13 @@ export function findBestE24Pairs(
 
       const normalizedPower = power * 1e3;
       let stiffnessPenalty = 0;
+
       if (hasLoad && stiffnessRatio !== undefined && stiffnessRatio < 10) {
         stiffnessPenalty = ((10 - stiffnessRatio) / 10) * 3.0;
       }
 
       let score = 0;
+
       if (appMode === 'sampling') {
         const rthPenalty = thevenin > 10e3 ? Math.log10(thevenin / 10e3) * 4.0 : 0;
         const currentPenalty = current > 2e-3 ? (current - 2e-3) * 1000 : current < 20e-6 ? 0.5 : 0;
@@ -251,21 +239,29 @@ export function findBestE24Pairs(
     switch (criterion) {
       case 'accuracy': {
         const errDiff = a.errorPct - b.errorPct;
+
         return Math.abs(errDiff) > 0.001 ? errDiff : a.score - b.score;
       }
+
       case 'power': {
         const pwrDiff = a.power - b.power;
+
         return Math.abs(pwrDiff) > 1e-6 ? pwrDiff : a.errorPct - b.errorPct;
       }
+
       case 'current': {
         const curA = Math.abs(a.current - 1e-3);
         const curB = Math.abs(b.current - 1e-3);
+
         return Math.abs(curA - curB) > 1e-5 ? curA - curB : a.errorPct - b.errorPct;
       }
+
       case 'thevenin': {
         const thDiff = a.thevenin - b.thevenin;
+
         return Math.abs(thDiff) > 1 ? thDiff : a.errorPct - b.errorPct;
       }
+
       case 'overall':
       default: {
         return a.score - b.score;
@@ -280,25 +276,29 @@ export function findBestE24Pairs(
     const cand = candidates[c];
     const ratioKey = (cand.r1 / cand.r2).toPrecision(3);
     const count = ratioCounts.get(ratioKey) ?? 0;
+
     if (count >= 2) continue;
 
     ratioCounts.set(ratioKey, count + 1);
     selected.push(cand);
+
     if (selected.length >= maxResults) break;
   }
 
   if (selected.length < maxResults) {
     for (let c = 0; c < candidates.length; c++) {
       const cand = candidates[c];
+
       if (!selected.includes(cand)) {
         selected.push(cand);
+
         if (selected.length >= maxResults) break;
       }
     }
   }
 
   const count = selected.length;
-  const results: StandardResistorPair[] = new Array(count);
+  const results: StandardResistorPair[] = [];
 
   for (let k = 0; k < count; k++) {
     const cand = selected[k];
@@ -308,6 +308,7 @@ export function findBestE24Pairs(
     const rthFmt = formatResistance(cand.thevenin);
 
     let badge: string | undefined;
+
     if (cand.errorPct === 0) {
       badge = 'دقیق‌ترین (۰٪ خطا)';
     } else if (appMode === 'sampling' && cand.thevenin <= 10e3 && k === 0) {
@@ -324,7 +325,7 @@ export function findBestE24Pairs(
       badge = 'بهترین تعادل کلی';
     }
 
-    results[k] = {
+    results.push({
       r1Value: r1Dec.value,
       r1Unit: r1Dec.unit,
       r2Value: r2Dec.value,
@@ -364,12 +365,13 @@ export function findBestE24Pairs(
       overallScore: cand.score,
       badge,
       isLoaded: hasLoad,
-    };
+    });
   }
 
   if (PAIR_CACHE.size >= MAX_PAIR_CACHE) {
     PAIR_CACHE.delete(PAIR_CACHE.keys().next().value!);
   }
+
   PAIR_CACHE.set(cacheKey, results);
 
   return results;
