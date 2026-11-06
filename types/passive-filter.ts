@@ -65,3 +65,48 @@ export interface StandardFilterPair {
   errorPct: number;
 }
 
+export interface BodeViewport {
+  width: number;
+  height: number;
+  padLeft: number;
+  padRight: number;
+  padTop: number;
+  padBottom: number;
+}
+
+export interface BodeDecadeTick {
+  freq: number;
+  label: string;
+  x: number;
+}
+
+export interface BodeHorizontalGridLine {
+  value: number;
+  label: string;
+  y: number;
+}
+
+export interface BodePlotSamplePoint extends BodePoint {
+  x: number;
+  magY: number;
+  phaseY: number;
+}
+
+export interface BodePlotProjection {
+  plotWidth: number;
+  plotHeight: number;
+  magPath: string;
+  phasePath: string;
+  decadeTicks: BodeDecadeTick[];
+  magnitudeGrid: BodeHorizontalGridLine[];
+  phaseGrid: BodeHorizontalGridLine[];
+  fcX: number;
+  cutMagY: number;
+  cutPhaseY: number;
+  testX: number;
+  testMagY: number;
+  testPhaseY: number;
+  samples: BodePlotSamplePoint[];
+}
+
+

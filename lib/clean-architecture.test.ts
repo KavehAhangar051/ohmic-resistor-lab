@@ -21,6 +21,7 @@ import {
 import {
   calculatePassiveFilter,
   applyStandardFilterPair,
+  buildBodePlotProjection,
 } from './passive-filter-calc';
 import {
   solveR1,
@@ -159,7 +160,7 @@ test('E24 pair finder and filter/sort use case filters by current and sorts dete
   assert.equal(sortedByR1Desc[0].r1Ohms >= sortedByR1Desc[sortedByR1Desc.length - 1].r1Ohms, true);
 });
 
-test('Deep passive filter module synthesizes Bode response, standard commercial pairs, and topology-aware state updates', () => {
+test('Deep passive filter module synthesizes Bode response, viewport projection, standard pairs, and state updates', () => {
   const initialState = {
     topology: 'rc' as const,
     type: 'lowpass' as const,
@@ -183,6 +184,16 @@ test('Deep passive filter module synthesizes Bode response, standard commercial 
   assert.equal(highpassResult.phaseAtTestDeg > 0, true);
   assert.equal(lowpassResult.standardPairs.length > 0, true);
 
+  const viewport = { width: 640, height: 240, padLeft: 52, padRight: 36, padTop: 26, padBottom: 34 };
+  const lowpassProj = buildBodePlotProjection(lowpassResult, lowpassResult.testFreqHz, viewport);
+  const highpassProj = buildBodePlotProjection(highpassResult, highpassResult.testFreqHz, viewport);
+
+  assert.equal(lowpassProj.plotWidth, 552);
+  assert.equal(lowpassProj.plotHeight, 180);
+  assert.equal(lowpassProj.magPath.startsWith('M '), true);
+  assert.equal(lowpassProj.decadeTicks.length >= 3, true);
+  assert.equal(lowpassProj.cutPhaseY > highpassProj.cutPhaseY, true);
+
   const topPair = lowpassResult.standardPairs[0];
 
   const updatedState = applyStandardFilterPair(
@@ -196,3 +207,4 @@ test('Deep passive filter module synthesizes Bode response, standard commercial 
   assert.equal(updatedState.resistance, topPair.resistorValue);
   assert.equal(updatedState.capacitance, topPair.reactiveDisplay);
 });
+

@@ -2,9 +2,8 @@
 
 import * as React from 'react';
 import { ResistorItem, ParallelCalculationResult } from '@/types/resistor';
-import { SymbolStandard } from './schematic/schematic-types';
+import { SymbolStandard, SchematicLegendItem } from '../schematic-core/schematic-types';
 import { SchematicCard } from '../schematic-core/SchematicCard';
-import { SchematicLegendItem } from '../schematic-core/schematic-types';
 import { SchematicTerminals } from './schematic/SchematicTerminals';
 import { SchematicBuses } from './schematic/SchematicBuses';
 import { SchematicBranch } from './schematic/SchematicBranch';

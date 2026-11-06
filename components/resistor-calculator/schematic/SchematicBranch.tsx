@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { ResistorItem } from '@/types/resistor';
-import { BranchStat, SymbolStandard, UNIT_SYMBOL_MAP } from './schematic-types';
+import { ResistorItem, ParallelBranchStat } from '@/types/resistor';
+import { SymbolStandard } from '@/components/schematic-core/schematic-types';
+import { RESISTOR_SYMBOL_MAP } from '@/lib/voltage-divider-format';
 import { SchematicResistor } from '@/components/schematic-core/SchematicResistor';
 import { SchematicNode } from '@/components/schematic-core/SchematicNode';
 
@@ -10,7 +11,7 @@ interface SchematicBranchProps {
   branchX: number;
   topBusY: number;
   bottomBusY: number;
-  stats: BranchStat;
+  stats: ParallelBranchStat;
   isHovered: boolean;
   symbolStandard: SymbolStandard;
   animateFlow: boolean;
@@ -36,7 +37,7 @@ export const SchematicBranch = React.memo(function SchematicBranch({
   onHover,
 }: SchematicBranchProps) {
   const isShort = stats.isShort;
-  const resUnitSymbol = UNIT_SYMBOL_MAP[item.unit] || item.unit;
+  const resUnitSymbol = RESISTOR_SYMBOL_MAP[item.unit] || item.unit;
 
   const wireColor = isShort ? '#ef4444' : isHovered ? '#34d399' : '#10b981';
   const returnColor = isShort ? '#ef4444' : isHovered ? '#a1a1aa' : '#71717a';

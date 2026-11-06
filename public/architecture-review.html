@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Architecture review for ohmic-resistor-lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+    </script>
+    <style>
+      .seam { stroke-dasharray: 4 4; }
+      .leak { stroke: #dc2626; }
+      .deep { background: linear-gradient(135deg, #0f172a, #1e293b); }
+    </style>
+  </head>
+  <body class="bg-stone-50 text-slate-900 font-sans antialiased">
+    <main class="max-w-5xl mx-auto px-6 py-12 space-y-12">
+      <!-- Header -->
+      <header class="border-b border-stone-200 pb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <p class="text-xs font-mono uppercase tracking-widest text-slate-500">Architecture Review &bull; 2026-11-06</p>
+          <h1 class="text-3xl font-serif font-bold tracking-tight text-slate-900 mt-1">ohmic-resistor-lab</h1>
+        </div>
+        <!-- Compact Legend -->
+        <div class="flex flex-wrap items-center gap-4 text-xs font-mono text-slate-600 bg-white border border-stone-200 px-3.5 py-2 rounded-lg">
+          <span class="inline-flex items-center gap-1.5">
+            <span class="inline-block w-3.5 h-3.5 border border-slate-400 bg-stone-50 rounded-xs"></span>
+            <span>module</span>
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <span class="inline-block w-5 border-t-2 border-dashed border-slate-500"></span>
+            <span>seam</span>
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <span class="inline-block w-4 border-t-2 border-red-600"></span>
+            <span class="text-red-700 font-semibold">leakage</span>
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <span class="inline-block w-3.5 h-3.5 rounded-xs deep border-2 border-slate-900"></span>
+            <span class="font-semibold text-slate-900">deep module</span>
+          </span>
+        </div>
+      </header>
+
+      <!-- Candidates -->
+      <section id="candidates" class="space-y-10">
+
+        <!-- Candidate 1: Passive Filter Bode Plot Projection -->
+        <article id="candidate-bode-projection" class="bg-white border border-stone-200 rounded-xl p-6 shadow-xs space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-xl font-serif font-bold text-slate-900">
+              1. Absorb Bode Plot Projection into the Passive Filter Module
+            </h2>
+            <div class="flex items-center gap-2 text-xs font-mono">
+              <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-semibold border border-emerald-300">
+                Strong &bull; Implemented
+              </span>
+              <span class="px-2.5 py-0.5 rounded-full bg-stone-100 text-slate-700 border border-stone-300">
+                in-process
+              </span>
+            </div>
+          </div>
+
+          <ul class="font-mono text-sm text-slate-600 space-y-0.5">
+            <li>components/passive-filter/FilterBodePlot.tsx</li>
+            <li>lib/passive-filter-calc.ts</li>
+            <li>types/passive-filter.ts</li>
+          </ul>
+
+          <!-- Before / After Diagram (Pattern 1: Mermaid Call & Leakage Graph) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="rounded-lg border border-stone-200 bg-stone-50/60 p-4 min-h-[320px] flex flex-col justify-between">
+              <p class="text-xs uppercase tracking-wider font-mono text-red-700 font-semibold mb-2">
+                Before &mdash; Transfer math leaks across seam
+              </p>
+              <pre class="mermaid">
+                flowchart TB
+                  UI["FilterBodePlot UI Module"]
+                  CALC["calculatePassiveFilter"]
+                  UI --> CALC
+                  UI -. "log10(minFreq..maxFreq)" .-> LOG["Inline Decade Loop"]
+                  UI -. "dbToY / phaseToY clamp" .-> CLAMP["Inline SVG Path Builder"]
+                  UI -. "gainDb[0] > gainDb[N]" .-> POL["Inline Low-Pass Heuristic"]
+                  classDef leak stroke:#dc2626,stroke-width:2px,color:#991b1b;
+                  class LOG,CLAMP,POL leak
+              </pre>
+              <p class="text-[11px] font-mono text-slate-500 mt-2">
+                Caller re-derives decade ticks, clamping, and low-pass polarity.
+              </p>
+            </div>
+
+            <div class="rounded-lg border border-stone-200 bg-stone-50/60 p-4 min-h-[320px] flex flex-col justify-between">
+              <p class="text-xs uppercase tracking-wider font-mono text-emerald-800 font-semibold mb-2">
+                After &mdash; Deep Passive Filter Module
+              </p>
+              <pre class="mermaid">
+                flowchart TB
+                  UI2["FilterBodePlot UI Module"]
+                  subgraph DEEP ["Passive Filter Module (lib/passive-filter-calc.ts)"]
+                    direction TB
+                    PROJ["buildBodePlotProjection(result, fin, viewport)"]
+                    INTERNAL["Decade Ticks + SVG Paths + Phase Polarity"]
+                    PROJ --> INTERNAL
+                  end
+                  UI2 == "Single Seam" ==> PROJ
+                  classDef deepBox fill:#0f172a,color:#f8fafc,stroke:#0f172a,stroke-width:2px;
+                  class PROJ deepBox
+              </pre>
+              <p class="text-[11px] font-mono text-slate-500 mt-2">
+                One interface projects Bode Plot geometry; tests hit the seam directly.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-stone-100 text-sm">
+            <div>
+              <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-1">Problem</h3>
+              <p class="text-slate-700">
+                The Bode Plot UI module reaches past the Passive Filter seam to compute logarithmic decade ticks, dB/phase clamping, and low-pass phase polarity.
+              </p>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-1">Solution</h3>
+              <p class="text-slate-700">
+                Deepen <code class="font-mono text-xs bg-stone-100 px-1 py-0.5 rounded">lib/passive-filter-calc.ts</code> with <code class="font-mono text-xs bg-stone-100 px-1 py-0.5 rounded">buildBodePlotProjection</code> so the implementation hides coordinate math behind one seam.
+              </p>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-1">Wins</h3>
+              <ul class="list-disc list-inside text-slate-700 space-y-1 text-xs font-mono">
+                <li>Locality: decade math in one module</li>
+                <li>Leverage: tests exercise projection interface</li>
+                <li>Polarity heuristic stops leaking</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Candidate 2: Delete Pass-Through Schematic Types Module -->
+        <article id="candidate-schematic-types" class="bg-white border border-stone-200 rounded-xl p-6 shadow-xs space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-xl font-serif font-bold text-slate-900">
+              2. Collapse the Pass-Through Parallel Schematic Types Module
+            </h2>
+            <div class="flex items-center gap-2 text-xs font-mono">
+              <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-semibold border border-emerald-300">
+                Strong &bull; Implemented
+              </span>
+              <span class="px-2.5 py-0.5 rounded-full bg-stone-100 text-slate-700 border border-stone-300">
+                in-process
+              </span>
+            </div>
+          </div>
+
+          <ul class="font-mono text-sm text-slate-600 space-y-0.5">
+            <li>components/resistor-calculator/schematic/schematic-types.ts</li>
+            <li>components/resistor-calculator/CircuitSchematic.tsx</li>
+            <li>components/resistor-calculator/schematic/SchematicBranch.tsx</li>
+          </ul>
+
+          <!-- Before / After Diagram (Pattern 2: Cross-Section of Shallow Pass-Through Layers) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="rounded-lg border border-stone-200 bg-stone-50/60 p-4 min-h-[320px] flex flex-col justify-between">
+              <p class="text-xs uppercase tracking-wider font-mono text-red-700 font-semibold">
+                Before &mdash; Cross-section fails deletion test
+              </p>
+              <div class="space-y-2.5 my-auto">
+                <div class="h-12 border-l-4 border-slate-700 bg-white px-3 flex items-center justify-between rounded-r shadow-2xs">
+                  <span class="text-xs uppercase tracking-wider font-mono font-semibold">CircuitSchematic / SchematicBranch</span>
+                  <span class="text-[11px] font-mono text-slate-400">Caller</span>
+                </div>
+                <div class="h-14 border-l-4 border-red-600 bg-red-50/70 px-3 flex flex-col justify-center rounded-r">
+                  <span class="text-xs uppercase tracking-wider font-mono font-semibold text-red-900">schematic/schematic-types.ts</span>
+                  <span class="text-[11px] font-mono text-red-700">Shallow alias: BranchStat = ParallelBranchStat</span>
+                </div>
+                <div class="h-12 border-l-4 border-slate-400 bg-white px-3 flex items-center justify-between rounded-r shadow-2xs">
+                  <span class="text-xs uppercase tracking-wider font-mono">schematic-core &amp; types/resistor.ts</span>
+                  <span class="text-[11px] font-mono text-slate-400">Canonical Seam</span>
+                </div>
+              </div>
+              <p class="text-[11px] font-mono text-slate-500">
+                100% pass-through re-aliasing with zero added depth.
+              </p>
+            </div>
+
+            <div class="rounded-lg border border-stone-200 bg-stone-50/60 p-4 min-h-[320px] flex flex-col justify-between">
+              <p class="text-xs uppercase tracking-wider font-mono text-emerald-800 font-semibold">
+                After &mdash; Direct seam alignment
+              </p>
+              <div class="space-y-4 my-auto">
+                <div class="h-14 border-l-4 border-slate-700 bg-white px-3 flex items-center justify-between rounded-r shadow-2xs">
+                  <span class="text-xs uppercase tracking-wider font-mono font-semibold">CircuitSchematic / SchematicBranch</span>
+                  <span class="text-[11px] font-mono text-slate-500">Caller</span>
+                </div>
+                <div class="border-t-2 border-dashed border-emerald-600 relative my-2">
+                  <span class="absolute -top-2.5 left-3 bg-stone-50 px-1.5 text-[10px] font-mono uppercase tracking-wider text-emerald-800">
+                    Canonical Seam
+                  </span>
+                </div>
+                <div class="h-20 deep text-white px-4 flex flex-col justify-center rounded-lg border-2 border-slate-900 shadow-xs">
+                  <span class="text-xs uppercase tracking-wider font-mono text-emerald-300 font-bold">
+                    types/resistor.ts + schematic-core/schematic-types.ts
+                  </span>
+                  <span class="text-[11px] font-mono text-slate-300 mt-1">
+                    ParallelBranchStat &bull; SymbolStandard &bull; RESISTOR_SYMBOL_MAP
+                  </span>
+                </div>
+              </div>
+              <p class="text-[11px] font-mono text-slate-500">
+                Pass-through module deleted; complexity vanishes.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-stone-100 text-sm">
+            <div>
+              <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-1">Problem</h3>
+              <p class="text-slate-700">
+                <code class="font-mono text-xs bg-stone-100 px-1 py-0.5 rounded">schematic/schematic-types.ts</code> is a shallow pass-through module whose interface equals its 4-line alias implementation.
+              </p>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-1">Solution</h3>
+              <p class="text-slate-700">
+                Delete <code class="font-mono text-xs bg-stone-100 px-1 py-0.5 rounded">schematic/schematic-types.ts</code> and point callers directly at the canonical <code class="font-mono text-xs bg-stone-100 px-1 py-0.5 rounded">ParallelBranchStat</code> and <code class="font-mono text-xs bg-stone-100 px-1 py-0.5 rounded">SymbolStandard</code> interfaces.
+              </p>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-1">Wins</h3>
+              <ul class="list-disc list-inside text-slate-700 space-y-1 text-xs font-mono">
+                <li>Passes deletion test cleanly</li>
+                <li>Locality: one domain vocabulary</li>
+                <li>Removes 1 shallow module seam</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Candidate 3: Load Regulation Curve & EDA Netlist Synthesis -->
+        <article id="candidate-load-curve-eda" class="bg-white border border-stone-200 rounded-xl p-6 shadow-xs space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-xl font-serif font-bold text-slate-900">
+              3. Deepen Load Regulation Sweep &amp; EDA Netlist Synthesis Behind the Voltage Divider Seam
+            </h2>
+            <div class="flex items-center gap-2 text-xs font-mono">
+              <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-semibold border border-amber-300">
+                Worth exploring
+              </span>
+              <span class="px-2.5 py-0.5 rounded-full bg-stone-100 text-slate-700 border border-stone-300">
+                in-process
+              </span>
+            </div>
+          </div>
+
+          <ul class="font-mono text-sm text-slate-600 space-y-0.5">
+            <li>components/voltage-divider/DividerLoadCurve.tsx</li>
+            <li>components/voltage-divider/DividerEdaExportModal.tsx</li>
+            <li>lib/voltage-divider-calc.ts</li>
+          </ul>
+
+          <!-- Before / After Diagram (Pattern 3: Mass Diagram — Interface vs Implementation) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="rounded-lg border border-stone-200 bg-stone-50/60 p-4 min-h-[320px] flex flex-col justify-between">
+              <p class="text-xs uppercase tracking-wider font-mono text-red-700 font-semibold">
+                Before &mdash; Mass diagram: physics split into UI modules
+              </p>
+              <div class="grid grid-cols-2 gap-3 my-auto">
+                <div class="border border-red-300 bg-white p-3 rounded flex flex-col justify-between h-48">
+                  <div class="border-b border-dashed border-red-300 pb-2">
+                    <span class="text-xs uppercase tracking-wider font-mono text-red-800 block">DividerLoadCurve</span>
+                    <span class="text-[10px] font-mono text-slate-500">Interface: state + result</span>
+                  </div>
+                  <div class="bg-red-50 border border-red-200 p-2 rounded text-[11px] font-mono text-red-900 space-y-1">
+                    <div>kOhm / MOhm scaling</div>
+                    <div>30-point log10 RL sweep</div>
+                    <div>Load Drop % formula</div>
+                  </div>
+                </div>
+                <div class="border border-red-300 bg-white p-3 rounded flex flex-col justify-between h-48">
+                  <div class="border-b border-dashed border-red-300 pb-2">
+                    <span class="text-xs uppercase tracking-wider font-mono text-red-800 block">DividerEdaExportModal</span>
+                    <span class="text-[10px] font-mono text-slate-500">Interface: pair + state</span>
+                  </div>
+                  <div class="bg-red-50 border border-red-200 p-2 rounded text-[11px] font-mono text-red-900 space-y-1">
+                    <div>Altium Designer netlist</div>
+                    <div>Proteus 8 script</div>
+                    <div>SPICE .SUBCKT &amp; CSV BOM</div>
+                  </div>
+                </div>
+              </div>
+              <p class="text-[11px] font-mono text-slate-500">
+                Unit scaling and SPICE netlist synthesis are trapped inside React hooks.
+              </p>
+            </div>
+
+            <div class="rounded-lg border border-stone-200 bg-stone-50/60 p-4 min-h-[320px] flex flex-col justify-between">
+              <p class="text-xs uppercase tracking-wider font-mono text-emerald-800 font-semibold">
+                After &mdash; Narrow interface, deep domain implementation
+              </p>
+              <div class="my-auto flex flex-col items-center">
+                <!-- Narrow Interface Bar -->
+                <div class="w-3/4 bg-emerald-950 text-emerald-200 border-2 border-slate-900 rounded-t-lg px-3 py-2 text-center">
+                  <span class="text-xs uppercase tracking-wider font-mono font-bold block">Small Seam Interface</span>
+                  <span class="text-[10px] font-mono">buildLoadRegulationCurve() &bull; synthesizeEdaArtifact()</span>
+                </div>
+                <!-- Deep Implementation Body -->
+                <div class="w-full deep text-slate-100 border-2 border-t-0 border-slate-900 rounded-b-lg p-4 space-y-1.5 text-xs font-mono">
+                  <div class="text-emerald-300 font-semibold">lib/voltage-divider-calc.ts (Deep Module)</div>
+                  <div class="text-slate-300 text-[11px]">&bull; Reuses canonical toOhms() and getEffectiveR2()</div>
+                  <div class="text-slate-300 text-[11px]">&bull; Computes 0.05&times;R2..25&times;R2 logarithmic curve</div>
+                  <div class="text-slate-300 text-[11px]">&bull; Emits deterministic Altium / Proteus / SPICE / BOM text</div>
+                </div>
+              </div>
+              <p class="text-[11px] font-mono text-slate-500">
+                Interface shrinks; implementation absorbs netlist and sweep math.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-stone-100 text-sm">
+            <div>
+              <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-1">Problem</h3>
+              <p class="text-slate-700">
+                <code class="font-mono text-xs bg-stone-100 px-1 py-0.5 rounded">DividerLoadCurve</code> and <code class="font-mono text-xs bg-stone-100 px-1 py-0.5 rounded">DividerEdaExportModal</code> duplicate unit scaling, logarithmic load sweeps, and SPICE netlist formatting inside UI state hooks.
+              </p>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-1">Solution</h3>
+              <p class="text-slate-700">
+                Move load-curve sweep math and EDA netlist synthesis behind the Voltage Divider module seam in <code class="font-mono text-xs bg-stone-100 px-1 py-0.5 rounded">lib/voltage-divider-calc.ts</code>.
+              </p>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-1">Wins</h3>
+              <ul class="list-disc list-inside text-slate-700 space-y-1 text-xs font-mono">
+                <li>Locality: unit math in one module</li>
+                <li>Leverage: netlists testable via node:test</li>
+                <li>Deletes duplicate kOhm/MOhm branches</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Candidate 4: Consolidate E-Series Pair Search Modules -->
+        <article id="candidate-eseries-consolidation" class="bg-white border border-stone-200 rounded-xl p-6 shadow-xs space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-xl font-serif font-bold text-slate-900">
+              4. Collapse Legacy E12/E24 Pair Search into the Multi-Objective Pair Finder Module
+            </h2>
+            <div class="flex items-center gap-2 text-xs font-mono">
+              <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-semibold border border-amber-300">
+                Worth exploring
+              </span>
+              <span class="px-2.5 py-0.5 rounded-full bg-stone-100 text-slate-700 border border-stone-300">
+                in-process
+              </span>
+            </div>
+          </div>
+
+          <ul class="font-mono text-sm text-slate-600 space-y-0.5">
+            <li>lib/e-series.ts</li>
+            <li>lib/voltage-divider-pair-finder.ts</li>
+            <li>components/voltage-divider/ReverseDividerSolver.tsx</li>
+          </ul>
+
+          <!-- Before / After Diagram (Pattern 4: Call-Graph Collapse) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="rounded-lg border border-stone-200 bg-stone-50/60 p-4 min-h-[320px] flex flex-col justify-between">
+              <p class="text-xs uppercase tracking-wider font-mono text-red-700 font-semibold">
+                Before &mdash; Split pair-search implementations
+              </p>
+              <div class="space-y-3 my-auto font-mono text-xs">
+                <div class="border border-red-300 bg-red-50/60 p-3 rounded space-y-1.5">
+                  <div class="uppercase tracking-wider text-red-900 font-bold">lib/e-series.ts</div>
+                  <div class="pl-3 border-l-2 border-red-400 text-slate-700">
+                    <div>E12 / E24 / E96 Decade Tables</div>
+                    <div class="text-red-700 font-semibold">+ findBestDividerPairs() [O(N&sup2;) loop #1]</div>
+                  </div>
+                </div>
+                <div class="border border-slate-300 bg-white p-3 rounded space-y-1.5">
+                  <div class="uppercase tracking-wider text-slate-800 font-bold">lib/voltage-divider-pair-finder.ts</div>
+                  <div class="pl-3 border-l-2 border-slate-400 text-slate-700">
+                    <div>findBestE24Pairs() [O(N&sup2;) loop #2]</div>
+                    <div>filterAndSortResistorPairs()</div>
+                  </div>
+                </div>
+              </div>
+              <p class="text-[11px] font-mono text-slate-500">
+                Two modules implement quadratic resistor-pair search with separate interfaces.
+              </p>
+            </div>
+
+            <div class="rounded-lg border border-stone-200 bg-stone-50/60 p-4 min-h-[320px] flex flex-col justify-between">
+              <p class="text-xs uppercase tracking-wider font-mono text-emerald-800 font-semibold">
+                After &mdash; Call-graph collapse into one deep module
+              </p>
+              <div class="space-y-3 my-auto font-mono text-xs">
+                <div class="deep text-white p-4 rounded-lg border-2 border-slate-900 space-y-2">
+                  <div class="uppercase tracking-wider text-emerald-300 font-bold">
+                    lib/voltage-divider-pair-finder.ts
+                  </div>
+                  <div class="text-[11px] text-slate-200">
+                    Single interface: findBestE24Pairs(vin, vout, criterion, max, rl, mode, series: 'E12'|'E24'|'E96')
+                  </div>
+                  <div class="bg-slate-800/80 border border-slate-700 p-2 rounded text-[11px] text-slate-400">
+                    Internal dependency: lib/e-series.ts (pure EIA decade constants only)
+                  </div>
+                </div>
+              </div>
+              <p class="text-[11px] font-mono text-slate-500">
+                One pair-matching module owns search, scoring, and tolerance bounds.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-stone-100 text-sm">
+            <div>
+              <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-1">Problem</h3>
+              <p class="text-slate-700">
+                <code class="font-mono text-xs bg-stone-100 px-1 py-0.5 rounded">lib/e-series.ts</code> mixes static EIA decade constants with a second, un-loaded quadratic divider search implementation.
+              </p>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-1">Solution</h3>
+              <p class="text-slate-700">
+                Collapse <code class="font-mono text-xs bg-stone-100 px-1 py-0.5 rounded">findBestDividerPairs</code> into <code class="font-mono text-xs bg-stone-100 px-1 py-0.5 rounded">lib/voltage-divider-pair-finder.ts</code> so <code class="font-mono text-xs bg-stone-100 px-1 py-0.5 rounded">lib/e-series.ts</code> stays pure catalog data.
+              </p>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-1">Wins</h3>
+              <ul class="list-disc list-inside text-slate-700 space-y-1 text-xs font-mono">
+                <li>Locality: one pair-search implementation</li>
+                <li>Leverage: E12/E24/E96 share one seam</li>
+                <li>Separates catalog data from solver</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- Top Recommendation -->
+      <section id="top-recommendation" class="deep text-white rounded-2xl p-8 border-2 border-slate-900 shadow-lg space-y-3">
+        <p class="text-xs font-mono uppercase tracking-widest text-emerald-400">Top Recommendation</p>
+        <h2 class="text-2xl font-serif font-bold">
+          1. Absorb Bode Plot Projection into the Passive Filter Module (+ 2. Delete Pass-Through Schematic Types)
+        </h2>
+        <p class="text-slate-300 text-sm leading-relaxed">
+          <code class="font-mono text-emerald-300">FilterBodePlot.tsx</code> and <code class="font-mono text-emerald-300">CircuitSchematic.tsx</code> are on the active hot path in recent commits, and deepening <code class="font-mono text-emerald-300">lib/passive-filter-calc.ts</code> with <code class="font-mono text-emerald-300">buildBodePlotProjection</code> while deleting the pass-through <code class="font-mono text-emerald-300">schematic-types.ts</code> module moves all logarithmic coordinate math and phase-cutoff polarity behind a directly tested <code class="font-mono text-emerald-300">in-process</code> seam.
+        </p>
+        <div class="pt-2">
+          <a href="#candidate-bode-projection" class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-lg hover:bg-emerald-400 transition-colors">
+            Jump to Candidate #1 &uarr;
+          </a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -3,6 +3,11 @@ import {
   FilterType,
   FilterCalculationResult,
   BodePoint,
+  BodeViewport,
+  BodeDecadeTick,
+  BodeHorizontalGridLine,
+  BodePlotSamplePoint,
+  BodePlotProjection,
   StandardFilterPair,
   ResistanceUnit,
   CapacitanceUnit,
@@ -321,5 +326,136 @@ export function findStandardFilterPairs(
 
   return results.slice(0, maxResults);
 }
+
+const BODE_MIN_DB = -40;
+const BODE_MAX_DB = 0;
+const BODE_MIN_PHASE = -90;
+const BODE_MAX_PHASE = 90;
+const BODE_MAGNITUDE_TICKS = [-10, -20, -30, -40] as const;
+const BODE_PHASE_TICKS = [-90, -45, 0, 45, 90] as const;
+
+/**
+ * Projects a passive filter's frequency response onto SVG viewport coordinates,
+ * encapsulating logarithmic decade scaling, dB/phase clamping, and cutoff markers.
+ */
+export function buildBodePlotProjection(
+  result: FilterCalculationResult,
+  testFreqHz: number,
+  viewport: BodeViewport
+): BodePlotProjection {
+  const { width, height, padLeft, padRight, padTop, padBottom } = viewport;
+  const plotWidth = width - padLeft - padRight;
+  const plotHeight = height - padTop - padBottom;
+  const { bodePoints, cutoffFreqHz } = result;
+
+  if (!result.isValid || bodePoints.length === 0) {
+    return {
+      plotWidth,
+      plotHeight,
+      magPath: '',
+      phasePath: '',
+      decadeTicks: [],
+      magnitudeGrid: [],
+      phaseGrid: [],
+      fcX: padLeft,
+      cutMagY: padTop,
+      cutPhaseY: padTop,
+      testX: padLeft,
+      testMagY: padTop,
+      testPhaseY: padTop,
+      samples: [],
+    };
+  }
+
+  const minFreq = bodePoints[0].freq;
+  const maxFreq = bodePoints[bodePoints.length - 1].freq;
+  const logMin = Math.log10(minFreq);
+  const logMax = Math.log10(maxFreq);
+  const logSpan = Math.max(1e-9, logMax - logMin);
+
+  const freqToX = (f: number): number => {
+    const logF = Math.log10(Math.max(f, minFreq));
+    const normalized = (logF - logMin) / logSpan;
+
+    return padLeft + normalized * plotWidth;
+  };
+
+  const dbToY = (db: number): number => {
+    const clamped = Math.max(BODE_MIN_DB, Math.min(BODE_MAX_DB, db));
+    const normalized = (clamped - BODE_MIN_DB) / (BODE_MAX_DB - BODE_MIN_DB);
+
+    return padTop + (1 - normalized) * plotHeight;
+  };
+
+  const phaseToY = (ph: number): number => {
+    const clamped = Math.max(BODE_MIN_PHASE, Math.min(BODE_MAX_PHASE, ph));
+    const normalized = (clamped - BODE_MIN_PHASE) / (BODE_MAX_PHASE - BODE_MIN_PHASE);
+
+    return padTop + (1 - normalized) * plotHeight;
+  };
+
+  const samples: BodePlotSamplePoint[] = bodePoints.map((pt) => ({
+    ...pt,
+    x: freqToX(pt.freq),
+    magY: dbToY(pt.gainDb),
+    phaseY: phaseToY(pt.phaseDeg),
+  }));
+
+  const magPath = samples.reduce(
+    (acc, pt, idx) => (idx === 0 ? `M ${pt.x} ${pt.magY}` : `${acc} L ${pt.x} ${pt.magY}`),
+    ''
+  );
+
+  const phasePath = samples.reduce(
+    (acc, pt, idx) => (idx === 0 ? `M ${pt.x} ${pt.phaseY}` : `${acc} L ${pt.x} ${pt.phaseY}`),
+    ''
+  );
+
+  const decadeTicks: BodeDecadeTick[] = [];
+  const startDecade = Math.ceil(logMin);
+  const endDecade = Math.floor(logMax);
+
+  for (let d = startDecade; d <= endDecade; d++) {
+    const freq = Math.pow(10, d);
+    const fmt = formatFrequency(freq);
+    decadeTicks.push({
+      freq,
+      label: `${fmt.value}${fmt.unit}`,
+      x: freqToX(freq),
+    });
+  }
+
+  const magnitudeGrid: BodeHorizontalGridLine[] = BODE_MAGNITUDE_TICKS.map((db) => ({
+    value: db,
+    label: `${db} dB`,
+    y: dbToY(db),
+  }));
+
+  const phaseGrid: BodeHorizontalGridLine[] = BODE_PHASE_TICKS.map((ph) => ({
+    value: ph,
+    label: `${ph > 0 ? `+${ph}` : ph}°`,
+    y: phaseToY(ph),
+  }));
+
+  const isLowPass = bodePoints[0].gainDb > bodePoints[bodePoints.length - 1].gainDb;
+
+  return {
+    plotWidth,
+    plotHeight,
+    magPath,
+    phasePath,
+    decadeTicks,
+    magnitudeGrid,
+    phaseGrid,
+    fcX: freqToX(cutoffFreqHz),
+    cutMagY: dbToY(-3.01),
+    cutPhaseY: phaseToY(isLowPass ? -45 : 45),
+    testX: freqToX(testFreqHz),
+    testMagY: dbToY(result.gainAtTestDb),
+    testPhaseY: phaseToY(result.phaseAtTestDeg),
+    samples,
+  };
+}
+
 
 
