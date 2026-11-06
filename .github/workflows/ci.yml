@@ -1,0 +1,35 @@
+name: CI Quality Checks
+
+on:
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Typecheck, Lint & Build Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Verify TypeScript & ESLint / Oxlint
+        run: npm run check
+
+      - name: Verify Build
+        env:
+          NODE_ENV: "production"
+          GITHUB_PAGES: "true"
+        run: npm run build

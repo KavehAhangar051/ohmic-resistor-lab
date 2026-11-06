@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   },
 };
 
+const isGithubPages = process.env.GITHUB_ACTIONS === 'true' || process.env.GITHUB_PAGES === 'true';
+const fontBasePath = isGithubPages ? '/ohmic-resistor-lab' : '';
+
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
@@ -26,14 +29,14 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         {/* Local bundled font preloads */}
         <link
           rel="preload"
-          href="/fonts/vazirmatn-400.woff2"
+          href={`${fontBasePath}/fonts/vazirmatn-400.woff2`}
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
         <link
           rel="preload"
-          href="/fonts/kodemono-400.woff2"
+          href={`${fontBasePath}/fonts/kodemono-400.woff2`}
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
