@@ -3,12 +3,18 @@ import assert from 'node:assert/strict';
 import {
   calculateParallelResistance,
   calculateParallelBranchStats,
+  getResistorColorBands,
 } from './resistor-calc';
 import { calculateVoltageDivider } from './voltage-divider-calc';
 import {
   findBestE24Pairs,
   filterAndSortResistorPairs,
 } from './voltage-divider-pair-finder';
+import {
+  classifyAdcSuitability,
+  classifyBiasStability,
+  classifyDomainCategory,
+} from './voltage-divider-pair-scoring';
 import {
   calculatePassiveFilter,
   findStandardFilterPairs,
@@ -52,6 +58,16 @@ test('Parallel resistor use case guards short-circuit invariant when a branch is
   assert.equal(branchStats[0].currentShare, '100%');
 });
 
+test('EIA 4-band color code module encodes 4.7 kOhm accurately', () => {
+  const bands = getResistorColorBands({ value: '4.7', unit: 'kOhm' });
+
+  assert.equal(bands !== null, true);
+  assert.equal(bands?.[0].name, 'Yellow');
+  assert.equal(bands?.[1].name, 'Violet');
+  assert.equal(bands?.[2].name, 'Red');
+  assert.equal(bands?.[3].name, 'Gold');
+});
+
 test('Voltage divider use case computes output telemetry, safe current, and ADC impedance status', () => {
   const result = calculateVoltageDivider({
     appMode: 'sampling',
@@ -79,6 +95,17 @@ test('Voltage divider use case computes output telemetry, safe current, and ADC 
   assert.equal(result.safeOutputCurrent5PctAmperes, 0.000025);
 });
 
+test('Domain scoring classifiers categorize ADC impedance, bias stability, and current domain', () => {
+  assert.equal(classifyAdcSuitability(5000).status, 'direct');
+  assert.equal(classifyAdcSuitability(25000).status, 'buffered');
+  assert.equal(classifyAdcSuitability(100000).status, 'high_impedance');
+
+  assert.equal(classifyBiasStability(10000, 0.001).status, 'stiff');
+  assert.equal(classifyDomainCategory(0.00005).category, 'low_power');
+  assert.equal(classifyDomainCategory(0.001).category, 'general');
+  assert.equal(classifyDomainCategory(0.01).category, 'high_drive');
+});
+
 test('E24 pair finder and filter/sort use case filters by current and sorts deterministically', () => {
   const pairs = findBestE24Pairs(5, 2.5, 'overall', 10, null, 'sampling', 'E24');
 
@@ -90,8 +117,8 @@ test('E24 pair finder and filter/sort use case filters by current and sorts dete
   assert.equal(sortedByR1Desc[0].r1Ohms >= sortedByR1Desc[sortedByR1Desc.length - 1].r1Ohms, true);
 });
 
-test('Passive filter use case computes cutoff frequency and returns pre-decomposed standard pairs', () => {
-  const filterResult = calculatePassiveFilter({
+test('Passive filter use case computes lowpass and highpass responses and returns standard pairs', () => {
+  const lowpassResult = calculatePassiveFilter({
     topology: 'rc',
     type: 'lowpass',
     resistance: '10',
@@ -105,10 +132,26 @@ test('Passive filter use case computes cutoff frequency and returns pre-decompos
     vinPeak: '5',
   });
 
-  assert.equal(filterResult.isValid, true);
-  assert.equal(Math.round(filterResult.cutoffFreqHz), 159);
+  const highpassResult = calculatePassiveFilter({
+    topology: 'rc',
+    type: 'highpass',
+    resistance: '10',
+    resistanceUnit: 'kOhm',
+    capacitance: '100',
+    capacitanceUnit: 'nF',
+    inductance: '10',
+    inductanceUnit: 'mH',
+    testFrequency: '1',
+    testFrequencyUnit: 'kHz',
+    vinPeak: '5',
+  });
 
-  const pairs = findStandardFilterPairs(filterResult.cutoffFreqHz, 'rc', 3);
+  assert.equal(lowpassResult.isValid, true);
+  assert.equal(Math.round(lowpassResult.cutoffFreqHz), 159);
+  assert.equal(lowpassResult.phaseAtTestDeg < 0, true);
+  assert.equal(highpassResult.phaseAtTestDeg > 0, true);
+
+  const pairs = findStandardFilterPairs(lowpassResult.cutoffFreqHz, 'rc', 3);
 
   assert.equal(pairs.length, 3);
   assert.equal(pairs[0].resistorValue.length > 0, true);

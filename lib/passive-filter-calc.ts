@@ -1,5 +1,6 @@
 import {
   FilterState,
+  FilterType,
   FilterCalculationResult,
   BodePoint,
   StandardFilterPair,
@@ -34,6 +35,11 @@ export const FREQUENCY_MULTIPLIERS = {
   MHz: 1e6,
 } as const;
 
+const MIN_GAIN_FLOOR = 1e-5;
+const BODE_PLOT_STEPS = 70;
+const BODE_MIN_DECADE_RATIO = 0.01;
+const BODE_MAX_DECADE_RATIO = 100;
+
 interface TransferFunctionPoint {
   gainLinear: number;
   gainDb: number;
@@ -62,23 +68,35 @@ export function formatTime(seconds: number): FormattedMeasurement {
   return { value: formatPrecision(seconds * 1e9, 2), unit: 'ns' };
 }
 
-/**
- * Evaluates first-order passive filter magnitude and phase at normalized frequency ratio (f / fc).
- */
-function evaluateTransferFunction(
-  ratio: number,
-  isLowPass: boolean
-): TransferFunctionPoint {
+function evaluateLowPassResponse(ratio: number): TransferFunctionPoint {
   const denom = Math.sqrt(1 + ratio * ratio);
-  const gainLinear = isLowPass ? 1 / denom : ratio / denom;
-
-  const phaseDeg = isLowPass
-    ? -Math.atan(ratio) * (180 / Math.PI)
-    : 90 - Math.atan(ratio) * (180 / Math.PI);
-
-  const gainDb = 20 * Math.log10(Math.max(gainLinear, 1e-5));
+  const gainLinear = 1 / denom;
+  const phaseDeg = -Math.atan(ratio) * (180 / Math.PI);
+  const gainDb = 20 * Math.log10(Math.max(gainLinear, MIN_GAIN_FLOOR));
 
   return { gainLinear, gainDb, phaseDeg };
+}
+
+function evaluateHighPassResponse(ratio: number): TransferFunctionPoint {
+  const denom = Math.sqrt(1 + ratio * ratio);
+  const gainLinear = ratio / denom;
+  const phaseDeg = 90 - Math.atan(ratio) * (180 / Math.PI);
+  const gainDb = 20 * Math.log10(Math.max(gainLinear, MIN_GAIN_FLOOR));
+
+  return { gainLinear, gainDb, phaseDeg };
+}
+
+/**
+ * Evaluates first-order passive filter magnitude and phase at normalized frequency ratio (f / fc)
+ * without boolean control flags.
+ */
+function evaluateFilterResponse(
+  ratio: number,
+  filterType: FilterType
+): TransferFunctionPoint {
+  return filterType === 'lowpass'
+    ? evaluateLowPassResponse(ratio)
+    : evaluateHighPassResponse(ratio);
 }
 
 /**
@@ -119,23 +137,20 @@ export function calculatePassiveFilter(state: FilterState): FilterCalculationRes
   const tau = state.topology === 'rc' ? rOhms * reactiveValue : reactiveValue / rOhms;
   const fc = state.topology === 'rc' ? 1 / (2 * Math.PI * tau) : rOhms / (2 * Math.PI * reactiveValue);
 
-  const isLowPass = state.type === 'lowpass';
   const ratio = testFreq > 0 && fc > 0 ? testFreq / fc : 1;
-  const { gainLinear, gainDb, phaseDeg } = evaluateTransferFunction(ratio, isLowPass);
+  const { gainLinear, gainDb, phaseDeg } = evaluateFilterResponse(ratio, state.type);
 
   const voutPeak = vin * gainLinear;
   const attenuationPct = (1 - gainLinear) * 100;
 
-  // Generate 70 logarithmically distributed Bode points across 4 decades (0.01 fc to 100 fc)
   const bodePoints: BodePoint[] = [];
-  const steps = 70;
-  const logMin = Math.log10(fc * 0.01);
-  const logMax = Math.log10(fc * 100);
-  const logStep = (logMax - logMin) / (steps - 1);
+  const logMin = Math.log10(fc * BODE_MIN_DECADE_RATIO);
+  const logMax = Math.log10(fc * BODE_MAX_DECADE_RATIO);
+  const logStep = (logMax - logMin) / (BODE_PLOT_STEPS - 1);
 
-  for (let i = 0; i < steps; i++) {
+  for (let i = 0; i < BODE_PLOT_STEPS; i++) {
     const f = Math.pow(10, logMin + i * logStep);
-    const pt = evaluateTransferFunction(f / fc, isLowPass);
+    const pt = evaluateFilterResponse(f / fc, state.type);
     bodePoints.push({
       freq: f,
       gainDb: parseFloat(pt.gainDb.toFixed(2)),
