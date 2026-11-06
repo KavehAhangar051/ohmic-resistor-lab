@@ -67,7 +67,7 @@ export const FilterStandardPicker = React.memo(function FilterStandardPicker({
               <th scope="col" className="py-2 px-3 text-center w-24">اعمال</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-800/70 font-mono text-zinc-200">
+          <tbody className="divide-y divide-zinc-800/70 font-mono tabular-nums text-zinc-200">
             {pairs.map((pair, idx) => {
               const isApplied = appliedIdx === idx;
 
@@ -85,7 +85,7 @@ export const FilterStandardPicker = React.memo(function FilterStandardPicker({
                     <button
                       type="button"
                       onClick={() => handleApply(pair, idx)}
-                      className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 hover:text-white transition-colors cursor-pointer text-[11px] font-sans inline-flex items-center gap-1"
+                      className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 hover:text-white transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.96] cursor-pointer text-[11px] font-sans inline-flex items-center gap-1"
                     >
                       {isApplied ? (
                         <>

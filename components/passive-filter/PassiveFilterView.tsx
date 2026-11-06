@@ -140,7 +140,7 @@ export function PassiveFilterView() {
               value={state.resistance}
               onChange={(e) => updateField('resistance', sanitizeNumericInput(e.target.value))}
               placeholder="10"
-              className="font-mono text-sm h-9 flex-1"
+              className="font-mono text-base sm:text-sm h-9 flex-1"
             />
             <select
               value={state.resistanceUnit}
@@ -174,7 +174,7 @@ export function PassiveFilterView() {
                   : updateField('inductance', sanitizeNumericInput(e.target.value))
               }
               placeholder="100"
-              className="font-mono text-sm h-9 flex-1"
+              className="font-mono text-base sm:text-sm h-9 flex-1"
             />
             {state.topology === 'rc' ? (
               <select
@@ -217,7 +217,7 @@ export function PassiveFilterView() {
               value={state.testFrequency}
               onChange={(e) => updateField('testFrequency', sanitizeNumericInput(e.target.value))}
               placeholder="1"
-              className="font-mono text-sm h-9 flex-1"
+              className="font-mono text-base sm:text-sm h-9 flex-1"
             />
             <select
               value={state.testFrequencyUnit}
@@ -245,7 +245,7 @@ export function PassiveFilterView() {
               value={state.vinPeak}
               onChange={(e) => updateField('vinPeak', sanitizeNumericInput(e.target.value))}
               placeholder="5"
-              className="font-mono text-sm h-9 flex-1"
+              className="font-mono text-base sm:text-sm h-9 flex-1"
             />
             <span className="inline-flex items-center justify-center bg-zinc-950 border border-zinc-800 text-zinc-400 text-xs rounded-md h-9 px-3 font-mono">
               Vpk

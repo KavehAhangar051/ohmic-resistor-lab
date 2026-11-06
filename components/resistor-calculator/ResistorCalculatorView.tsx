@@ -143,7 +143,7 @@ export function ResistorCalculatorView() {
             </div>
 
             {/* Bottom Fade Gradient for Scrollable List */}
-            <AnimatePresence>
+            <AnimatePresence initial={false}>
               {items.length > 3 && (
                 <motion.div
                   initial={{ opacity: 0 }}

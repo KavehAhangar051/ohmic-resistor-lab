@@ -135,7 +135,7 @@ export const DividerParameterRow = React.memo(function DividerParameterRow({
                 readOnly={isCalculated}
                 onChange={handleValueChange}
                 className={cn(
-                  "w-full pl-3 pr-8 font-mono text-sm h-10 text-left transition-colors",
+                  "w-full pl-3 pr-8 font-mono text-base sm:text-sm h-10 text-left transition-colors",
                   isCalculated
                     ? "bg-emerald-950/30 border-emerald-500/50 text-emerald-200 cursor-default font-bold"
                     : "bg-zinc-950/90 border-zinc-800 text-zinc-100 focus-visible:border-emerald-500/80 focus-visible:ring-emerald-500/20"

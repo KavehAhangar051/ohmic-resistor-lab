@@ -214,7 +214,7 @@ export const FilterBodePlot = React.memo(function FilterBodePlot({
       </div>
 
       {/* Real-time Cursor Readout Footer */}
-      <div className="flex flex-wrap items-center justify-between text-xs text-zinc-400 font-mono bg-zinc-950/80 px-3 py-2 rounded-lg border border-zinc-800/80">
+      <div className="flex flex-wrap items-center justify-between text-xs text-zinc-400 font-mono tabular-nums bg-zinc-950/80 px-3 py-2 rounded-lg border border-zinc-800/80">
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5">
             <span className="inline-block h-2 w-2 rounded-full bg-amber-400" />

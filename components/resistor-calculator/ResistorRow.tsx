@@ -118,7 +118,7 @@ export const ResistorRow = React.memo(function ResistorRow({
                 aria-label={`مقدار مقاومت R${index + 1}`}
                 value={item.value}
                 onChange={handleValueChange}
-                className="w-full pl-3 pr-8 font-mono text-sm h-10 bg-zinc-950/90 border-zinc-800 text-left focus-visible:border-emerald-500/80 focus-visible:ring-emerald-500/20 transition-colors"
+                className="w-full pl-3 pr-8 font-mono text-base sm:text-sm h-10 bg-zinc-950/90 border-zinc-800 text-left focus-visible:border-emerald-500/80 focus-visible:ring-emerald-500/20 transition-colors"
               />
               {item.value ? (
                 <motion.button

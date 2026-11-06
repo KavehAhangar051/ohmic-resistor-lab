@@ -51,7 +51,10 @@ export const DividerPairTableRow = React.memo(function DividerPairTableRow({
             {idx + 1}
           </span>
           {pair.badge && (
-            <span className="text-[9px] font-sans text-zinc-500 truncate max-w-[76px]">
+            <span
+              className="text-[9px] font-sans text-zinc-500 truncate max-w-[76px]"
+              title={pair.badge}
+            >
               {pair.badge}
             </span>
           )}

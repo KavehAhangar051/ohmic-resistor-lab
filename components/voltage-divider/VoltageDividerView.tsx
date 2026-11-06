@@ -132,7 +132,7 @@ export function VoltageDividerView() {
                 />
 
                 {/* Input 3: RL (Optional Load Resistor) */}
-                <AnimatePresence>
+                <AnimatePresence initial={false}>
                   {state.hasLoad && (
                     <DividerParameterRow
                       id="rl"
