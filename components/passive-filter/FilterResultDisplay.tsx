@@ -125,13 +125,13 @@ export const FilterResultDisplay = React.memo(function FilterResultDisplay({
           />
         </button>
 
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
           {showFormula && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, height: 0, transition: { duration: 0.16, ease: [0.3, 0, 1, 1] } }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
               className="overflow-hidden pt-2 text-xs font-mono text-zinc-300 space-y-2"
             >
               <div className="p-3 bg-zinc-950/90 rounded-lg border border-zinc-800 space-y-2" dir="ltr">
