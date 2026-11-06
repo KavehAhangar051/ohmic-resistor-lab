@@ -10,7 +10,6 @@ import {
   Menu,
   X,
   Compass,
-  CheckCircle2,
   PanelLeftClose,
   PanelLeftOpen,
   Waves,
@@ -77,7 +76,7 @@ export function AppShell({
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col font-vazir" dir="rtl">
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-40 h-14 border-b border-zinc-800/80 bg-[#09090b]/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between">
+      <header className="sticky top-0 z-40 h-14 border-b border-zinc-800/80 bg-[#09090b] px-4 sm:px-6 flex items-center justify-between">
         {/* Zone 1: Brand & Workspace */}
         <div className="flex items-center gap-3">
           <button
@@ -165,7 +164,7 @@ export function AppShell({
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`h-4 w-4 ${isSelected ? 'text-cyan-400' : tool.active ? 'text-zinc-300' : 'text-zinc-500'}`} />
+                    <Icon className={`h-4 w-4 ${isSelected ? 'text-emerald-400' : tool.active ? 'text-zinc-400' : 'text-zinc-500'}`} />
                     <span>{tool.name}</span>
                   </div>
 
@@ -173,9 +172,9 @@ export function AppShell({
                     <Badge variant="subtle" className="text-[10px] py-0 px-1.5">
                       به‌زودی
                     </Badge>
-                  ) : (
-                    <CheckCircle2 className={`h-3.5 w-3.5 ${isSelected ? 'text-cyan-400' : 'text-emerald-400'}`} />
-                  )}
+                  ) : isSelected ? (
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  ) : null}
                 </button>
               );
             })}
@@ -202,7 +201,7 @@ export function AppShell({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10, transition: { duration: 0.16, ease: [0.3, 0, 1, 1] } }}
               transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-0 top-14 z-50 bg-[#09090b]/95 backdrop-blur-md md:hidden p-4"
+              className="fixed inset-0 top-14 z-50 bg-[#09090b] md:hidden p-4 border-t border-zinc-800"
             >
               <div className="mb-4 px-2">
                 <span className="text-[11px] text-zinc-400 font-semibold">
@@ -235,16 +234,16 @@ export function AppShell({
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <Icon className={`h-4 w-4 ${isSelected ? 'text-cyan-400' : ''}`} />
+                        <Icon className={`h-4 w-4 ${isSelected ? 'text-emerald-400' : ''}`} />
                         <span>{tool.name}</span>
                       </div>
                       {tool.comingSoon ? (
                         <Badge variant="subtle" className="text-[10px]">
                           به‌زودی
                         </Badge>
-                      ) : (
-                        <CheckCircle2 className={`h-3.5 w-3.5 ${isSelected ? 'text-cyan-400' : 'text-emerald-400'}`} />
-                      )}
+                      ) : isSelected ? (
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                      ) : null}
                     </motion.div>
                   );
                 })}

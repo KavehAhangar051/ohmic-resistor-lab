@@ -112,7 +112,7 @@ export const FilterBodePlot = React.memo(function FilterBodePlot({
   const isLowPass = bodePoints[0].gainDb > bodePoints[bodePoints.length - 1].gainDb;
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-gradient-to-b from-zinc-900/60 to-zinc-950/80 p-4 sm:p-5 shadow-xl space-y-3">
+    <div className="rounded-xl border border-zinc-800 bg-[#121215] p-4 sm:p-5 space-y-3">
       {/* Header and Toggle */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800/80 pb-3">
         <div>

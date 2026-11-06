@@ -62,9 +62,7 @@ export const ResistorRow = React.memo(function ResistorRow({
       }}
       className="overflow-hidden shrink-0 w-full"
     >
-      <div className="group relative rounded-xl border border-zinc-800/90 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 p-3.5 sm:p-4 transition-[border-color,box-shadow] duration-200 hover:border-zinc-700 hover:shadow-lg hover:shadow-zinc-950/40">
-        {/* Top subtle glow bar */}
-        <div className="absolute top-0 inset-x-4 h-px bg-gradient-to-r from-transparent via-zinc-700/40 to-transparent" />
+      <div className="group relative rounded-xl border border-zinc-800/90 bg-[#121215] p-3.5 sm:p-4 transition-colors duration-150 hover:border-zinc-700">
 
         {/* Main Interactive Controls Bar */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3.5">

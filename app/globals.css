@@ -10,7 +10,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: local('Vazirmatn'), local('Vazirmatn-Regular'), url('/ohmic-resistor-lab/fonts/vazirmatn-400.woff2') format('woff2'), url('/fonts/vazirmatn-400.woff2') format('woff2');
+  src: local('Vazirmatn'), local('Vazirmatn-Regular'), url('/fonts/vazirmatn-400.woff2') format('woff2'), url('/ohmic-resistor-lab/fonts/vazirmatn-400.woff2') format('woff2');
 }
 
 @font-face {
@@ -18,7 +18,7 @@
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: local('Vazirmatn Medium'), local('Vazirmatn-Medium'), url('/ohmic-resistor-lab/fonts/vazirmatn-500.woff2') format('woff2'), url('/fonts/vazirmatn-500.woff2') format('woff2');
+  src: local('Vazirmatn Medium'), local('Vazirmatn-Medium'), url('/fonts/vazirmatn-500.woff2') format('woff2'), url('/ohmic-resistor-lab/fonts/vazirmatn-500.woff2') format('woff2');
 }
 
 @font-face {
@@ -26,7 +26,7 @@
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: local('Vazirmatn SemiBold'), local('Vazirmatn-SemiBold'), url('/ohmic-resistor-lab/fonts/vazirmatn-600.woff2') format('woff2'), url('/fonts/vazirmatn-600.woff2') format('woff2');
+  src: local('Vazirmatn SemiBold'), local('Vazirmatn-SemiBold'), url('/fonts/vazirmatn-600.woff2') format('woff2'), url('/ohmic-resistor-lab/fonts/vazirmatn-600.woff2') format('woff2');
 }
 
 @font-face {
@@ -34,7 +34,7 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: local('Vazirmatn Bold'), local('Vazirmatn-Bold'), url('/ohmic-resistor-lab/fonts/vazirmatn-700.woff2') format('woff2'), url('/fonts/vazirmatn-700.woff2') format('woff2');
+  src: local('Vazirmatn Bold'), local('Vazirmatn-Bold'), url('/fonts/vazirmatn-700.woff2') format('woff2'), url('/ohmic-resistor-lab/fonts/vazirmatn-700.woff2') format('woff2');
 }
 
 /* Kode Mono (English Latin letters, digits & engineering symbols)
@@ -46,7 +46,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: local('Kode Mono'), local('KodeMono-Regular'), url('/ohmic-resistor-lab/fonts/kodemono-400.woff2') format('woff2'), url('/fonts/kodemono-400.woff2') format('woff2');
+  src: local('Kode Mono'), local('KodeMono-Regular'), url('/fonts/kodemono-400.woff2') format('woff2'), url('/ohmic-resistor-lab/fonts/kodemono-400.woff2') format('woff2');
   unicode-range: U+0021-007E, U+00A0-024F, U+03A9, U+03BC, U+2070-209F, U+2126, U+2200-22FF;
 }
 
@@ -55,7 +55,7 @@
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: local('Kode Mono Medium'), local('KodeMono-Medium'), url('/ohmic-resistor-lab/fonts/kodemono-500.woff2') format('woff2'), url('/fonts/kodemono-500.woff2') format('woff2');
+  src: local('Kode Mono Medium'), local('KodeMono-Medium'), url('/fonts/kodemono-500.woff2') format('woff2'), url('/ohmic-resistor-lab/fonts/kodemono-500.woff2') format('woff2');
   unicode-range: U+0021-007E, U+00A0-024F, U+03A9, U+03BC, U+2070-209F, U+2126, U+2200-22FF;
 }
 
@@ -64,7 +64,7 @@
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: local('Kode Mono SemiBold'), local('KodeMono-SemiBold'), url('/ohmic-resistor-lab/fonts/kodemono-600.woff2') format('woff2'), url('/fonts/kodemono-600.woff2') format('woff2');
+  src: local('Kode Mono SemiBold'), local('KodeMono-SemiBold'), url('/fonts/kodemono-600.woff2') format('woff2'), url('/ohmic-resistor-lab/fonts/kodemono-600.woff2') format('woff2');
   unicode-range: U+0021-007E, U+00A0-024F, U+03A9, U+03BC, U+2070-209F, U+2126, U+2200-22FF;
 }
 
@@ -73,7 +73,7 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: local('Kode Mono Bold'), local('KodeMono-Bold'), url('/ohmic-resistor-lab/fonts/kodemono-700.woff2') format('woff2'), url('/fonts/kodemono-700.woff2') format('woff2');
+  src: local('Kode Mono Bold'), local('KodeMono-Bold'), url('/fonts/kodemono-700.woff2') format('woff2'), url('/ohmic-resistor-lab/fonts/kodemono-700.woff2') format('woff2');
   unicode-range: U+0021-007E, U+00A0-024F, U+03A9, U+03BC, U+2070-209F, U+2126, U+2200-22FF;
 }
 

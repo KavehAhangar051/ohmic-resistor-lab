@@ -63,12 +63,12 @@ export function SchematicCard({
   const svgWidth = Math.max(containerWidth || 600, minContentWidth);
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-gradient-to-b from-[#0e0e11] to-[#09090b] shadow-xl overflow-hidden select-none">
+    <div className="rounded-xl border border-zinc-800 bg-[#0e0e11] overflow-hidden select-none">
       {/* Precision Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-zinc-800/80 bg-zinc-950/70 backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-zinc-800/80 bg-zinc-950">
         {/* Left: Identity */}
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-950/50 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.15)]">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-950/50 text-emerald-400">
             <Zap className="h-4 w-4" />
           </div>
           <div>

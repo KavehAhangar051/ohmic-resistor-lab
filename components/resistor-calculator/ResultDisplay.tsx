@@ -11,15 +11,7 @@ interface ResultDisplayProps {
 
 export function ResultDisplay({ result }: ResultDisplayProps) {
   return (
-    <div className="relative rounded-xl border border-zinc-800 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 p-5 sm:p-6 shadow-xl transition-[border-color,box-shadow] duration-200 overflow-hidden">
-      {/* Top subtle hairline glow - Secondary feedback pulse when calculation updates */}
-      <motion.div
-        key={result.displayValue}
-        initial={{ opacity: 0.2, scaleX: 0.8 }}
-        animate={{ opacity: 1, scaleX: 1 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute top-0 inset-x-6 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent origin-center"
-      />
+    <div className="relative rounded-xl border border-zinc-800 bg-[#121215] p-5 sm:p-6 overflow-hidden">
 
       {/* Short Circuit Warning Banner with Corporate Error Shake Pattern */}
       <AnimatePresence>

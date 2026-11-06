@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Check, Sparkles } from 'lucide-react';
+import { Check } from 'lucide-react';
 import {
   StandardFilterPair,
   ResistanceUnit,
@@ -58,23 +58,18 @@ export const FilterStandardPicker = React.memo(function FilterStandardPicker({
   }
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4 space-y-3">
+    <div className="rounded-xl border border-zinc-800 bg-[#121215] p-4 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 pb-2.5">
-        <div className="flex items-center gap-2">
-          <div className="p-1 rounded-lg bg-emerald-950/70 border border-emerald-800/40 text-emerald-400">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <div>
-            <h4 className="text-xs sm:text-sm font-semibold text-zinc-100 flex items-center gap-1.5">
-              <span>جفت قطعات استاندارد تجاری بازار (E24 + E12)</span>
-              <Badge variant="subtle" className="text-[10px] font-mono border-zinc-700 bg-zinc-900 text-zinc-300">
-                Commercial Match
-              </Badge>
-            </h4>
-            <p className="text-[11px] text-zinc-400">
-              نزدیک‌ترین ترکیب مقاومت و {topology === 'rc' ? 'خازن' : 'سلف'} استاندارد بازار به فرکانس قطع هدف ({targetFcDisplay})
-            </p>
-          </div>
+        <div>
+          <h4 className="text-xs sm:text-sm font-semibold text-zinc-100 flex items-center gap-1.5">
+            <span>جفت قطعات استاندارد تجاری بازار (E24 + E12)</span>
+            <Badge variant="subtle" className="text-[10px] font-mono border-zinc-700 bg-zinc-900 text-zinc-300">
+              Commercial Match
+            </Badge>
+          </h4>
+          <p className="text-[11px] text-zinc-400 mt-0.5">
+            نزدیک‌ترین ترکیب مقاومت و {topology === 'rc' ? 'خازن' : 'سلف'} استاندارد بازار به فرکانس قطع هدف ({targetFcDisplay})
+          </p>
         </div>
       </div>
 

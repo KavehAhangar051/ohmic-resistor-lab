@@ -74,16 +74,11 @@ export const DividerParameterRow = React.memo(function DividerParameterRow({
       className="overflow-hidden shrink-0 w-full"
     >
       <div className={cn(
-        "group relative rounded-xl border p-3.5 sm:p-4 transition-[border-color,box-shadow,background-color] duration-200",
+        "group relative rounded-xl border p-3.5 sm:p-4 transition-colors duration-150",
         isCalculated
-          ? "border-emerald-600/70 bg-gradient-to-b from-emerald-950/20 to-zinc-950/70 shadow-emerald-950/20 shadow-lg"
-          : "border-zinc-800/90 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 hover:border-zinc-700 hover:shadow-lg hover:shadow-zinc-950/40"
+          ? "border-emerald-600/70 bg-emerald-950/15"
+          : "border-zinc-800/90 bg-[#121215] hover:border-zinc-700"
       )}>
-        {/* Top subtle glow bar */}
-        <div className={cn(
-          "absolute top-0 inset-x-4 h-px bg-gradient-to-r from-transparent to-transparent",
-          isCalculated ? "via-emerald-500/60" : "via-zinc-700/40"
-        )} />
 
         {/* Main Interactive Controls Bar matching ResistorRow */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3.5">

@@ -155,7 +155,7 @@ export function PassiveFilterView() {
       {/* Grid: Component Inputs & Controls */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
         {/* Resistor Input */}
-        <div className="rounded-xl border border-zinc-800/90 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 p-3.5 space-y-2">
+        <div className="rounded-xl border border-zinc-800/90 bg-[#121215] p-3.5 space-y-2">
           <label className="text-xs text-zinc-400 font-medium block">مقاومت فیلتر (R)</label>
           <div className="flex items-center gap-1.5">
             <Input
@@ -183,7 +183,7 @@ export function PassiveFilterView() {
         </div>
 
         {/* Capacitor or Inductor Input */}
-        <div className="rounded-xl border border-zinc-800/90 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 p-3.5 space-y-2">
+        <div className="rounded-xl border border-zinc-800/90 bg-[#121215] p-3.5 space-y-2">
           <label className="text-xs text-zinc-400 font-medium block">
             {state.topology === 'rc' ? 'خازن فیلتر (C)' : 'سلف فیلتر (L)'}
           </label>
@@ -232,7 +232,7 @@ export function PassiveFilterView() {
         </div>
 
         {/* Test Frequency Input */}
-        <div className="rounded-xl border border-zinc-800/90 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 p-3.5 space-y-2">
+        <div className="rounded-xl border border-zinc-800/90 bg-[#121215] p-3.5 space-y-2">
           <label className="text-xs text-zinc-400 font-medium block">فرکانس سیگنال تست (fin)</label>
           <div className="flex items-center gap-1.5">
             <Input
@@ -260,7 +260,7 @@ export function PassiveFilterView() {
         </div>
 
         {/* Input Voltage Peak */}
-        <div className="rounded-xl border border-zinc-800/90 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 p-3.5 space-y-2">
+        <div className="rounded-xl border border-zinc-800/90 bg-[#121215] p-3.5 space-y-2">
           <label className="text-xs text-zinc-400 font-medium block">دامنه ورودی (Vin Peak)</label>
           <div className="flex items-center gap-1.5">
             <Input

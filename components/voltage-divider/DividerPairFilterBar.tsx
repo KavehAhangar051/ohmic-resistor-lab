@@ -95,7 +95,7 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
   const rlSym = getResistorSymbol(rlUnit);
 
   return (
-    <div className="space-y-3.5 p-3.5 sm:p-4 rounded-xl border border-zinc-800/90 bg-gradient-to-b from-zinc-900/80 via-zinc-900/40 to-zinc-950/90 text-xs shadow-md">
+    <div className="space-y-3.5 p-3.5 sm:p-4 rounded-xl border border-zinc-800/90 bg-zinc-950/90 text-xs">
       {/* Row 1: Application Modes & Resistor Series */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-zinc-800/70 pb-3">
         {/* Application Mode Tabs */}
@@ -166,7 +166,7 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
           {/* Prominent Load Status Indicator */}
           {hasLoad ? (
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/70 border border-emerald-600/50 text-emerald-300 text-xs shadow-xs animate-in fade-in duration-200">
-              <Zap className="h-3.5 w-3.5 text-emerald-400 animate-pulse shrink-0" />
+              <Zap className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
               <div className="flex items-center gap-1.5">
                 <span className="font-semibold text-white">بار متصل:</span>
                 <span className="font-mono font-bold text-emerald-300 tabular-nums" dir="ltr">
