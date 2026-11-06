@@ -127,3 +127,24 @@
 
 به همین شکل در شبکه موازی، `calculateParallelResistance` آمار جریان و سرعت انیمیشن هر شاخه (`branchStats`) را همراه مقاومت معادل برمی‌گرداند و توابع تغییر شاخه (`removeResistorBranch` و همنوعانش) تضمین می‌کنند که حداقل یک شاخه در مدار باقی بماند. در فیلتر پسیو هم `calculatePassiveFilter` علاوه بر پاسخ فرکانسی و نقاط نمودار بُد، جفت‌های استاندارد تجاری (`standardPairs`) را در همان خروجی تولید می‌کند. تست‌های واحد در `lib/clean-architecture.test.ts` مستقیماً همین توابع خروجی را صدا می‌زنند.
 
+---
+
+## ۶. الگوهای معماری سازمانی مارتین فاولر (PoEAA)
+
+معماری این سامانه بر اساس الگوهای کتاب *Patterns of Enterprise Application Architecture* سازمان‌دهی شده است:
+
+1. **لایه‌بندی صریح (Explicit Layering)**:
+   - **لایه نمایش (Presentation Layer)**: کامپوننت‌های React در پوشه `components/` فقط وظیفه دریافت تعاملات کاربر، وضعیت بصری و رندرینگ SVG را بر عهده دارند و فاقد هرگونه محاسبات مدار هستند.
+   - **لایه سرویس / هماهنگی کاربرد (Service Layer / Application Facade)**: توابع سطح‌بالا (`evaluateVoltageDividerWorkspace`, `calculateParallelResistance`, `calculatePassiveFilter`) جریان سناریوهای کاربر را هماهنگ می‌کنند و واسط درشت‌دانه (Coarse-grained) به لایه نمایش ارائه می‌دهند.
+   - **مدل دامنه و حل‌کننده‌ها (Domain Model & Solvers)**: توابع خالص فیزیک الکترونیک و حل معادلات جبری مدار در ماژول‌های مجزا (`voltage-divider-solver.ts`, `resistor-calc.ts`).
+   - **ماژول جدول داده (Table Module / Data Gateway)**: ماژول `e-series.ts` دسترسی و جستجو روی جداول داده‌ای مقادیر استاندارد تجاری EIA (سری‌های E12، E24، E96) را متمرکز می‌کند.
+
+2. **اشیاء انتقال داده (Data Transfer Objects - DTOs)**:
+   - خروجی لایه سرویس به لایه نمایش در قالب اشیاء DTO مشخص و صریح (`VoltageDividerResult`, `ParallelCalculationResult`, `FilterCalculationResult`) انتقال می‌یابد تا لایه نمایش به جزییات محاسبات واسط وابسته نباشد.
+
+3. **اشیاء مقداری (Value Objects)**:
+   - واحدهای اندازه‌گیری مقاومت و ولتاژ، دسته‌بندی‌های وضعیت و خروجی‌های تبدیل مهندسی به عنوان Value Objectهای تغییرناپذیر (Immutable) مدیریت می‌شوند.
+
+4. **اجتناب از تئاتر لایه‌بندی (No Layering Theater)**:
+   - هر لایه وظیفه کاهش جفت‌شدگی (Coupling) و تعریف مرز صریح را انجام می‌دهد و هیچ لایه صوری و پاس‌دادن محض متدها در سیستم وجود ندارد.
+
