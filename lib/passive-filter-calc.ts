@@ -157,11 +157,12 @@ export function calculatePassiveFilter(state: FilterState): FilterCalculationRes
   for (let i = 0; i < BODE_PLOT_STEPS; i++) {
     const f = Math.pow(10, logMin + i * logStep);
     const pt = evaluateFilterResponse(f / fc, state.type);
+
     bodePoints.push({
       freq: f,
-      gainDb: parseFloat(pt.gainDb.toFixed(2)),
-      gainLinear: parseFloat(pt.gainLinear.toFixed(4)),
-      phaseDeg: parseFloat(pt.phaseDeg.toFixed(1)),
+      gainDb: Math.round(pt.gainDb * 100) / 100,
+      gainLinear: Math.round(pt.gainLinear * 10000) / 10000,
+      phaseDeg: Math.round(pt.phaseDeg * 10) / 10,
     });
   }
 
@@ -394,22 +395,32 @@ export function buildBodePlotProjection(
     return padTop + (1 - normalized) * plotHeight;
   };
 
-  const samples: BodePlotSamplePoint[] = bodePoints.map((pt) => ({
-    ...pt,
-    x: freqToX(pt.freq),
-    magY: dbToY(pt.gainDb),
-    phaseY: phaseToY(pt.phaseDeg),
-  }));
+  const count = bodePoints.length;
+  const samples: BodePlotSamplePoint[] = [];
+  let magPath = '';
+  let phasePath = '';
 
-  const magPath = samples.reduce(
-    (acc, pt, idx) => (idx === 0 ? `M ${pt.x} ${pt.magY}` : `${acc} L ${pt.x} ${pt.magY}`),
-    ''
-  );
+  for (let i = 0; i < count; i++) {
+    const pt = bodePoints[i];
+    const x = freqToX(pt.freq);
+    const magY = dbToY(pt.gainDb);
+    const phaseY = phaseToY(pt.phaseDeg);
 
-  const phasePath = samples.reduce(
-    (acc, pt, idx) => (idx === 0 ? `M ${pt.x} ${pt.phaseY}` : `${acc} L ${pt.x} ${pt.phaseY}`),
-    ''
-  );
+    samples.push({
+      ...pt,
+      x,
+      magY,
+      phaseY,
+    });
+
+    if (i === 0) {
+      magPath = `M ${x} ${magY}`;
+      phasePath = `M ${x} ${phaseY}`;
+    } else {
+      magPath += ` L ${x} ${magY}`;
+      phasePath += ` L ${x} ${phaseY}`;
+    }
+  }
 
   const decadeTicks: BodeDecadeTick[] = [];
   const startDecade = Math.ceil(logMin);

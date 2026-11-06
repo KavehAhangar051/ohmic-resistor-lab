@@ -167,17 +167,20 @@ function selectTopDistinctCandidates(
   maxResults: number
 ): RawCandidate[] {
   const selected: RawCandidate[] = [];
-  const ratioCounts = new Map<string, number>();
+  const ratioCounts = new Map<number, number>();
+  const selectedSet = new Set<RawCandidate>();
 
   for (let i = 0; i < candidates.length; i++) {
     const cand = candidates[i];
-    const ratioKey = (cand.r1 / cand.r2).toPrecision(3);
-    const count = ratioCounts.get(ratioKey) ?? 0;
+    // V8 performance: integer ratio bucket avoids string allocation in hot loop
+    const ratioBucket = Math.round((cand.r1 / cand.r2) * 1000);
+    const count = ratioCounts.get(ratioBucket) ?? 0;
 
     if (count >= 2) continue;
 
-    ratioCounts.set(ratioKey, count + 1);
+    ratioCounts.set(ratioBucket, count + 1);
     selected.push(cand);
+    selectedSet.add(cand);
 
     if (selected.length >= maxResults) return selected;
   }
@@ -185,8 +188,9 @@ function selectTopDistinctCandidates(
   for (let i = 0; i < candidates.length; i++) {
     const cand = candidates[i];
 
-    if (!selected.includes(cand)) {
+    if (!selectedSet.has(cand)) {
       selected.push(cand);
+      selectedSet.add(cand);
 
       if (selected.length >= maxResults) break;
     }
@@ -224,6 +228,12 @@ export function findBestE24Pairs(
 
   for (let i = 0; i < ohmsList.length; i++) {
     const r1 = ohmsList[i];
+
+    // V8 optimization: If Vin/R1 alone is below minimum current threshold,
+    // adding any R2 > 0 will only increase loop impedance, keeping current below threshold.
+    if (vinVolts / r1 < MIN_PRACTICAL_CURRENT_AMPS) {
+      break;
+    }
 
     for (let j = 0; j < ohmsList.length; j++) {
       const candidate = evaluateResistorPairCandidate(
@@ -300,7 +310,11 @@ export function findBestE24Pairs(
   }
 
   if (PAIR_CACHE.size >= MAX_PAIR_CACHE) {
-    PAIR_CACHE.delete(PAIR_CACHE.keys().next().value!);
+    const oldestKey = PAIR_CACHE.keys().next().value;
+
+    if (oldestKey !== undefined) {
+      PAIR_CACHE.delete(oldestKey);
+    }
   }
 
   PAIR_CACHE.set(cacheKey, results);
@@ -330,55 +344,51 @@ export function filterAndSortResistorPairs(
     return true;
   });
 
-  const indexed = filtered.map((pair, originalIdx) => ({ pair, originalIdx }));
-
-  indexed.sort((a, b) => {
+  // V8 optimization: Array.prototype.sort is strictly stable (TimSort in V8).
+  // In-place sorting eliminates intermediate wrapper objects and mapping passes.
+  filtered.sort((a, b) => {
     let diff = 0;
 
     switch (sortKey) {
       case 'r1':
-        diff = a.pair.r1Ohms - b.pair.r1Ohms;
+        diff = a.r1Ohms - b.r1Ohms;
         break;
       case 'r2':
-        diff = a.pair.r2Ohms - b.pair.r2Ohms;
+        diff = a.r2Ohms - b.r2Ohms;
         break;
       case 'error':
-        diff = a.pair.errorPercentage - b.pair.errorPercentage;
+        diff = a.errorPercentage - b.errorPercentage;
         break;
       case 'vout':
-        diff = a.pair.actualVout - b.pair.actualVout;
+        diff = a.actualVout - b.actualVout;
         break;
       case 'ratio':
-        diff = a.pair.divisionRatio - b.pair.divisionRatio;
+        diff = a.divisionRatio - b.divisionRatio;
         break;
       case 'thevenin':
-        diff = a.pair.theveninOhms - b.pair.theveninOhms;
+        diff = a.theveninOhms - b.theveninOhms;
         break;
       case 'current':
-        diff = a.pair.currentAmperes - b.pair.currentAmperes;
+        diff = a.currentAmperes - b.currentAmperes;
         break;
       case 'power':
-        diff = a.pair.powerWatts - b.pair.powerWatts;
+        diff = a.powerWatts - b.powerWatts;
         break;
       case 'worst_case':
-        diff = a.pair.worstCaseErrorPct - b.pair.worstCaseErrorPct;
+        diff = a.worstCaseErrorPct - b.worstCaseErrorPct;
         break;
       case 'score':
       default:
-        diff = a.originalIdx - b.originalIdx;
+        diff = a.overallScore - b.overallScore;
         break;
     }
 
     if (Math.abs(diff) < 1e-9) {
-      diff = a.pair.errorPercentage - b.pair.errorPercentage;
-
-      if (Math.abs(diff) < 1e-9) {
-        diff = a.originalIdx - b.originalIdx;
-      }
+      diff = a.errorPercentage - b.errorPercentage;
     }
 
     return sortDir === 'asc' ? diff : -diff;
   });
 
-  return indexed.map((item) => item.pair);
+  return filtered;
 }

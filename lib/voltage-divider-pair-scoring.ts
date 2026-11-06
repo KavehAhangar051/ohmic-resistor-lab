@@ -66,16 +66,66 @@ export interface LoadStiffnessEvaluation {
   penalty: number;
 }
 
+const ADC_DIRECT: AdcSuitabilityClassification = Object.freeze({
+  status: 'direct',
+  label: 'سازگار مستقیم (بدون بافر)',
+});
+
+const ADC_BUFFERED: AdcSuitabilityClassification = Object.freeze({
+  status: 'buffered',
+  label: 'نیاز به خازن نویزگیر / فرکانس کم',
+});
+
+const ADC_HIGH_IMP: AdcSuitabilityClassification = Object.freeze({
+  status: 'high_impedance',
+  label: 'امپدانس بالا (نیازمند بافر Op-Amp)',
+});
+
+const BIAS_STIFF: BiasStabilityClassification = Object.freeze({
+  status: 'stiff',
+  label: 'بایاس سفت و پایدار (Stiff)',
+});
+
+const BIAS_MODERATE: BiasStabilityClassification = Object.freeze({
+  status: 'moderate',
+  label: 'بایاس متوسط (Moderate)',
+});
+
+const BIAS_SOFT: BiasStabilityClassification = Object.freeze({
+  status: 'soft',
+  label: 'بایاس حساس به تغییرات بتا (Soft)',
+});
+
+const DOMAIN_LOW_POWER: DomainCategoryClassification = Object.freeze({
+  category: 'low_power',
+  label: 'کم‌مصرف (سنسور/باتری)',
+});
+
+const DOMAIN_GENERAL: DomainCategoryClassification = Object.freeze({
+  category: 'general',
+  label: 'عمومی (سیگنال/ADC)',
+});
+
+const DOMAIN_HIGH_DRIVE: DomainCategoryClassification = Object.freeze({
+  category: 'high_drive',
+  label: 'درایو قوی (بایاس)',
+});
+
+const UNLOADED_STIFFNESS: LoadStiffnessEvaluation = Object.freeze({
+  status: 'unloaded',
+  penalty: 0,
+});
+
 export function classifyAdcSuitability(theveninOhms: number): AdcSuitabilityClassification {
   if (theveninOhms <= ADC_DIRECT_MAX_RTH_OHMS) {
-    return { status: 'direct', label: 'سازگار مستقیم (بدون بافر)' };
+    return ADC_DIRECT;
   }
 
   if (theveninOhms <= ADC_BUFFERED_MAX_RTH_OHMS) {
-    return { status: 'buffered', label: 'نیاز به خازن نویزگیر / فرکانس کم' };
+    return ADC_BUFFERED;
   }
 
-  return { status: 'high_impedance', label: 'امپدانس بالا (نیازمند بافر Op-Amp)' };
+  return ADC_HIGH_IMP;
 }
 
 export function classifyBiasStability(
@@ -83,29 +133,29 @@ export function classifyBiasStability(
   currentAmps: number
 ): BiasStabilityClassification {
   if (theveninOhms <= BIAS_STIFF_MAX_RTH_OHMS && currentAmps >= BIAS_STIFF_MIN_CURRENT_AMPS) {
-    return { status: 'stiff', label: 'بایاس سفت و پایدار (Stiff)' };
+    return BIAS_STIFF;
   }
 
   if (
     theveninOhms <= BIAS_MODERATE_MAX_RTH_OHMS &&
     currentAmps >= BIAS_MODERATE_MIN_CURRENT_AMPS
   ) {
-    return { status: 'moderate', label: 'بایاس متوسط (Moderate)' };
+    return BIAS_MODERATE;
   }
 
-  return { status: 'soft', label: 'بایاس حساس به تغییرات بتا (Soft)' };
+  return BIAS_SOFT;
 }
 
 export function classifyDomainCategory(currentAmps: number): DomainCategoryClassification {
   if (currentAmps < LOW_POWER_MAX_CURRENT_AMPS) {
-    return { category: 'low_power', label: 'کم‌مصرف (سنسور/باتری)' };
+    return DOMAIN_LOW_POWER;
   }
 
   if (currentAmps <= GENERAL_MAX_CURRENT_AMPS) {
-    return { category: 'general', label: 'عمومی (سیگنال/ADC)' };
+    return DOMAIN_GENERAL;
   }
 
-  return { category: 'high_drive', label: 'درایو قوی (بایاس)' };
+  return DOMAIN_HIGH_DRIVE;
 }
 
 export function evaluateLoadStiffness(
@@ -113,7 +163,7 @@ export function evaluateLoadStiffness(
   rlOhms?: number | null
 ): LoadStiffnessEvaluation {
   if (!rlOhms || rlOhms <= 0) {
-    return { status: 'unloaded', penalty: 0 };
+    return UNLOADED_STIFFNESS;
   }
 
   const ratio = rlOhms / (theveninOhms > 0 ? theveninOhms : 1);

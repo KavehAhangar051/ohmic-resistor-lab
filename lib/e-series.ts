@@ -133,21 +133,24 @@ export function findBestDividerPairs(
 
     for (let j = 0; j < resistors.length; j++) {
       const r2 = resistors[j];
-      const actualVout = vin * (r2.ohms / (r1.ohms + r2.ohms));
+      const sum = r1.ohms + r2.ohms;
+      const actualVout = vin * (r2.ohms / sum);
       const error = Math.abs(actualVout - targetVout);
       const errorPercentage = (error / targetVout) * 100;
 
       // Filter to reasonably low-error pairs (<= 5% error)
       if (errorPercentage <= 5) {
-        const current = vin / (r1.ohms + r2.ohms);
+        const current = vin / sum;
+        const curSq = current * current;
+
         candidates.push({
           r1,
           r2,
           actualVout,
           errorPercentage,
           currentAmps: current,
-          powerR1Watts: Math.pow(current, 2) * r1.ohms,
-          powerR2Watts: Math.pow(current, 2) * r2.ohms,
+          powerR1Watts: curSq * r1.ohms,
+          powerR2Watts: curSq * r2.ohms,
         });
       }
     }
