@@ -11,7 +11,7 @@ const TooltipContent = React.forwardRef<
   <ArkTooltip.Content
     ref={ref}
     className={cn(
-      'z-50 rounded-md border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-xs font-mono text-zinc-200 shadow-md animate-in fade-in-0 zoom-in-95',
+      'z-50 rounded-md border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-xs font-mono text-zinc-200 shadow-xs animate-in fade-in-0 zoom-in-95',
       className
     )}
     {...props}

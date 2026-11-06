@@ -119,7 +119,7 @@ R2,${r2ValStr},${r2ValStr},${tolStr},SMD 0805,${state.appMode === 'sampling' ? '
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           transition={{ duration: 0.2 }}
-          className="relative w-full max-w-2xl rounded-xl border border-zinc-750 bg-zinc-950 p-6 shadow-2xl space-y-4 text-zinc-100 font-sans"
+          className="relative w-full max-w-2xl rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-xs space-y-4 text-zinc-100 font-sans"
           dir="rtl"
         >
           {/* Header */}
