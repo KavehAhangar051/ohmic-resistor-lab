@@ -2,14 +2,8 @@ import {
   ResistorItem,
   ParallelCalculationResult,
   ParallelBranchStat,
-  ResistorUnit,
+  RESISTOR_UNIT_MAP as UNIT_MAP,
 } from '@/types/resistor';
-
-const UNIT_MAP: Record<ResistorUnit, number> = {
-  Ohm: 1,
-  kOhm: 1e3,
-  MOhm: 1e6,
-};
 
 // V8 Performance: Cache Intl.NumberFormat instances to prevent repetitive C++/JS bridge allocations
 const FORMATTER_CACHE = new Map<number, Intl.NumberFormat>();

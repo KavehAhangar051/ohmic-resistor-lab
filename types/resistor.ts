@@ -7,10 +7,16 @@ export interface ResistorUnitOption {
   multiplier: number;
 }
 
+export const RESISTOR_UNIT_MAP: Record<ResistorUnit, number> = {
+  Ohm: 1,
+  kOhm: 1e3,
+  MOhm: 1e6,
+};
+
 export const RESISTOR_UNITS: ResistorUnitOption[] = [
-  { value: 'Ohm', label: 'اهم', symbol: 'Ω', multiplier: 1 },
-  { value: 'kOhm', label: 'کیلو‌اهم', symbol: 'kΩ', multiplier: 1e3 },
-  { value: 'MOhm', label: 'مگا‌اهم', symbol: 'MΩ', multiplier: 1e6 },
+  { value: 'Ohm', label: 'اهم', symbol: 'Ω', multiplier: RESISTOR_UNIT_MAP.Ohm },
+  { value: 'kOhm', label: 'کیلو‌اهم', symbol: 'kΩ', multiplier: RESISTOR_UNIT_MAP.kOhm },
+  { value: 'MOhm', label: 'مگا‌اهم', symbol: 'MΩ', multiplier: RESISTOR_UNIT_MAP.MOhm },
 ];
 
 export interface ResistorItem {

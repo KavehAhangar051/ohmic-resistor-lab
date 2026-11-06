@@ -1,10 +1,7 @@
-import { ResistorItem, ResistorUnit } from '@/types/resistor';
-
-const UNIT_MULTIPLIER_MAP: Record<ResistorUnit, number> = {
-  Ohm: 1,
-  kOhm: 1e3,
-  MOhm: 1e6,
-};
+import {
+  ResistorItem,
+  RESISTOR_UNIT_MAP as UNIT_MULTIPLIER_MAP,
+} from '@/types/resistor';
 
 export interface ResistorColorBand {
   color: string;

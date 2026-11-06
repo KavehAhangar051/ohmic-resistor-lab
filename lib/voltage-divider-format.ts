@@ -1,16 +1,8 @@
-import { ResistorUnit } from '@/types/resistor';
+import { ResistorUnit, RESISTOR_UNIT_MAP } from '@/types/resistor';
 import { VoltageUnit } from '@/types/voltage-divider';
 import { formatPrecision } from './resistor-calc';
 
-/**
- * Canonical multiplier table converting ResistorUnit to base Ohms (Ω).
- * Centralizes unit scaling so callers never hardcode decade ternary chains.
- */
-export const RESISTOR_UNIT_MAP: Record<ResistorUnit, number> = {
-  Ohm: 1,
-  kOhm: 1e3,
-  MOhm: 1e6,
-};
+export { RESISTOR_UNIT_MAP };
 
 /**
  * Canonical display symbol table for ResistorUnit.

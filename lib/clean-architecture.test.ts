@@ -22,6 +22,21 @@ import {
   calculatePassiveFilter,
   applyStandardFilterPair,
 } from './passive-filter-calc';
+import {
+  solveR1,
+  solveR2,
+  solveVin,
+  getEffectiveR2,
+} from './voltage-divider-solver';
+import {
+  toOhms,
+  toVolts,
+  decomposeOhms,
+  formatVoltage,
+  formatCurrent,
+  formatPower,
+  symbolToResistorUnit,
+} from './voltage-divider-format';
 
 test('Deep parallel resistor module returns equivalent resistance and branch telemetry across a single interface', () => {
   const items = [
@@ -112,6 +127,25 @@ test('Deep voltage divider workspace module evaluates E24/E96 pairs, effective s
 
   const directResult = calculateVoltageDivider(baseState);
   assert.equal(directResult.theveninResistanceOhms, 5000);
+});
+
+test('Analytical voltage divider solver pins R1, R2, Vin, and loaded R2_eff equations and boundary errors', () => {
+  assert.equal(getEffectiveR2(10000, 10000), 5000);
+  assert.equal(solveR1(5, 2.5, 10000, null).r1Ohms, 10000);
+  assert.equal(solveR1(5, 6, 10000, null).r1Ohms, null);
+  assert.equal(solveR2(5, 2.5, 10000, 20000).r2Ohms, 20000);
+  assert.equal(solveR2(5, 2.5, 10000, 5000).r2Ohms, null);
+  assert.equal(solveVin(2.5, 10000, 10000, null).vinVolts, 5);
+});
+
+test('Engineering unit formatter pins Ohms, Volts, Current, and Power scaling', () => {
+  assert.equal(toOhms('4.7', 'kOhm'), 4700);
+  assert.equal(toVolts('2500', 'mV'), 2.5);
+  assert.equal(decomposeOhms(4700).unit, 'kOhm');
+  assert.equal(formatVoltage(0.05).unit, 'mV');
+  assert.equal(formatCurrent(0.0005).unit, 'µA');
+  assert.equal(formatPower(0.025), '25 mW');
+  assert.equal(symbolToResistorUnit('MΩ'), 'MOhm');
 });
 
 test('E24 pair finder and filter/sort use case filters by current and sorts deterministically', () => {
