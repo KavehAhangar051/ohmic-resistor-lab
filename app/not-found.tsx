@@ -2,9 +2,9 @@ import Link from 'next/link';
 
 export default function NotFound() {
   return (
-    <main className="min-h-dvh bg-[#09090b] text-[#fafafa] flex flex-col items-center justify-center p-6 text-center select-none">
+    <main dir="rtl" lang="fa" className="min-h-dvh bg-[#09090b] text-[#fafafa] flex flex-col items-center justify-center p-6 text-center select-none">
       <div className="max-w-md w-full border border-[#27272a] bg-[#121215] lab-panel p-8 rounded-xl space-y-4">
-        <span className="inline-block font-mono text-xs uppercase px-2.5 py-1 rounded-md bg-[#27272a]/80 text-[#10b981] border border-[#3f3f46] tracking-wider">
+        <span dir="ltr" className="inline-block font-mono text-xs uppercase px-2.5 py-1 rounded-md bg-[#27272a]/80 text-[#10b981] border border-[#3f3f46] tracking-wider">
           404 // NODE DISCONNECTED
         </span>
         <h1 className="text-xl font-bold font-sans text-balance">صفحه مورد نظر یافت نشد</h1>

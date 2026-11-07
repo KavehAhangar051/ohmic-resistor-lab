@@ -81,9 +81,9 @@ export function ResistorCalculatorView() {
       <div className="border-b border-zinc-800/80 pb-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5 text-balance">
+            <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5 text-balance">
               <span>محاسبه‌گر مقاومت موازی</span>
-              <Badge variant="subtle" className="text-[11px] font-mono border-emerald-900/50 bg-emerald-950/40 text-emerald-400">
+              <Badge variant="subtle" dir="ltr" className="text-[11px] font-mono border-emerald-900/50 bg-emerald-950/40 text-emerald-400">
                 Parallel Network
               </Badge>
             </h1>
@@ -102,16 +102,20 @@ export function ResistorCalculatorView() {
         {/* Left Column: Resistor List (Interactive Workspace) */}
         <div className="lg:col-span-7 space-y-3">
           {/* Workspace Subheader with Active Count */}
-          <div className="flex items-center justify-between px-1">
+          <div className="flex items-center justify-between px-1" dir="rtl" lang="fa">
             <span className="text-xs font-semibold text-zinc-300">شاخه‌های ورودی مدار</span>
-            <span className="text-[11px] font-medium text-emerald-400 bg-emerald-950/50 border border-emerald-800/40 px-2.5 py-0.5 rounded-md flex items-center gap-1">
+            <span
+              dir="rtl"
+              lang="fa"
+              className="text-[11px] font-medium text-emerald-400 bg-emerald-950/50 border border-emerald-800/40 px-2.5 py-0.5 rounded-md flex items-center gap-1"
+            >
               <AnimatePresence mode="popLayout" initial={false}>
                 <m.span
                   key={items.length}
                   initial={{ opacity: 0, scale: 0.7 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.7 }}
-                  transition={{ duration: 0.15 }}
+                  transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
                   className="font-mono font-bold text-xs inline-block"
                 >
                   {items.length}

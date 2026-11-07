@@ -138,10 +138,10 @@ export function VoltageDividerView() {
     >
       {/* Title & Scope Header */}
       <div className="border-b border-zinc-800/80 pb-5">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5 text-balance">
+        <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5 text-balance">
           <Sliders className="h-6 w-6 text-emerald-400" />
           <span>محاسبه‌گر مقسم ولتاژ</span>
-          <Badge variant="subtle" className="text-[11px] font-mono border-emerald-900/50 bg-emerald-950/40 text-emerald-400 pt-1 pb-0.5 leading-none">
+          <Badge variant="subtle" dir="ltr" className="text-[11px] font-mono border-emerald-900/50 bg-emerald-950/40 text-emerald-400 pt-1 pb-0.5 leading-none">
             Voltage Divider
           </Badge>
         </h1>

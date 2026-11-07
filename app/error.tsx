@@ -7,9 +7,9 @@ export default function Error({
   reset: () => void;
 }) {
   return (
-    <div className="min-h-dvh bg-[#09090b] text-[#fafafa] flex flex-col items-center justify-center p-6 text-center select-none">
+    <div dir="rtl" lang="fa" className="min-h-dvh bg-[#09090b] text-[#fafafa] flex flex-col items-center justify-center p-6 text-center select-none">
       <div className="max-w-md w-full border border-[#27272a] bg-[#121215] lab-panel p-8 rounded-xl space-y-4">
-        <span className="inline-block font-mono text-xs uppercase px-2.5 py-1 rounded-md bg-[#27272a]/80 text-[#ef4444] border border-[#3f3f46] tracking-wider">
+        <span dir="ltr" className="inline-block font-mono text-xs uppercase px-2.5 py-1 rounded-md bg-[#27272a]/80 text-[#ef4444] border border-[#3f3f46] tracking-wider">
           ERROR // 500
         </span>
         <h1 className="text-xl font-bold font-sans text-balance">خطای سیستمی در مدار</h1>

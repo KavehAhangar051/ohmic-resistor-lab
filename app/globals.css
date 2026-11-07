@@ -171,8 +171,15 @@
     font-family: 'Kode Mono', 'Vazirmatn', 'Vazir', system-ui, -apple-system, sans-serif !important;
   }
 
-  .font-vazir {
+  .font-vazir,
+  [dir="rtl"] h1,
+  [dir="rtl"] h2,
+  [dir="rtl"] h3,
+  [dir="rtl"] h4,
+  [dir="rtl"] p {
     font-family: 'Vazirmatn', 'Vazir', 'Kode Mono', system-ui, -apple-system, sans-serif !important;
+    letter-spacing: normal !important;
+    text-transform: none;
   }
 
   /* Top-lit laboratory instrument surface with subtle edge refraction and tinted shadow */

@@ -63,9 +63,9 @@ export function PassiveFilterView() {
       <div className="border-b border-zinc-800/80 pb-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5 text-balance">
+            <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5 text-balance">
               <span>محاسبه‌گر فیلتر پسیو فرکانسی</span>
-              <Badge variant="subtle" className="text-[11px] font-mono border-emerald-900/50 bg-emerald-950/40 text-emerald-400">
+              <Badge variant="subtle" dir="ltr" className="text-[11px] font-mono border-emerald-900/50 bg-emerald-950/40 text-emerald-400">
                 RC / RL Filter
               </Badge>
             </h1>

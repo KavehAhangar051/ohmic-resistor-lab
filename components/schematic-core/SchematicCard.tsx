@@ -72,7 +72,7 @@ export function SchematicCard({
             <Zap className="h-4 w-4" />
           </div>
           <div>
-            <h2 className="text-xs sm:text-sm font-semibold text-zinc-100 tracking-tight">
+            <h2 className="text-xs sm:text-sm font-semibold text-zinc-100">
               {title}
             </h2>
           </div>

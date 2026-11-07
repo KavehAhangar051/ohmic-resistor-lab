@@ -315,14 +315,14 @@ export const AppFooter = React.memo(function AppFooter({
           <m.div
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18 }}
+            exit={{ opacity: 0, y: -4, transition: { duration: 0.14, ease: [0.3, 0, 1, 1] } }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-[1440px] mx-auto mt-3 pt-3 border-t border-zinc-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[11px] text-zinc-400"
           >
             <p className="text-pretty max-w-[75ch]">
               تمامی محاسبات مداری به‌صورت محلی در مرورگر شما اجرا می‌شوند و هیچ داده‌ای به سرور ارسال یا ذخیره نمی‌شود. مقادیر پیشنهادی بر پایه جداول استاندارد IEC 60063 (E12/E24/E96) محاسبه شده‌اند.
             </p>
-            <span className="font-mono text-[10px] text-emerald-400 shrink-0">
+            <span dir="ltr" className="font-mono text-[10px] text-emerald-400 shrink-0">
               100% LOCAL CLIENT COMPUTATION
             </span>
           </m.div>
