@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import { Activity, Cpu, RotateCcw, ShieldCheck, Zap } from 'lucide-react';
 import {
   CurrentFilterOption,
@@ -123,7 +123,7 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
                 )}
               >
                 {isSelected && (
-                  <motion.span
+                  <m.span
                     layoutId="active-app-mode-pill"
                     className="absolute inset-0 rounded-md bg-zinc-800 border border-zinc-700/80 -z-10"
                     transition={{ type: 'spring', stiffness: 500, damping: 35 }}
@@ -164,7 +164,7 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
                   title={s === 'E24' ? 'سری استاندارد تجاری E24 با تلورانس ۵٪' : 'سری دقیق تجاری E96 با تلورانس ۱٪'}
                 >
                   {isSelected && (
-                    <motion.span
+                    <m.span
                       layoutId="active-series-pill"
                       className="absolute inset-0 rounded bg-emerald-950 border border-emerald-800/60 shadow-xs -z-10"
                       transition={{ type: 'spring', stiffness: 500, damping: 35 }}
@@ -229,7 +229,7 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
                     )}
                   >
                     {isSelected && (
-                      <motion.span
+                      <m.span
                         layoutId="active-criterion-pill"
                         className="absolute inset-0 rounded bg-zinc-800 border border-zinc-700/60 shadow-xs -z-10"
                         transition={{ type: 'spring', stiffness: 500, damping: 35 }}
@@ -269,7 +269,7 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
                     )}
                   >
                     {isSelected && (
-                      <motion.span
+                      <m.span
                         layoutId="active-current-pill"
                         className="absolute inset-0 rounded bg-zinc-800 border border-zinc-700/60 shadow-xs -z-10"
                         transition={{ type: 'spring', stiffness: 500, damping: 35 }}
@@ -315,7 +315,7 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
                   )}
                 >
                   {isSelected && (
-                    <motion.span
+                    <m.span
                       layoutId="active-page-size-pill"
                       className="absolute inset-0 rounded bg-emerald-950 border border-emerald-800/60 shadow-xs -z-10"
                       transition={{ type: 'spring', stiffness: 500, damping: 35 }}

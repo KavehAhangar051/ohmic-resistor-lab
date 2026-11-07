@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { m, AnimatePresence } from 'motion/react';
 import { ChevronDown, Zap, Clock, Activity, Gauge, Compass } from 'lucide-react';
 import { FilterCalculationResult, FilterState } from '@/types/passive-filter';
 import { getResistorSymbol } from '@/lib/voltage-divider-format';
@@ -128,14 +128,14 @@ export const FilterResultDisplay = React.memo(function FilterResultDisplay({
         </button>
 
         <AnimatePresence initial={false}>
-          {showFormula && (
-            <motion.div
+          {showFormula ? (
+            <m.div
               id="filter-formula-panel"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0, transition: { duration: 0.16, ease: [0.3, 0, 1, 1] } }}
+              initial={{ opacity: 0, y: -4, scaleY: 0.96 }}
+              animate={{ opacity: 1, y: 0, scaleY: 1 }}
+              exit={{ opacity: 0, y: -4, scaleY: 0.96, transition: { duration: 0.16, ease: [0.3, 0, 1, 1] } }}
               transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="overflow-hidden pt-2 text-xs font-mono text-zinc-300 space-y-2"
+              className="overflow-hidden origin-top pt-2 text-xs font-mono text-zinc-300 space-y-2"
             >
               <div className="p-3 bg-zinc-950/90 rounded-lg border border-zinc-800 space-y-2" dir="ltr">
                 <div>
@@ -163,8 +163,8 @@ export const FilterResultDisplay = React.memo(function FilterResultDisplay({
                   </div>
                 </div>
               </div>
-            </motion.div>
-          )}
+            </m.div>
+          ) : null}
         </AnimatePresence>
       </div>
     </div>

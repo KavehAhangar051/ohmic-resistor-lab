@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { m, AnimatePresence } from 'motion/react';
 import { Plus, Info } from 'lucide-react';
 import { ResistorItem } from '@/types/resistor';
 import {
@@ -71,7 +71,7 @@ export function ResistorCalculatorView() {
   }, [getNextId, scrollToBottom]);
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
@@ -106,7 +106,7 @@ export function ResistorCalculatorView() {
             <span className="text-xs font-semibold text-zinc-300">شاخه‌های ورودی مدار</span>
             <span className="text-[11px] font-medium text-emerald-400 bg-emerald-950/50 border border-emerald-800/40 px-2.5 py-0.5 rounded-md flex items-center gap-1">
               <AnimatePresence mode="popLayout" initial={false}>
-                <motion.span
+                <m.span
                   key={items.length}
                   initial={{ opacity: 0, scale: 0.7 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -115,7 +115,7 @@ export function ResistorCalculatorView() {
                   className="font-mono font-bold text-xs inline-block"
                 >
                   {items.length}
-                </motion.span>
+                </m.span>
               </AnimatePresence>
               <span>شاخه فعال</span>
             </span>
@@ -144,15 +144,15 @@ export function ResistorCalculatorView() {
 
             {/* Bottom Fade Gradient for Scrollable List */}
             <AnimatePresence initial={false}>
-              {items.length > 3 && (
-                <motion.div
+              {items.length > 3 ? (
+                <m.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
                   className="pointer-events-none absolute bottom-0 inset-x-0 h-9 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-transparent rounded-b-xl"
                 />
-              )}
+              ) : null}
             </AnimatePresence>
           </div>
 
@@ -185,6 +185,6 @@ export function ResistorCalculatorView() {
           <ResultDisplay result={result} />
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

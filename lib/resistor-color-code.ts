@@ -8,6 +8,7 @@ export interface ResistorColorBand {
   name: string;
   nameFa: string;
   textColor?: string;
+  position?: string;
 }
 
 const DIGIT_COLORS: ResistorColorBand[] = [
@@ -120,10 +121,10 @@ export function getResistorColorBands(
   }
 
   const bands: ResistorColorBand[] = [
-    DIGIT_COLORS[firstDigit],
-    DIGIT_COLORS[secondDigit],
-    multiplierBand,
-    GOLD_BAND,
+    { ...DIGIT_COLORS[firstDigit], position: 'digit-1' },
+    { ...DIGIT_COLORS[secondDigit], position: 'digit-2' },
+    { ...multiplierBand, position: 'multiplier' },
+    { ...GOLD_BAND, position: 'tolerance' },
   ];
 
   return setColorCache(cacheKey, bands);

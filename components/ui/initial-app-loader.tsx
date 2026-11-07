@@ -32,33 +32,31 @@ export function InitialAppLoader({
   const [isLoading, setIsLoading] = useState<boolean>(() => enabled && !didCompleteInitialLoad);
 
   useEffect(() => {
-    if (!enabled || didCompleteInitialLoad) return;
+    let minTimeElapsed = false;
+    let windowLoaded = document.readyState === 'complete';
 
-    const startTime = performance.now();
-    let timerId: ReturnType<typeof setTimeout> | null = null;
-
-    const finishLoading = () => {
-      const elapsed = (performance.now() - startTime) | 0;
-      const remaining = minDurationMs > elapsed ? minDurationMs - elapsed : 0;
-
-      timerId = setTimeout(() => {
+    const tryComplete = () => {
+      if (enabled && !didCompleteInitialLoad && minTimeElapsed && windowLoaded) {
         didCompleteInitialLoad = true;
         setIsLoading(false);
-      }, remaining);
+      }
     };
 
-    if (document.readyState === 'complete') {
-      finishLoading();
-    } else {
-      window.addEventListener('load', finishLoading, { once: true, passive: true });
-    }
+    const handleLoad = () => {
+      windowLoaded = true;
+      tryComplete();
+    };
+
+    const timerId = setTimeout(() => {
+      minTimeElapsed = true;
+      tryComplete();
+    }, minDurationMs);
+
+    window.addEventListener('load', handleLoad, { once: true, passive: true });
 
     return () => {
-      window.removeEventListener('load', finishLoading);
-
-      if (timerId !== null) {
-        clearTimeout(timerId);
-      }
+      clearTimeout(timerId);
+      window.removeEventListener('load', handleLoad);
     };
   }, [enabled, minDurationMs]);
 
@@ -71,7 +69,7 @@ export function InitialAppLoader({
             initial={INITIAL_STATE}
             exit={EXIT_STATE}
             transition={EXIT_TRANSITION}
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 text-zinc-200 select-none pointer-events-none will-change-opacity"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 text-zinc-200 select-none pointer-events-none"
           >
             <AsciiLineLoader size={32} />
           </m.div>

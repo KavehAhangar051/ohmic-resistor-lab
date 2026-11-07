@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import { Trash2, Copy, X } from 'lucide-react';
 import { ResistorItem, RESISTOR_UNITS, ResistorUnit } from '@/types/resistor';
 import { ResistorColorCodeFooter } from '@/components/voltage-divider/ResistorColorCodeBadge';
@@ -40,15 +40,14 @@ export const ResistorRow = React.memo(function ResistorRow({
   };
 
   return (
-    <motion.div
+    <m.div
       layout
-      initial={{ opacity: 0, height: 0, y: -6, marginBottom: 0 }}
-      animate={{ opacity: 1, height: 'auto', y: 0, marginBottom: 10 }}
+      initial={{ opacity: 0, y: -6, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{
         opacity: 0,
-        height: 0,
         y: -4,
-        marginBottom: 0,
+        scale: 0.98,
         transition: {
           duration: 0.18,
           ease: [0.3, 0, 1, 1],
@@ -60,7 +59,7 @@ export const ResistorRow = React.memo(function ResistorRow({
         duration: 0.28,
         ease: [0.16, 1, 0.3, 1],
       }}
-      className="overflow-hidden shrink-0 w-full"
+      className="overflow-hidden shrink-0 w-full mb-2.5"
     >
       <div className="group relative rounded-xl border border-zinc-800/90 bg-[#121215] p-3.5 sm:p-4 transition-colors duration-150 hover:border-zinc-700">
 
@@ -69,13 +68,13 @@ export const ResistorRow = React.memo(function ResistorRow({
           {/* Branch Index Identification */}
           <div className="flex items-center justify-between lg:justify-start gap-2 shrink-0">
             <div className="flex items-center gap-2">
-              <motion.div
+              <m.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.96 }}
                 className="flex h-8 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-700/70 bg-zinc-950 font-mono text-xs font-bold text-zinc-200 shadow-inner select-none"
               >
                 R{index + 1}
-              </motion.div>
+              </m.div>
             </div>
 
             {/* Mobile Top Actions */}
@@ -121,7 +120,7 @@ export const ResistorRow = React.memo(function ResistorRow({
                 className="w-full pl-3 pr-8 font-mono text-base sm:text-sm h-10 bg-zinc-950/90 border-zinc-800 text-left focus-visible:border-emerald-500/80 focus-visible:ring-emerald-500/20 transition-colors"
               />
               {item.value ? (
-                <motion.button
+                <m.button
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
@@ -133,7 +132,7 @@ export const ResistorRow = React.memo(function ResistorRow({
                   aria-label={`پاک کردن مقدار R${index + 1}`}
                 >
                   <X className="h-3.5 w-3.5" />
-                </motion.button>
+                </m.button>
               ) : null}
             </div>
           </div>
@@ -163,13 +162,13 @@ export const ResistorRow = React.memo(function ResistorRow({
                   )}
                   title={u.label}
                 >
-                  {isSelected && (
-                    <motion.span
+                  {isSelected ? (
+                    <m.span
                       layoutId={`unit-pill-${item.id}`}
                       className="absolute inset-0 rounded-md bg-zinc-800 border border-zinc-700/60 shadow-xs -z-10"
                       transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                     />
-                  )}
+                  ) : null}
                   <span>{u.symbol}</span>
                 </button>
               );
@@ -178,7 +177,7 @@ export const ResistorRow = React.memo(function ResistorRow({
 
           {/* Desktop Action Controls */}
           <div className="hidden lg:flex items-center gap-1 shrink-0">
-            <motion.div whileTap={{ scale: 0.96 }}>
+            <m.div whileTap={{ scale: 0.96 }}>
               <IconButton
                 type="button"
                 variant="ghost"
@@ -190,9 +189,9 @@ export const ResistorRow = React.memo(function ResistorRow({
               >
                 <Copy className="h-4 w-4" />
               </IconButton>
-            </motion.div>
-            {canDelete && (
-              <motion.div whileTap={{ scale: 0.96 }}>
+            </m.div>
+            {canDelete ? (
+              <m.div whileTap={{ scale: 0.96 }}>
                 <IconButton
                   type="button"
                   variant="ghost"
@@ -204,14 +203,14 @@ export const ResistorRow = React.memo(function ResistorRow({
                 >
                   <Trash2 className="h-4 w-4" />
                 </IconButton>
-              </motion.div>
-            )}
+              </m.div>
+            ) : null}
           </div>
         </div>
 
         {/* Mini Resistor Color Code Visualizer (if resistor value is valid) */}
         <ResistorColorCodeFooter value={item.value} unit={item.unit} />
       </div>
-    </motion.div>
+    </m.div>
   );
 });

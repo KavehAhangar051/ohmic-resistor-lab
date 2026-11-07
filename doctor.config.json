@@ -1,0 +1,8 @@
+{
+  "ignore": {
+    "files": [
+      "tools/oxlint/**",
+      "public/**"
+    ]
+  }
+}

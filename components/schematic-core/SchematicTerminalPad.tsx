@@ -21,6 +21,38 @@ export interface SchematicTerminalPadProps {
   onMouseLeave?: () => void;
 }
 
+interface TerminalPadStyle {
+  padBg: string;
+  padBorder: string;
+  titleColor: string;
+  hitX: number;
+  leadStartX: number;
+  textX: number;
+  textAnchor: 'end' | 'start';
+}
+
+function resolveTerminalPadStyle(
+  color: string,
+  labelPosition: 'left' | 'right',
+  cx: number,
+  bgColor?: string,
+  borderColor?: string,
+  tagColor?: string
+): TerminalPadStyle {
+  const isEmerald = color === '#10b981' || color === '#34d399';
+  const isLeft = labelPosition === 'left';
+
+  return {
+    padBg: bgColor ?? (isEmerald ? '#10231b' : '#18181b'),
+    padBorder: borderColor ?? (isEmerald ? '#10b981' : '#52525b'),
+    titleColor: tagColor ?? (isEmerald ? '#34d399' : '#a1a1aa'),
+    hitX: isLeft ? cx - 80 : cx - 16,
+    leadStartX: isLeft ? cx + 7 : cx - 7,
+    textX: isLeft ? cx - 20 : cx + 20,
+    textAnchor: isLeft ? 'end' : 'start',
+  };
+}
+
 export const SchematicTerminalPad = React.memo(function SchematicTerminalPad({
   cx,
   cy,
@@ -41,22 +73,13 @@ export const SchematicTerminalPad = React.memo(function SchematicTerminalPad({
   onMouseEnter,
   onMouseLeave,
 }: SchematicTerminalPadProps) {
-  const padBg = bgColor || (color === '#10b981' || color === '#34d399' ? '#10231b' : '#18181b');
-  const padBorder = borderColor || (color === '#10b981' || color === '#34d399' ? '#10b981' : '#52525b');
-  const titleColor = tagColor || (color === '#10b981' || color === '#34d399' ? '#34d399' : '#a1a1aa');
-
-  const textX = labelPosition === 'left' ? cx - 20 : cx + 20;
-  const textAnchor = labelPosition === 'left' ? 'end' : 'start';
+  const style = resolveTerminalPadStyle(color, labelPosition, cx, bgColor, borderColor, tagColor);
+  const hasLead = leadToX !== undefined && leadToY !== undefined;
 
   return (
-    <g
-      className={className}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    >
-      {/* Invisible generous hit target */}
+    <g className={className} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       <rect
-        x={labelPosition === 'left' ? cx - 80 : cx - 16}
+        x={style.hitX}
         y={cy - 16}
         width={96}
         height={34}
@@ -66,46 +89,25 @@ export const SchematicTerminalPad = React.memo(function SchematicTerminalPad({
       />
 
       <g className="pointer-events-none">
-        {/* Terminal Pad Frame */}
         <rect
           x={cx - 14}
           y={cy - 14}
           width="28"
           height="28"
           rx="6"
-          fill={padBg}
-          stroke={padBorder}
+          fill={style.padBg}
+          stroke={style.padBorder}
           strokeWidth="1.2"
           strokeOpacity="0.5"
         />
 
-        {/* Pulsing Aura Circle */}
-        {hasAura && (
-          <circle
-            cx={cx}
-            cy={cy}
-            r="9.5"
-            fill="none"
-            stroke={color}
-            strokeWidth="1"
-            opacity="0.4"
-          >
-            <animate
-              attributeName="r"
-              values="8.5;11.5;8.5"
-              dur="2.4s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="opacity"
-              values="0.6;0.15;0.6"
-              dur="2.4s"
-              repeatCount="indefinite"
-            />
+        {hasAura ? (
+          <circle cx={cx} cy={cy} r="9.5" fill="none" stroke={color} strokeWidth="1" opacity="0.4">
+            <animate attributeName="r" values="8.5;11.5;8.5" dur="2.4s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="0.6;0.15;0.6" dur="2.4s" repeatCount="indefinite" />
           </circle>
-        )}
+        ) : null}
 
-        {/* Node Ring */}
         <circle
           cx={cx}
           cy={cy}
@@ -115,13 +117,11 @@ export const SchematicTerminalPad = React.memo(function SchematicTerminalPad({
           strokeWidth="2.5"
           filter={glow ? glowFilterId : undefined}
         />
-        {/* Inner Node Core */}
         <circle cx={cx} cy={cy} r="2.5" fill={color} />
 
-        {/* Lead wire to conductor bus */}
-        {leadToX !== undefined && leadToY !== undefined && (
+        {hasLead ? (
           <line
-            x1={labelPosition === 'left' ? cx + 7 : cx - 7}
+            x1={style.leadStartX}
             y1={cy}
             x2={leadToX}
             y2={leadToY}
@@ -129,36 +129,34 @@ export const SchematicTerminalPad = React.memo(function SchematicTerminalPad({
             strokeWidth="2.5"
             strokeLinecap="round"
           />
-        )}
+        ) : null}
 
-        {/* Terminal Title */}
         <text
-          x={textX}
+          x={style.textX}
           y={sublabel ? cy - 2 : cy + 4}
-          fill={titleColor}
+          fill={style.titleColor}
           fontSize="12"
           fontWeight="bold"
           fontFamily="monospace"
-          textAnchor={textAnchor}
+          textAnchor={style.textAnchor}
           style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
         >
           {tag}
         </text>
 
-        {/* Optional Secondary Value Label */}
-        {sublabel && (
+        {sublabel ? (
           <text
-            x={textX}
+            x={style.textX}
             y={cy + 13}
             fill={sublabelColor}
             fontSize="10"
             fontFamily="monospace"
-            textAnchor={textAnchor}
+            textAnchor={style.textAnchor}
             style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
           >
             {sublabel}
           </text>
-        )}
+        ) : null}
       </g>
     </g>
   );

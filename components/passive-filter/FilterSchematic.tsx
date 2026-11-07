@@ -7,8 +7,8 @@ import { SymbolStandard, SchematicLegendItem } from '../schematic-core/schematic
 import { SchematicCard } from '../schematic-core/SchematicCard';
 import { SchematicGround } from '../schematic-core/SchematicGround';
 import { SchematicTerminalPad } from '../schematic-core/SchematicTerminalPad';
-import { SchematicResistor } from '../schematic-core/SchematicResistor';
 import { SchematicNode } from '../schematic-core/SchematicNode';
+import { FilterSeriesElement, FilterShuntElement } from './FilterSchematicElements';
 
 interface FilterSchematicProps {
   state: FilterState;
@@ -34,7 +34,6 @@ export const FilterSchematic = React.memo(function FilterSchematic({
   const isLowPass = state.type === 'lowpass';
   const isRC = state.topology === 'rc';
 
-  // Geometry layout coordinates
   const vinX = 60;
   const seriesX1 = 110;
   const seriesX2 = 210;
@@ -49,16 +48,20 @@ export const FilterSchematic = React.memo(function FilterSchematic({
   const returnColor = '#71717a';
 
   const rUnitText = getResistorSymbol(state.resistanceUnit);
+  const rText = `${state.resistance} ${rUnitText}`;
   const cText = `${state.capacitance} ${state.capacitanceUnit}`;
   const lText = `${state.inductance} ${state.inductanceUnit}`;
 
+  const topologyLabel = isRC ? 'RC' : 'RL';
+  const passTypeLabel = isLowPass ? 'Low-Pass' : 'High-Pass';
+
+  const title = isLowPass
+    ? `شماتیک فیلتر پایین‌گذر پسیو (${topologyLabel} ${passTypeLabel})`
+    : `شماتیک فیلتر بالا‌گذر پسیو (${topologyLabel} ${passTypeLabel})`;
+
   return (
     <SchematicCard
-      title={
-        isLowPass
-          ? `شماتیک فیلتر پایین‌گذر پسیو (${isRC ? 'RC Low-Pass' : 'RL Low-Pass'})`
-          : `شماتیک فیلتر بالا‌گذر پسیو (${isRC ? 'RC High-Pass' : 'RL High-Pass'})`
-      }
+      title={title}
       subtitle="نمای اتصالات المان‌های پسیو، پایانه ورودی سیگنال AC و خروجی تضعیف‌شده"
       svgHeight={240}
       minContentWidth={440}
@@ -70,21 +73,13 @@ export const FilterSchematic = React.memo(function FilterSchematic({
     >
       {({ symbolStandard: std, animateFlow: flow }) => (
         <g>
-          {/* ================= 1. AC INPUT TERMINAL ================= */}
+          {/* 1. AC Input Terminal */}
           <g
             className="cursor-pointer"
             onMouseEnter={() => setHoveredElement('vin')}
             onMouseLeave={() => setHoveredElement(null)}
           >
-            <circle
-              cx={vinX}
-              cy={lineY}
-              r="7"
-              fill="#09090b"
-              stroke={wireColor}
-              strokeWidth="2"
-            />
-            {/* Live AC Sine Wave Icon inside Terminal */}
+            <circle cx={vinX} cy={lineY} r="7" fill="#09090b" stroke={wireColor} strokeWidth="2" />
             <path
               d={`M ${vinX - 4} ${lineY} Q ${vinX - 2} ${lineY - 3} ${vinX} ${lineY} T ${vinX + 4} ${lineY}`}
               fill="none"
@@ -118,7 +113,7 @@ export const FilterSchematic = React.memo(function FilterSchematic({
 
           {/* Line Vin to Series Component */}
           <line x1={vinX + 8} y1={lineY} x2={seriesX1} y2={lineY} stroke={wireColor} strokeWidth="2.5" strokeLinecap="round" />
-          {flow && (
+          {flow ? (
             <line
               x1={vinX + 8}
               y1={lineY}
@@ -129,86 +124,28 @@ export const FilterSchematic = React.memo(function FilterSchematic({
               strokeDasharray="3 6"
               className="electron-flow"
             />
-          )}
+          ) : null}
 
-          {/* ================= 2. SERIES COMPONENT ================= */}
-          {/* In RC: Low-pass has R series, High-pass has C series */}
-          {/* In RL: Low-pass has L series, High-pass has R series */}
-          {(isRC && isLowPass) || (!isRC && !isLowPass) ? (
-            /* Series Resistor */
-            <g
-              transform={`translate(${seriesX1 + 10}, ${lineY - 45}) rotate(90, 40, 45)`}
-              className="cursor-pointer"
-            >
-              <SchematicResistor
-                x={40}
-                topY={5}
-                bottomY={85}
-                tag="R"
-                valueText={`${state.resistance} ${rUnitText}`}
-                symbolStandard={std}
-                isHovered={hoveredElement === 'r'}
-                animateFlow={flow}
-                onHover={(h) => setHoveredElement(h ? 'r' : null)}
-              />
-            </g>
-          ) : isRC && !isLowPass ? (
-            /* Series Capacitor */
-            <g
-              className="cursor-pointer"
-              onMouseEnter={() => setHoveredElement('c')}
-              onMouseLeave={() => setHoveredElement(null)}
-            >
-              <line x1={seriesX1} y1={lineY} x2={156} y2={lineY} stroke={wireColor} strokeWidth="2" />
-              <line x1={156} y1={lineY - 14} x2={156} y2={lineY + 14} stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" />
-              <line x1={164} y1={lineY - 14} x2={164} y2={lineY + 14} stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" />
-              <line x1={164} y1={lineY} x2={seriesX2} y2={lineY} stroke={wireColor} strokeWidth="2" />
-              <text
-                x={140}
-                y={lineY - 20}
-                fill="#fbbf24"
-                fontSize="11"
-                fontWeight="bold"
-                fontFamily="monospace"
-                style={{ direction: 'ltr' }}
-              >
-                C ({cText})
-              </text>
-            </g>
-          ) : (
-            /* Series Inductor (RL Low-Pass) */
-            <g
-              className="cursor-pointer"
-              onMouseEnter={() => setHoveredElement('l')}
-              onMouseLeave={() => setHoveredElement(null)}
-            >
-              <line x1={seriesX1} y1={lineY} x2={135} y2={lineY} stroke={wireColor} strokeWidth="2" />
-              {/* 3 Inductor Coils */}
-              <path
-                d="M 135 80 A 7 7 0 0 1 149 80 A 7 7 0 0 1 163 80 A 7 7 0 0 1 177 80 A 7 7 0 0 1 191 80"
-                fill="none"
-                stroke="#f59e0b"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-              <line x1={191} y1={lineY} x2={seriesX2} y2={lineY} stroke={wireColor} strokeWidth="2" />
-              <text
-                x={145}
-                y={lineY - 18}
-                fill="#fbbf24"
-                fontSize="11"
-                fontWeight="bold"
-                fontFamily="monospace"
-                style={{ direction: 'ltr' }}
-              >
-                L ({lText})
-              </text>
-            </g>
-          )}
+          {/* 2. Series Component */}
+          <FilterSeriesElement
+            isRC={isRC}
+            isLowPass={isLowPass}
+            seriesX1={seriesX1}
+            seriesX2={seriesX2}
+            lineY={lineY}
+            wireColor={wireColor}
+            rText={rText}
+            cText={cText}
+            lText={lText}
+            symbolStandard={std}
+            hoveredElement={hoveredElement}
+            animateFlow={flow}
+            onHoverElement={setHoveredElement}
+          />
 
           {/* Line from Series to Node */}
           <line x1={seriesX2} y1={lineY} x2={nodeX} y2={lineY} stroke={wireColor} strokeWidth="2.5" strokeLinecap="round" />
-          {flow && (
+          {flow ? (
             <line
               x1={seriesX2}
               y1={lineY}
@@ -219,14 +156,14 @@ export const FilterSchematic = React.memo(function FilterSchematic({
               strokeDasharray="3 6"
               className="electron-flow"
             />
-          )}
+          ) : null}
 
-          {/* ================= 3. CENTRAL JUNCTION NODE ================= */}
+          {/* 3. Central Junction Node */}
           <SchematicNode cx={nodeX} cy={lineY} color={wireColor} glow={hoveredElement === 'vout'} />
 
           {/* Line to Output Probe */}
           <line x1={nodeX} y1={lineY} x2={voutX} y2={lineY} stroke={wireColor} strokeWidth="2.5" strokeLinecap="round" />
-          {flow && (
+          {flow ? (
             <line
               x1={nodeX}
               y1={lineY}
@@ -237,9 +174,9 @@ export const FilterSchematic = React.memo(function FilterSchematic({
               strokeDasharray="3 6"
               className="electron-flow"
             />
-          )}
+          ) : null}
 
-          {/* ================= 4. OUTPUT PROBE TERMINAL ================= */}
+          {/* 4. Output Probe Terminal */}
           <SchematicTerminalPad
             cx={voutX}
             cy={lineY}
@@ -253,9 +190,9 @@ export const FilterSchematic = React.memo(function FilterSchematic({
             onMouseLeave={() => setHoveredElement(null)}
           />
 
-          {/* ================= 5. SHUNT COMPONENT (TO GROUND) ================= */}
+          {/* 5. Shunt Component (to Ground) */}
           <line x1={nodeX} y1={lineY} x2={nodeX} y2={shuntTopY} stroke={wireColor} strokeWidth="2" />
-          {flow && (
+          {flow ? (
             <line
               x1={nodeX}
               y1={lineY}
@@ -266,75 +203,24 @@ export const FilterSchematic = React.memo(function FilterSchematic({
               strokeDasharray="3 6"
               className="electron-down"
             />
-          )}
+          ) : null}
 
-          {/* In RC Low-pass: Shunt is C. In RC High-pass: Shunt is R. */}
-          {/* In RL Low-pass: Shunt is R. In RL High-pass: Shunt is L. */}
-          {isRC && isLowPass ? (
-            /* Shunt Capacitor */
-            <g
-              className="cursor-pointer"
-              onMouseEnter={() => setHoveredElement('c')}
-              onMouseLeave={() => setHoveredElement(null)}
-            >
-              <line x1={nodeX} y1={shuntTopY} x2={nodeX} y2={124} stroke={wireColor} strokeWidth="2" />
-              <line x1={nodeX - 14} y1={124} x2={nodeX + 14} y2={124} stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" />
-              <line x1={nodeX - 14} y1={132} x2={nodeX + 14} y2={132} stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" />
-              <line x1={nodeX} y1={132} x2={nodeX} y2={shuntBottomY} stroke={returnColor} strokeWidth="2" />
-              <text
-                x={nodeX + 22}
-                y={132}
-                fill="#fbbf24"
-                fontSize="11"
-                fontWeight="bold"
-                fontFamily="monospace"
-                style={{ direction: 'ltr' }}
-              >
-                C: {cText}
-              </text>
-            </g>
-          ) : (!isRC && isLowPass) || (isRC && !isLowPass) ? (
-            /* Shunt Resistor */
-            <SchematicResistor
-              x={nodeX}
-              topY={shuntTopY}
-              bottomY={shuntBottomY}
-              tag="R"
-              valueText={`${state.resistance} ${rUnitText}`}
-              symbolStandard={std}
-              isHovered={hoveredElement === 'r'}
-              animateFlow={flow}
-              onHover={(h) => setHoveredElement(h ? 'r' : null)}
-            />
-          ) : (
-            /* Shunt Inductor (RL High-Pass) */
-            <g
-              className="cursor-pointer"
-              onMouseEnter={() => setHoveredElement('l')}
-              onMouseLeave={() => setHoveredElement(null)}
-            >
-              <line x1={nodeX} y1={shuntTopY} x2={nodeX} y2={108} stroke={wireColor} strokeWidth="2" />
-              <path
-                d="M 260 108 A 7 7 0 0 1 260 122 A 7 7 0 0 1 260 136 A 7 7 0 0 1 260 150"
-                fill="none"
-                stroke="#f59e0b"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-              <line x1={nodeX} y1={150} x2={nodeX} y2={shuntBottomY} stroke={returnColor} strokeWidth="2" />
-              <text
-                x={nodeX + 22}
-                y={132}
-                fill="#fbbf24"
-                fontSize="11"
-                fontWeight="bold"
-                fontFamily="monospace"
-                style={{ direction: 'ltr' }}
-              >
-                L: {lText}
-              </text>
-            </g>
-          )}
+          <FilterShuntElement
+            isRC={isRC}
+            isLowPass={isLowPass}
+            nodeX={nodeX}
+            shuntTopY={shuntTopY}
+            shuntBottomY={shuntBottomY}
+            wireColor={wireColor}
+            returnColor={returnColor}
+            rText={rText}
+            cText={cText}
+            lText={lText}
+            symbolStandard={std}
+            hoveredElement={hoveredElement}
+            animateFlow={flow}
+            onHoverElement={setHoveredElement}
+          />
 
           {/* Line Shunt to Ground */}
           <line x1={nodeX} y1={shuntBottomY} x2={nodeX} y2={gndY} stroke={returnColor} strokeWidth="2" />

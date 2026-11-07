@@ -5,7 +5,7 @@ import { ark } from '@ark-ui/react/factory';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
-export const iconButtonVariants = cva(
+const iconButtonVariants = cva(
   'inline-flex items-center justify-center rounded-lg transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 disabled:pointer-events-none disabled:opacity-40 cursor-pointer active:scale-[0.96]',
   {
     variants: {

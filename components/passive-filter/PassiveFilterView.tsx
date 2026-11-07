@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import { FilterState, ResistanceUnit, CapacitanceUnit, InductanceUnit, FrequencyUnit } from '@/types/passive-filter';
 import { calculatePassiveFilter, applyStandardFilterPair } from '@/lib/passive-filter-calc';
 import { Input } from '@/components/ui/input';
@@ -53,7 +53,7 @@ export function PassiveFilterView() {
   );
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
@@ -300,6 +300,6 @@ export function PassiveFilterView() {
         targetFcDisplay={`${result.displayFc} ${result.displayFcUnit}`}
         onApplyPair={handleApplyStandardPair}
       />
-    </motion.div>
+    </m.div>
   );
 }

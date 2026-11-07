@@ -22,6 +22,180 @@ export interface SchematicResistorProps {
   onHover?: (hovered: boolean) => void;
 }
 
+function resolveResistorColors(isShort: boolean, isHovered: boolean) {
+  if (isShort) {
+    return {
+      wireColor: '#ef4444',
+      returnColor: '#ef4444',
+      resistorColor: '#ef4444',
+    };
+  }
+
+  return {
+    wireColor: isHovered ? '#34d399' : '#10b981',
+    returnColor: isHovered ? '#a1a1aa' : '#71717a',
+    resistorColor: isHovered ? '#fbbf24' : '#f59e0b',
+  };
+}
+
+interface ResistorSymbolBodyProps {
+  x: number;
+  rTopY: number;
+  rBottomY: number;
+  bodyH: number;
+  symbolStandard: SymbolStandard;
+  isHovered: boolean;
+  isDashed: boolean;
+  resistorColor: string;
+}
+
+const ResistorSymbolBody = React.memo(function ResistorSymbolBody({
+  x,
+  rTopY,
+  rBottomY,
+  bodyH,
+  symbolStandard,
+  isHovered,
+  isDashed,
+  resistorColor,
+}: ResistorSymbolBodyProps) {
+  const filterUrl = isHovered ? 'url(#amber-glow)' : undefined;
+  const strokeColor = isDashed ? '#34d399' : resistorColor;
+
+  if (symbolStandard === 'ieee') {
+    const h = bodyH / 6;
+    const halfH = h / 2;
+    const width = Math.min(8.5, Math.max(6.5, bodyH * 0.17));
+
+    return (
+      <g filter={filterUrl}>
+        <path
+          d={`
+            M ${x} ${rTopY}
+            L ${x - width} ${rTopY + halfH}
+            L ${x + width} ${rTopY + halfH + h}
+            L ${x - width} ${rTopY + halfH + 2 * h}
+            L ${x + width} ${rTopY + halfH + 3 * h}
+            L ${x - width} ${rTopY + halfH + 4 * h}
+            L ${x + width} ${rTopY + halfH + 5 * h}
+            L ${x} ${rBottomY}
+          `}
+          fill="none"
+          stroke={strokeColor}
+          strokeWidth={isHovered ? '2.8' : '2.2'}
+          strokeDasharray={isDashed ? '4 2' : undefined}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </g>
+    );
+  }
+
+  return (
+    <g filter={filterUrl}>
+      <line x1={x} y1={rTopY} x2={x} y2={rTopY + 4} stroke={resistorColor} strokeWidth="2" />
+      <rect
+        x={x - 10}
+        y={rTopY + 4}
+        width="20"
+        height={bodyH - 8}
+        rx="2"
+        fill="#121215"
+        stroke={strokeColor}
+        strokeWidth={isHovered ? '2.4' : '2'}
+        strokeDasharray={isDashed ? '3 2' : undefined}
+      />
+      <line
+        x1={x}
+        y1={rTopY + 10}
+        x2={x}
+        y2={rBottomY - 10}
+        stroke={resistorColor}
+        strokeWidth="1"
+        strokeDasharray="2 2"
+        strokeOpacity="0.4"
+      />
+      <line x1={x} y1={rBottomY - 4} x2={x} y2={rBottomY} stroke={resistorColor} strokeWidth="2" />
+    </g>
+  );
+});
+
+interface ResistorBadgeOverlayProps {
+  textStartX: number;
+  rTopY: number;
+  badgeWidth: number;
+  isShort: boolean;
+  metricBadge?: ResistorMetricBadge | null;
+}
+
+const ResistorBadgeOverlay = React.memo(function ResistorBadgeOverlay({
+  textStartX,
+  rTopY,
+  badgeWidth,
+  isShort,
+  metricBadge,
+}: ResistorBadgeOverlayProps) {
+  if (isShort) {
+    return (
+      <g>
+        <rect
+          x={textStartX}
+          y={rTopY + 36}
+          width="72"
+          height="17"
+          rx="4"
+          fill="#2b0d0d"
+          stroke="#ef4444"
+          strokeWidth="1"
+        />
+        <text
+          x={textStartX + 6}
+          y={rTopY + 48}
+          fill="#ef4444"
+          fontSize="9.5"
+          fontWeight="bold"
+          fontFamily="monospace"
+          textAnchor="start"
+          style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
+        >
+          SHORT 0Ω
+        </text>
+      </g>
+    );
+  }
+
+  if (!metricBadge) {
+    return null;
+  }
+
+  return (
+    <g>
+      <rect
+        x={textStartX}
+        y={rTopY + 36}
+        width={badgeWidth}
+        height="17"
+        rx="4"
+        fill={metricBadge.bgColor || '#121215'}
+        stroke={metricBadge.borderColor || '#27272a'}
+        strokeWidth="1"
+      />
+      <text
+        x={textStartX + 6}
+        y={rTopY + 48}
+        fill={metricBadge.color || '#fbbf24'}
+        fontSize="9.5"
+        fontFamily="monospace"
+        fontWeight="600"
+        textAnchor="start"
+        style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
+      >
+        {metricBadge.text}
+      </text>
+    </g>
+  );
+});
+
 /**
  * Deep EDA schematic resistor module encapsulating IEEE zigzag and IEC rectangular
  * representations, lead wires, electron flow animations, hover hit-targets, and
@@ -53,20 +227,14 @@ export const SchematicResistor = React.memo(function SchematicResistor({
   const rBottomY = bodyBottomY ?? bottomY - leadH;
   const bodyH = rBottomY - rTopY;
 
-  // Symmetrical IEEE Zigzag pitch calculation
-  const h = bodyH / 6;
-  const halfH = h / 2;
-  const width = Math.min(8.5, Math.max(6.5, bodyH * 0.17));
-
-  const wireColor = isShort ? '#ef4444' : isHovered ? '#34d399' : '#10b981';
-  const returnColor = isShort ? '#ef4444' : isHovered ? '#a1a1aa' : '#71717a';
-  const resistorColor = isShort ? '#ef4444' : isHovered ? '#fbbf24' : '#f59e0b';
+  const { wireColor, returnColor, resistorColor } = resolveResistorColors(isShort, isHovered);
 
   const textStartX = x + 18;
-  const badgeText = metricBadge?.text || '';
+  const badgeText = metricBadge?.text ?? '';
   const badgeWidth = metricBadge?.width ?? Math.max(46, Math.round(badgeText.length * 5.6 + 10));
   const cardBackingWidth = Math.max(104, 38 + badgeWidth + 6);
   const showFlow = animateFlow && !isShort && !isPlaceholder;
+  const valueTextColor = isPlaceholder ? '#71717a' : isShort ? '#ef4444' : '#e4e4e7';
 
   return (
     <g
@@ -74,7 +242,6 @@ export const SchematicResistor = React.memo(function SchematicResistor({
       onMouseLeave={() => onHover?.(false)}
       className="cursor-pointer transition-[opacity,fill,stroke] duration-150 ease-out"
     >
-      {/* Generous Hit-Target & Hover Backing Pill */}
       <rect
         x={x - 20}
         y={topY - 6}
@@ -90,21 +257,10 @@ export const SchematicResistor = React.memo(function SchematicResistor({
         className="transition-[opacity,fill,stroke] duration-150 ease-out"
       />
 
-      {/* Visual Circuit Elements (pointer-events-none to prevent micro-jitter) */}
       <g className="pointer-events-none">
-        {/* Top Lead: From topY to rTopY */}
-        <line
-          x1={x}
-          y1={topY}
-          x2={x}
-          y2={rTopY}
-          stroke={wireColor}
-          strokeWidth="2.2"
-          strokeLinecap="round"
-        />
+        <line x1={x} y1={topY} x2={x} y2={rTopY} stroke={wireColor} strokeWidth="2.2" strokeLinecap="round" />
 
-        {/* Animated Flow Down Top Lead */}
-        {showFlow && (
+        {showFlow ? (
           <line
             x1={x}
             y1={topY}
@@ -116,85 +272,22 @@ export const SchematicResistor = React.memo(function SchematicResistor({
             className="electron-down"
             style={{ animationDuration: `${flowDuration.toFixed(2)}s`, opacity: flowOpacity }}
           />
-        )}
+        ) : null}
 
-        {/* Resistor Body: IEEE Zigzag vs IEC Box */}
-        {symbolStandard === 'ieee' ? (
-          <g filter={isHovered ? 'url(#amber-glow)' : undefined}>
-            <path
-              d={`
-                M ${x} ${rTopY}
-                L ${x - width} ${rTopY + halfH}
-                L ${x + width} ${rTopY + halfH + h}
-                L ${x - width} ${rTopY + halfH + 2 * h}
-                L ${x + width} ${rTopY + halfH + 3 * h}
-                L ${x - width} ${rTopY + halfH + 4 * h}
-                L ${x + width} ${rTopY + halfH + 5 * h}
-                L ${x} ${rBottomY}
-              `}
-              fill="none"
-              stroke={isDashed ? '#34d399' : resistorColor}
-              strokeWidth={isHovered ? '2.8' : '2.2'}
-              strokeDasharray={isDashed ? '4 2' : undefined}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </g>
-        ) : (
-          <g filter={isHovered ? 'url(#amber-glow)' : undefined}>
-            <line
-              x1={x}
-              y1={rTopY}
-              x2={x}
-              y2={rTopY + 4}
-              stroke={resistorColor}
-              strokeWidth="2"
-            />
-            <rect
-              x={x - 10}
-              y={rTopY + 4}
-              width="20"
-              height={bodyH - 8}
-              rx="2"
-              fill="#121215"
-              stroke={isDashed ? '#34d399' : resistorColor}
-              strokeWidth={isHovered ? '2.4' : '2'}
-              strokeDasharray={isDashed ? '3 2' : undefined}
-            />
-            <line
-              x1={x}
-              y1={rTopY + 10}
-              x2={x}
-              y2={rBottomY - 10}
-              stroke={resistorColor}
-              strokeWidth="1"
-              strokeDasharray="2 2"
-              strokeOpacity="0.4"
-            />
-            <line
-              x1={x}
-              y1={rBottomY - 4}
-              x2={x}
-              y2={rBottomY}
-              stroke={resistorColor}
-              strokeWidth="2"
-            />
-          </g>
-        )}
-
-        {/* Bottom Lead: From rBottomY to bottomY */}
-        <line
-          x1={x}
-          y1={rBottomY}
-          x2={x}
-          y2={bottomY}
-          stroke={returnColor}
-          strokeWidth="2.2"
-          strokeLinecap="round"
+        <ResistorSymbolBody
+          x={x}
+          rTopY={rTopY}
+          rBottomY={rBottomY}
+          bodyH={bodyH}
+          symbolStandard={symbolStandard}
+          isHovered={isHovered}
+          isDashed={isDashed}
+          resistorColor={resistorColor}
         />
 
-        {/* Animated Flow Down Bottom Lead */}
-        {showFlow && (
+        <line x1={x} y1={rBottomY} x2={x} y2={bottomY} stroke={returnColor} strokeWidth="2.2" strokeLinecap="round" />
+
+        {showFlow ? (
           <line
             x1={x}
             y1={rBottomY}
@@ -209,9 +302,8 @@ export const SchematicResistor = React.memo(function SchematicResistor({
               opacity: Math.max(0.3, flowOpacity * 0.8),
             }}
           />
-        )}
+        ) : null}
 
-        {/* Text Labels (Strictly LTR) */}
         <text
           x={textStartX}
           y={rTopY + 15}
@@ -228,7 +320,7 @@ export const SchematicResistor = React.memo(function SchematicResistor({
         <text
           x={textStartX}
           y={rTopY + 30}
-          fill={isPlaceholder ? '#71717a' : isShort ? '#ef4444' : '#e4e4e7'}
+          fill={valueTextColor}
           fontSize="11"
           fontWeight={isPlaceholder ? 'normal' : '600'}
           fontFamily="monospace"
@@ -238,61 +330,13 @@ export const SchematicResistor = React.memo(function SchematicResistor({
           {valueText}
         </text>
 
-        {/* Metric Badge (Power or Current) */}
-        {metricBadge && !isShort && (
-          <g>
-            <rect
-              x={textStartX}
-              y={rTopY + 36}
-              width={badgeWidth}
-              height="17"
-              rx="4"
-              fill={metricBadge.bgColor || '#121215'}
-              stroke={metricBadge.borderColor || '#27272a'}
-              strokeWidth="1"
-            />
-            <text
-              x={textStartX + 6}
-              y={rTopY + 48}
-              fill={metricBadge.color || '#fbbf24'}
-              fontSize="9.5"
-              fontFamily="monospace"
-              fontWeight="600"
-              textAnchor="start"
-              style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
-            >
-              {metricBadge.text}
-            </text>
-          </g>
-        )}
-
-        {/* Short Circuit Warning Badge */}
-        {isShort && (
-          <g>
-            <rect
-              x={textStartX}
-              y={rTopY + 36}
-              width="72"
-              height="17"
-              rx="4"
-              fill="#2b0d0d"
-              stroke="#ef4444"
-              strokeWidth="1"
-            />
-            <text
-              x={textStartX + 6}
-              y={rTopY + 48}
-              fill="#ef4444"
-              fontSize="9.5"
-              fontWeight="bold"
-              fontFamily="monospace"
-              textAnchor="start"
-              style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
-            >
-              SHORT 0Ω
-            </text>
-          </g>
-        )}
+        <ResistorBadgeOverlay
+          textStartX={textStartX}
+          rTopY={rTopY}
+          badgeWidth={badgeWidth}
+          isShort={isShort}
+          metricBadge={metricBadge}
+        />
       </g>
     </g>
   );

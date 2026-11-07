@@ -20,11 +20,4 @@ const TooltipContent = React.forwardRef<
 
 TooltipContent.displayName = 'TooltipContent';
 
-export const Tooltip = {
-  Root: ArkTooltip.Root,
-  Trigger: ArkTooltip.Trigger,
-  Positioner: ArkTooltip.Positioner,
-  Content: TooltipContent,
-  Arrow: ArkTooltip.Arrow,
-  ArrowTip: ArkTooltip.ArrowTip,
-};
+export { TooltipContent };

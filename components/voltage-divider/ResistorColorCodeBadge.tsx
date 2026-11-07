@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { m, AnimatePresence } from 'motion/react';
 import { ResistorUnit } from '@/types/resistor';
 import { getResistorColorBands } from '@/lib/resistor-calc';
 import { cn } from '@/lib/utils';
@@ -46,9 +46,9 @@ export const ResistorColorCodeBadge = React.memo(function ResistorColorCodeBadge
 
       {/* Ceramic body */}
       <div className="flex items-center h-3.5 bg-[#d8c3a5] px-1 rounded-xs gap-1 border border-[#b8a082] shadow-xs">
-        {bands.map((band, idx) => (
+        {bands.map((band) => (
           <span
-            key={`${band.name}-${idx}`}
+            key={band.position ?? band.name}
             className="inline-block h-3.5 w-1 rounded-[1px] shadow-xs origin-center"
             style={{ backgroundColor: band.color }}
             title={`${band.nameFa} (${band.name})`}
@@ -81,13 +81,13 @@ export const ResistorColorCodeFooter = React.memo(function ResistorColorCodeFoot
 
   return (
     <AnimatePresence>
-      {colorBands && (
-        <motion.div
-          initial={{ opacity: 0, height: 0, marginTop: 0 }}
-          animate={{ opacity: 1, height: 'auto', marginTop: 10 }}
-          exit={{ opacity: 0, height: 0, marginTop: 0 }}
+      {colorBands ? (
+        <m.div
+          initial={{ opacity: 0, y: -4, scaleY: 0.95 }}
+          animate={{ opacity: 1, y: 0, scaleY: 1 }}
+          exit={{ opacity: 0, y: -4, scaleY: 0.95 }}
           transition={{ duration: 0.18, ease: [0.2, 0, 0, 1] }}
-          className="overflow-hidden"
+          className="overflow-hidden mt-2.5 origin-top"
         >
           <div className="pt-2 border-t border-zinc-800/40 flex items-center justify-end text-xs">
             <div
@@ -101,8 +101,8 @@ export const ResistorColorCodeFooter = React.memo(function ResistorColorCodeFoot
                 <div className="w-1.5 h-0.5 bg-zinc-500" />
                 <div className="flex items-center h-3.5 bg-[#d8c3a5] px-1 rounded-xs gap-1 border border-[#b8a082] shadow-xs">
                   {colorBands.map((band, idx) => (
-                    <motion.span
-                      key={idx}
+                    <m.span
+                      key={band.position ?? band.name}
                       initial={{ scaleY: 0 }}
                       animate={{ scaleY: 1 }}
                       transition={{ delay: idx * 0.03, duration: 0.15 }}
@@ -116,8 +116,8 @@ export const ResistorColorCodeFooter = React.memo(function ResistorColorCodeFoot
               </div>
             </div>
           </div>
-        </motion.div>
-      )}
+        </m.div>
+      ) : null}
     </AnimatePresence>
   );
 });

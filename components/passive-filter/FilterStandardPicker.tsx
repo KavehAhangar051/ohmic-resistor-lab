@@ -70,9 +70,10 @@ export const FilterStandardPicker = React.memo(function FilterStandardPicker({
           <tbody className="divide-y divide-zinc-800/70 font-mono tabular-nums text-zinc-200">
             {pairs.map((pair, idx) => {
               const isApplied = appliedIdx === idx;
+              const pairKey = `${pair.resistorDisplay}-${pair.reactiveDisplay}-${pair.reactiveUnit}`;
 
               return (
-                <tr key={idx} className="hover:bg-zinc-900/40 transition-colors">
+                <tr key={pairKey} className="hover:bg-zinc-900/40 transition-colors">
                   <td className="py-2 px-3 font-bold text-zinc-100">{pair.resistorDisplay}</td>
                   <td className="py-2 px-3 text-amber-400 font-semibold">{pair.reactiveDisplay} {pair.reactiveUnit}</td>
                   <td className="py-2 px-3 text-emerald-400 font-bold">{pair.displayActualFc}</td>

@@ -17,7 +17,7 @@ export const CursorSvg = forwardRef<HTMLDivElement, CursorSvgProps>(function Cur
   return (
     <div
       ref={ref}
-      className="fixed top-0 left-0 pointer-events-none z-[9999] hidden sm:block opacity-0 [backface-visibility:hidden] will-change-transform"
+      className="fixed top-0 left-0 pointer-events-none z-[9999] hidden sm:block opacity-0 [backface-visibility:hidden]"
       style={{
         transform: 'translate3d(-100px, -100px, 0)',
         transition: 'opacity 0.16s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -27,7 +27,7 @@ export const CursorSvg = forwardRef<HTMLDivElement, CursorSvgProps>(function Cur
     >
       <div
         ref={innerRef}
-        className="[backface-visibility:hidden] will-change-transform"
+        className="[backface-visibility:hidden]"
         style={{
           transformOrigin: '9px 2.86px',
           marginLeft: '-9px',

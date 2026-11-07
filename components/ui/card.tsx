@@ -78,11 +78,11 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutR
 
 CardFooter.displayName = 'CardFooter';
 
-export const Card = {
-  Root: CardRoot,
-  Header: CardHeader,
-  Title: CardTitle,
-  Description: CardDescription,
-  Body: CardBody,
-  Footer: CardFooter,
+export {
+  CardRoot,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardBody,
+  CardFooter,
 };

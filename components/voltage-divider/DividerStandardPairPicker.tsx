@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import {
   Info,
   RotateCcw,
@@ -105,7 +105,7 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
   const hasActiveFilters = currentFilter !== 'all';
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
@@ -295,7 +295,7 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
             : 'نکته ولتاژ رفرنس: رفرنس‌های دقیق را با در نظر گرفتن تلرانس ۵٪ بدترین حالت انتخاب کنید؛ جریان مصرفی کم از گرم شدن مقاومت‌ها و رانش دمایی مدار جلوگیری می‌کند.'}
         </span>
       </div>
-    </motion.div>
+    </m.div>
   );
 });
 

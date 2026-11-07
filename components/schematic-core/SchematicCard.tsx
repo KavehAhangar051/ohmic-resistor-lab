@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import { Zap, Activity } from 'lucide-react';
 import { SymbolStandard, SchematicLegendItem } from './schematic-types';
 import { SchematicDefs } from './SchematicDefs';
@@ -97,13 +97,13 @@ export function SchematicCard({
               )}
               title="استاندارد آمریکایی (زیگزاگ ANSI/IEEE)"
             >
-              {symbolStandard === 'ieee' && (
-                <motion.span
+              {symbolStandard === 'ieee' ? (
+                <m.span
                   layoutId="schematic-core-std-pill"
                   className="absolute inset-0 rounded bg-zinc-800 border border-zinc-700/60 shadow-xs -z-10"
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
-              )}
+              ) : null}
               <span className="inline-block translate-y-[1px]">IEEE</span>
             </button>
             <button
@@ -117,19 +117,19 @@ export function SchematicCard({
               )}
               title="استاندارد بین‌المللی (مستطیل IEC)"
             >
-              {symbolStandard === 'iec' && (
-                <motion.span
+              {symbolStandard === 'iec' ? (
+                <m.span
                   layoutId="schematic-core-std-pill"
                   className="absolute inset-0 rounded bg-zinc-800 border border-zinc-700/60 shadow-xs -z-10"
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
-              )}
+              ) : null}
               <span className="inline-block translate-y-[1px]">IEC</span>
             </button>
           </div>
 
           {/* Current Flow Animation Toggle */}
-          <motion.button
+          <m.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96 }}
             type="button"
@@ -146,7 +146,7 @@ export function SchematicCard({
           >
             <Activity className={cn('h-3.5 w-3.5 transition-colors', animateFlow && 'text-emerald-400')} />
             <span className="hidden sm:inline">شارش جریان</span>
-          </motion.button>
+          </m.button>
         </div>
       </div>
 
@@ -187,8 +187,8 @@ export function SchematicCard({
       {/* Footer Legend Bar */}
       <div className="flex items-center justify-between gap-3 px-4 py-2 border-t border-zinc-800/60 bg-zinc-950/40 text-[11px] font-mono text-zinc-400">
         <div className="flex items-center gap-3 flex-wrap">
-          {legendItems.map((item, idx) => (
-            <div key={idx} className="flex items-center gap-1.5">
+          {legendItems.map((item) => (
+            <div key={item.label} className="flex items-center gap-1.5">
               {item.marker === 'square' ? (
                 <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: item.color }} />
               ) : item.marker === 'dash' ? (

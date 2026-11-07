@@ -5,7 +5,7 @@ import { ark } from '@ark-ui/react/factory';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
-export const badgeVariants = cva(
+const badgeVariants = cva(
   'inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium transition-colors border select-none',
   {
     variants: {
