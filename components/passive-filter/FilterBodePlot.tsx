@@ -69,24 +69,30 @@ export const FilterBodePlot = React.memo(function FilterBodePlot({
       {/* Header and Toggle */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800/80 pb-3">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
             <span>دیاگرام بُد پاسخ فرکانسی (Bode Plot)</span>
             <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-800/40 text-emerald-400">
               -20 dB/decade
             </span>
-          </h3>
+          </h2>
           <p className="text-xs text-zinc-400 mt-0.5">
             تحلیل لاگاریتمی دامنه بر حسب دسی‌بل و تغییر فاز در گستره ۴ دهه فرکانسی
           </p>
         </div>
 
         {/* Magnitude vs Phase Toggle */}
-        <div className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg text-xs font-mono">
+        <div
+          role="radiogroup"
+          aria-label="نمودار دامنه یا فاز"
+          className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg text-xs font-mono"
+        >
           <button
             type="button"
+            role="radio"
+            aria-checked={activePlot === 'magnitude'}
             onClick={() => setActivePlot('magnitude')}
             className={cn(
-              'px-3 py-1 rounded-md transition-colors cursor-pointer',
+              'px-3 py-1 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
               activePlot === 'magnitude'
                 ? 'bg-zinc-800 text-emerald-400 font-semibold shadow-xs'
                 : 'text-zinc-400 hover:text-zinc-200'
@@ -96,9 +102,11 @@ export const FilterBodePlot = React.memo(function FilterBodePlot({
           </button>
           <button
             type="button"
+            role="radio"
+            aria-checked={activePlot === 'phase'}
             onClick={() => setActivePlot('phase')}
             className={cn(
-              'px-3 py-1 rounded-md transition-colors cursor-pointer',
+              'px-3 py-1 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
               activePlot === 'phase'
                 ? 'bg-zinc-800 text-cyan-400 font-semibold shadow-xs'
                 : 'text-zinc-400 hover:text-zinc-200'
@@ -112,6 +120,8 @@ export const FilterBodePlot = React.memo(function FilterBodePlot({
       {/* Vector SVG Canvas */}
       <div className="overflow-x-auto" dir="ltr">
         <svg
+          role="img"
+          aria-label={`دیاگرام بُد پاسخ فرکانسی با فرکانس قطع ${result.displayFc} ${result.displayFcUnit}`}
           viewBox={`0 0 ${width} ${height}`}
           className="w-full h-auto min-w-[500px] select-none block"
           style={{ direction: 'ltr' }}

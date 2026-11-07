@@ -99,7 +99,11 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
       {/* Row 1: Application Modes & Resistor Series */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-zinc-800/70 pb-3">
         {/* Application Mode Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto p-1 rounded-lg border border-zinc-800 bg-zinc-950/90 scrollbar-none">
+        <div
+          role="radiogroup"
+          aria-label="حالت کاربرد مقسم ولتاژ"
+          className="flex items-center gap-1.5 overflow-x-auto p-1 rounded-lg border border-zinc-800 bg-zinc-950/90 scrollbar-none"
+        >
           {APP_MODES.map((mode) => {
             const isSelected = appMode === mode.id;
             const Icon = mode.icon;
@@ -108,9 +112,11 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
               <button
                 key={mode.id}
                 type="button"
+                role="radio"
+                aria-checked={isSelected}
                 onClick={() => onChangeAppMode(mode.id)}
                 className={cn(
-                  'relative flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-[color,background-color] duration-150 ease-out cursor-pointer select-none shrink-0',
+                  'relative flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-[color,background-color] duration-150 ease-out cursor-pointer select-none shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                   isSelected
                     ? 'text-white font-semibold shadow-xs'
                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
@@ -123,7 +129,7 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
                     transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                   />
                 )}
-                <Icon className={cn('h-3.5 w-3.5 transition-colors', isSelected ? 'text-emerald-400' : 'text-zinc-500')} />
+                <Icon className={cn('h-3.5 w-3.5 transition-colors', isSelected ? 'text-emerald-400' : 'text-zinc-400')} />
                 <span>{mode.label}</span>
               </button>
             );
@@ -133,7 +139,12 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
         {/* Right side: Series Selector & Prominent Load Resistor Telemetry */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Resistor Series (E24 5% vs E96 1%) */}
-          <div className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg select-none" dir="ltr">
+          <div
+            role="radiogroup"
+            aria-label="سری استاندارد مقاومت"
+            className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg select-none"
+            dir="ltr"
+          >
             {SERIES_OPTIONS.map((s) => {
               const isSelected = series === s;
 
@@ -141,9 +152,11 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
                 <button
                   key={s}
                   type="button"
+                  role="radio"
+                  aria-checked={isSelected}
                   onClick={() => onChangeSeries(s)}
                   className={cn(
-                    'relative px-2.5 py-1 rounded text-xs font-mono font-medium transition-colors cursor-pointer',
+                    'relative px-2.5 py-1 rounded text-xs font-mono font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                     isSelected
                       ? 'text-emerald-300 font-bold'
                       : 'text-zinc-400 hover:text-zinc-200'
@@ -192,8 +205,12 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
         <div className="flex flex-wrap items-center gap-3">
           {/* Criteria Pills */}
           <div className="flex items-center gap-1.5">
-            <span className="text-zinc-500 text-[11px] font-medium">اولویت:</span>
-            <div className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg select-none">
+            <span className="text-zinc-400 text-[11px] font-medium">اولویت:</span>
+            <div
+              role="radiogroup"
+              aria-label="اولویت بهینه‌سازی جفت مقاومت"
+              className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg select-none"
+            >
               {CRITERIA_OPTIONS.map((opt) => {
                 const isSelected = criterion === opt.id;
 
@@ -201,9 +218,11 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
                   <button
                     key={opt.id}
                     type="button"
+                    role="radio"
+                    aria-checked={isSelected}
                     onClick={() => onChangeCriterion(opt.id)}
                     className={cn(
-                      'relative px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer',
+                      'relative px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                       isSelected
                         ? 'text-white font-semibold'
                         : 'text-zinc-400 hover:text-zinc-200'
@@ -225,7 +244,7 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
 
           {/* Current Range Filter */}
           <div className="flex items-center gap-1.5">
-            <span className="text-zinc-500 text-[11px] font-medium">جریان:</span>
+            <span className="text-zinc-400 text-[11px] font-medium">جریان:</span>
             <div
               role="radiogroup"
               aria-label="بازه جریان مدار"
@@ -239,9 +258,11 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
                   <button
                     key={opt.id}
                     type="button"
+                    role="radio"
+                    aria-checked={isSelected}
                     onClick={() => onChangeCurrentFilter(opt.id)}
                     className={cn(
-                      'relative px-2 py-0.5 rounded text-xs font-sans font-medium transition-colors cursor-pointer',
+                      'relative px-2 py-0.5 rounded text-xs font-sans font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                       isSelected
                         ? 'text-white font-semibold'
                         : 'text-zinc-400 hover:text-zinc-200'
@@ -270,7 +291,12 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
           </span>
 
           {/* Capacity Toggle */}
-          <div className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg select-none" dir="ltr">
+          <div
+            role="radiogroup"
+            aria-label="تعداد ردیف جدول"
+            className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg select-none"
+            dir="ltr"
+          >
             {PAGE_SIZE_OPTIONS.map((size) => {
               const isSelected = pageSize === size;
 
@@ -278,9 +304,11 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
                 <button
                   key={size}
                   type="button"
+                  role="radio"
+                  aria-checked={isSelected}
                   onClick={() => onChangePageSize(size)}
                   className={cn(
-                    'relative px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1',
+                    'relative px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                     isSelected
                       ? 'text-emerald-300 font-bold'
                       : 'text-zinc-400 hover:text-zinc-200'
@@ -304,7 +332,7 @@ export const DividerPairFilterBar = React.memo(function DividerPairFilterBar({
             <button
               type="button"
               onClick={onResetFilters}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer border border-zinc-800"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer border border-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
               title="بازنشانی فیلترها"
             >
               <RotateCcw className="h-3 w-3" />

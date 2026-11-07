@@ -81,12 +81,18 @@ export function SchematicCard({
         {/* Right: Controls */}
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* IEEE / IEC Toggle */}
-          <div className="relative inline-flex items-center bg-zinc-950 border border-zinc-800 rounded-lg p-0.5 text-[11px] font-mono select-none">
+          <div
+            role="radiogroup"
+            aria-label="استاندارد نماد شماتیک"
+            className="relative inline-flex items-center bg-zinc-950 border border-zinc-800 rounded-lg p-0.5 text-[11px] font-mono select-none"
+          >
             <button
               type="button"
+              role="radio"
+              aria-checked={symbolStandard === 'ieee'}
               onClick={() => onSymbolStandardChange('ieee')}
               className={cn(
-                'relative z-10 px-2 py-0.5 rounded transition-colors active:scale-[0.96] cursor-pointer',
+                'relative z-10 px-2 py-0.5 rounded transition-colors active:scale-[0.96] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                 symbolStandard === 'ieee' ? 'text-zinc-100 font-semibold' : 'text-zinc-400 hover:text-zinc-200'
               )}
               title="استاندارد آمریکایی (زیگزاگ ANSI/IEEE)"
@@ -102,9 +108,11 @@ export function SchematicCard({
             </button>
             <button
               type="button"
+              role="radio"
+              aria-checked={symbolStandard === 'iec'}
               onClick={() => onSymbolStandardChange('iec')}
               className={cn(
-                'relative z-10 px-2 py-0.5 rounded transition-colors active:scale-[0.96] cursor-pointer',
+                'relative z-10 px-2 py-0.5 rounded transition-colors active:scale-[0.96] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                 symbolStandard === 'iec' ? 'text-zinc-100 font-semibold' : 'text-zinc-400 hover:text-zinc-200'
               )}
               title="استاندارد بین‌المللی (مستطیل IEC)"
@@ -125,9 +133,11 @@ export function SchematicCard({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96 }}
             type="button"
+            aria-pressed={animateFlow}
+            aria-label="انیمیشن شارش جریان"
             onClick={() => onAnimateFlowChange(!animateFlow)}
             className={cn(
-              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-[color,background-color,border-color,box-shadow] duration-150 ease-out cursor-pointer select-none',
+              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-[color,background-color,border-color,box-shadow] duration-150 ease-out cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
               animateFlow
                 ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300 shadow-xs'
                 : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -148,6 +158,7 @@ export function SchematicCard({
         className="relative overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-800"
       >
         <svg
+          role="img"
           style={{
             direction: 'ltr',
             minWidth: `${minContentWidth}px`,

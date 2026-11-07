@@ -35,6 +35,8 @@ export const ResistorColorCodeBadge = React.memo(function ResistorColorCodeBadge
 
   return (
     <div
+      role="img"
+      aria-label={`کد رنگ مقاومت ${tooltipText}`}
       className={cn('flex items-center select-none shrink-0 [transform:rotateX(180deg)]', className)}
       style={{ transform: 'rotateX(180deg)' }}
       title={tooltipText}
@@ -89,6 +91,8 @@ export const ResistorColorCodeFooter = React.memo(function ResistorColorCodeFoot
         >
           <div className="pt-2 border-t border-zinc-800/40 flex items-center justify-end text-xs">
             <div
+              role="img"
+              aria-label={`کد رنگی استاندارد مقاومت: ${colorBands.map((b) => b.nameFa).join('، ')}`}
               className="flex items-center gap-1.5 bg-zinc-950/80 border border-zinc-800/80 px-2 py-1 rounded-md shadow-xs"
               title="کد رنگی استاندارد مقاومت (EIA 4-Band)"
             >

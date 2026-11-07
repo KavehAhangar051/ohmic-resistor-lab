@@ -44,12 +44,12 @@ export const FilterStandardPicker = React.memo(function FilterStandardPicker({
     <div className="rounded-xl border border-zinc-800 bg-[#121215] p-4 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 pb-2.5">
         <div>
-          <h4 className="text-xs sm:text-sm font-semibold text-zinc-100 flex items-center gap-1.5">
+          <h2 className="text-xs sm:text-sm font-semibold text-zinc-100 flex items-center gap-1.5">
             <span>جفت قطعات استاندارد تجاری بازار (E24 + E12)</span>
             <Badge variant="subtle" className="text-[10px] font-mono border-zinc-700 bg-zinc-900 text-zinc-300">
               Commercial Match
             </Badge>
-          </h4>
+          </h2>
           <p className="text-[11px] text-zinc-400 mt-0.5">
             نزدیک‌ترین ترکیب مقاومت و {topology === 'rc' ? 'خازن' : 'سلف'} استاندارد بازار به فرکانس قطع هدف ({targetFcDisplay})
           </p>
@@ -78,14 +78,15 @@ export const FilterStandardPicker = React.memo(function FilterStandardPicker({
                   <td className="py-2 px-3 text-emerald-400 font-bold">{pair.displayActualFc}</td>
                   <td className="py-2 px-3">
                     <span className={pair.errorPct <= 2 ? 'text-emerald-400' : 'text-amber-400'}>
-                      {pair.errorPct}%
+                      ±{pair.errorPct}%
                     </span>
                   </td>
                   <td className="py-2 px-3 text-center">
                     <button
                       type="button"
                       onClick={() => handleApply(pair, idx)}
-                      className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 hover:text-white transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.96] cursor-pointer text-[11px] font-sans inline-flex items-center gap-1"
+                      aria-label={`اعمال ترکیب ${pair.resistorDisplay} و ${pair.reactiveDisplay} ${pair.reactiveUnit}`}
+                      className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200 hover:text-white transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.96] cursor-pointer text-[11px] font-sans inline-flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
                     >
                       {isApplied ? (
                         <>

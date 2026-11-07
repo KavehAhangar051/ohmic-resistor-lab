@@ -114,20 +114,23 @@ export const FilterResultDisplay = React.memo(function FilterResultDisplay({
       <div className="pt-1">
         <button
           type="button"
+          aria-expanded={showFormula}
+          aria-controls="filter-formula-panel"
           onClick={() => setShowFormula((prev) => !prev)}
-          className="w-full flex items-center justify-between text-xs text-zinc-400 hover:text-zinc-200 transition-colors py-1 cursor-pointer select-none"
+          className="w-full flex items-center justify-between text-xs text-zinc-400 hover:text-zinc-200 transition-colors py-1 px-1 rounded-md cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
         >
           <span className="flex items-center gap-1.5 font-medium">
             <span>فرمول‌های فیزیک مدار و تابع انتقال فرکانسی</span>
           </span>
           <ChevronDown
-            className={cn('h-4 w-4 transition-transform duration-200 text-zinc-500', showFormula && 'rotate-180')}
+            className={cn('h-4 w-4 transition-transform duration-200 text-zinc-400', showFormula && 'rotate-180')}
           />
         </button>
 
         <AnimatePresence initial={false}>
           {showFormula && (
             <motion.div
+              id="filter-formula-panel"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0, transition: { duration: 0.16, ease: [0.3, 0, 1, 1] } }}

@@ -128,7 +128,7 @@ export const ResistorRow = React.memo(function ResistorRow({
                   whileTap={{ scale: 0.96 }}
                   type="button"
                   onClick={handleClearValue}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-zinc-500 hover:text-zinc-200 transition-colors rounded cursor-pointer"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-100 transition-colors rounded cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
                   title="پاک کردن مقدار"
                   aria-label={`پاک کردن مقدار R${index + 1}`}
                 >
@@ -156,7 +156,7 @@ export const ResistorRow = React.memo(function ResistorRow({
                   aria-checked={isSelected}
                   onClick={() => handleUnitSelect(u.value)}
                   className={cn(
-                    'relative inline-flex items-center justify-center cursor-pointer rounded-md px-2.5 py-1 text-xs font-mono font-medium transition-colors select-none z-10 active:scale-[0.96]',
+                    'relative inline-flex items-center justify-center cursor-pointer rounded-md px-2.5 py-1 text-xs font-mono font-medium transition-colors select-none z-10 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                     isSelected
                       ? 'text-white font-semibold'
                       : 'text-zinc-400 hover:text-zinc-200'

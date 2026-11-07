@@ -82,7 +82,9 @@ export function AppShell({
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-1.5 text-zinc-400 hover:text-zinc-100 rounded-md hover:bg-zinc-800/50"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-tools-drawer"
+            className="md:hidden p-2 text-zinc-400 hover:text-zinc-100 rounded-md hover:bg-zinc-800/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
             aria-label="منوی ابزارها"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -92,7 +94,8 @@ export function AppShell({
           <button
             type="button"
             onClick={() => setIsSidebarCollapsed((prev) => !prev)}
-            className="hidden md:flex items-center justify-center h-8 w-8 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-md border border-zinc-800 transition-colors cursor-pointer"
+            aria-expanded={!isSidebarCollapsed}
+            className="hidden md:flex items-center justify-center h-8 w-8 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-md border border-zinc-800 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
             title={isSidebarCollapsed ? 'باز کردن منو' : 'بستن منو (افزایش عرض فضای کار)'}
             aria-label={isSidebarCollapsed ? 'باز کردن منو' : 'بستن منو'}
           >
@@ -112,10 +115,10 @@ export function AppShell({
             </span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-500 ms-2">
-            <span>/</span>
-            <span className="text-zinc-400">تحلیل مدار</span>
-            <span>/</span>
+          <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-400 ms-2">
+            <span aria-hidden="true">/</span>
+            <span>تحلیل مدار</span>
+            <span aria-hidden="true">/</span>
             <span className="text-zinc-200 font-medium">{currentTool.name}</span>
           </div>
         </div>
@@ -197,6 +200,7 @@ export function AppShell({
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
+              id="mobile-tools-drawer"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10, transition: { duration: 0.16, ease: [0.3, 0, 1, 1] } }}
@@ -208,14 +212,17 @@ export function AppShell({
                   ابزارهای محاسباتی
                 </span>
               </div>
-              <nav className="space-y-1.5">
+              <nav aria-label="ابزارهای محاسباتی مدار (موبایل)" className="space-y-1.5">
                 {TOOLS_LIST.map((tool, idx) => {
                   const Icon = tool.icon;
                   const isSelected = activeToolId === tool.id;
 
                   return (
-                    <motion.div
+                    <motion.button
                       key={tool.id}
+                      type="button"
+                      disabled={!tool.active}
+                      aria-current={isSelected ? 'page' : undefined}
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: idx * 0.04, duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
@@ -225,11 +232,11 @@ export function AppShell({
                           setMobileMenuOpen(false);
                         }
                       }}
-                      className={`flex items-center justify-between px-3.5 py-2.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-md text-sm font-medium transition-colors text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${
                         isSelected
-                          ? 'bg-zinc-800 text-white border border-zinc-700'
+                          ? 'bg-zinc-800 text-white border border-zinc-700 cursor-pointer'
                           : tool.active
-                          ? 'text-zinc-300 hover:text-white hover:bg-zinc-800/50'
+                          ? 'text-zinc-300 hover:text-white hover:bg-zinc-800/50 cursor-pointer'
                           : 'text-zinc-400 opacity-60 cursor-not-allowed'
                       }`}
                     >
@@ -244,7 +251,7 @@ export function AppShell({
                       ) : isSelected ? (
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                       ) : null}
-                    </motion.div>
+                    </motion.button>
                   );
                 })}
               </nav>

@@ -77,12 +77,18 @@ export function PassiveFilterView() {
           {/* Top Filter Configuration Switches */}
           <div className="flex flex-wrap items-center gap-2">
             {/* Low-pass vs High-pass Selector */}
-            <div className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg text-xs font-mono">
+            <div
+              role="radiogroup"
+              aria-label="نوع پاسخ فیلتر"
+              className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg text-xs font-mono"
+            >
               <button
                 type="button"
+                role="radio"
+                aria-checked={state.type === 'lowpass'}
                 onClick={() => updateField('type', 'lowpass')}
                 className={cn(
-                  'px-3 py-1.5 rounded-md transition-colors cursor-pointer',
+                  'px-3 py-1.5 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                   state.type === 'lowpass' ? 'bg-zinc-800 text-white font-semibold shadow-xs' : 'text-zinc-400 hover:text-zinc-200'
                 )}
               >
@@ -90,9 +96,11 @@ export function PassiveFilterView() {
               </button>
               <button
                 type="button"
+                role="radio"
+                aria-checked={state.type === 'highpass'}
                 onClick={() => updateField('type', 'highpass')}
                 className={cn(
-                  'px-3 py-1.5 rounded-md transition-colors cursor-pointer',
+                  'px-3 py-1.5 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                   state.type === 'highpass' ? 'bg-zinc-800 text-white font-semibold shadow-xs' : 'text-zinc-400 hover:text-zinc-200'
                 )}
               >
@@ -101,12 +109,18 @@ export function PassiveFilterView() {
             </div>
 
             {/* Topology Selector: RC vs RL */}
-            <div className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg text-xs font-mono">
+            <div
+              role="radiogroup"
+              aria-label="توپولوژی شبکه فیلتر"
+              className="inline-flex items-center bg-zinc-950 border border-zinc-800 p-0.5 rounded-lg text-xs font-mono"
+            >
               <button
                 type="button"
+                role="radio"
+                aria-checked={state.topology === 'rc'}
                 onClick={() => updateField('topology', 'rc')}
                 className={cn(
-                  'px-3 py-1.5 rounded-md transition-colors cursor-pointer',
+                  'px-3 py-1.5 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                   state.topology === 'rc' ? 'bg-zinc-800 text-emerald-400 font-semibold shadow-xs' : 'text-zinc-400 hover:text-zinc-200'
                 )}
               >
@@ -114,9 +128,11 @@ export function PassiveFilterView() {
               </button>
               <button
                 type="button"
+                role="radio"
+                aria-checked={state.topology === 'rl'}
                 onClick={() => updateField('topology', 'rl')}
                 className={cn(
-                  'px-3 py-1.5 rounded-md transition-colors cursor-pointer',
+                  'px-3 py-1.5 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                   state.topology === 'rl' ? 'bg-zinc-800 text-emerald-400 font-semibold shadow-xs' : 'text-zinc-400 hover:text-zinc-200'
                 )}
               >
@@ -131,9 +147,12 @@ export function PassiveFilterView() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
         {/* Resistor Input */}
         <div className="rounded-xl border border-zinc-800/90 bg-[#121215] p-3.5 space-y-2">
-          <label className="text-xs text-zinc-400 font-medium block">مقاومت فیلتر (R)</label>
+          <label htmlFor="filter-resistance" className="text-xs text-zinc-400 font-medium block">
+            مقاومت فیلتر (R)
+          </label>
           <div className="flex items-center gap-1.5">
             <Input
+              id="filter-resistance"
               type="text"
               inputMode="decimal"
               dir="ltr"
@@ -143,12 +162,13 @@ export function PassiveFilterView() {
               className="font-mono text-base sm:text-sm h-9 flex-1"
             />
             <select
+              aria-label="واحد مقاومت فیلتر"
               value={state.resistanceUnit}
               onChange={(e) => {
                 // SAFETY: <select> options are strictly 'Ohm' | 'kOhm' | 'MOhm'
                 updateField('resistanceUnit', e.target.value as ResistanceUnit);
               }}
-              className="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs rounded-md h-9 px-2 font-mono cursor-pointer"
+              className="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs rounded-md h-9 px-2 font-mono cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
             >
               <option value="Ohm">Ω</option>
               <option value="kOhm">kΩ</option>
@@ -159,11 +179,12 @@ export function PassiveFilterView() {
 
         {/* Capacitor or Inductor Input */}
         <div className="rounded-xl border border-zinc-800/90 bg-[#121215] p-3.5 space-y-2">
-          <label className="text-xs text-zinc-400 font-medium block">
+          <label htmlFor="filter-reactive" className="text-xs text-zinc-400 font-medium block">
             {state.topology === 'rc' ? 'خازن فیلتر (C)' : 'سلف فیلتر (L)'}
           </label>
           <div className="flex items-center gap-1.5">
             <Input
+              id="filter-reactive"
               type="text"
               inputMode="decimal"
               dir="ltr"
@@ -178,12 +199,13 @@ export function PassiveFilterView() {
             />
             {state.topology === 'rc' ? (
               <select
+                aria-label="واحد ظرفیت خازن فیلتر"
                 value={state.capacitanceUnit}
                 onChange={(e) => {
                   // SAFETY: <select> options are strictly 'pF' | 'nF' | 'uF'
                   updateField('capacitanceUnit', e.target.value as CapacitanceUnit);
                 }}
-                className="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs rounded-md h-9 px-2 font-mono cursor-pointer"
+                className="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs rounded-md h-9 px-2 font-mono cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
               >
                 <option value="pF">pF</option>
                 <option value="nF">nF</option>
@@ -191,12 +213,13 @@ export function PassiveFilterView() {
               </select>
             ) : (
               <select
+                aria-label="واحد اندوکتانس سلف فیلتر"
                 value={state.inductanceUnit}
                 onChange={(e) => {
                   // SAFETY: <select> options are strictly 'uH' | 'mH' | 'H'
                   updateField('inductanceUnit', e.target.value as InductanceUnit);
                 }}
-                className="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs rounded-md h-9 px-2 font-mono cursor-pointer"
+                className="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs rounded-md h-9 px-2 font-mono cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
               >
                 <option value="uH">µH</option>
                 <option value="mH">mH</option>
@@ -208,9 +231,12 @@ export function PassiveFilterView() {
 
         {/* Test Frequency Input */}
         <div className="rounded-xl border border-zinc-800/90 bg-[#121215] p-3.5 space-y-2">
-          <label className="text-xs text-zinc-400 font-medium block">فرکانس سیگنال تست (fin)</label>
+          <label htmlFor="filter-test-freq" className="text-xs text-zinc-400 font-medium block">
+            فرکانس سیگنال تست (fin)
+          </label>
           <div className="flex items-center gap-1.5">
             <Input
+              id="filter-test-freq"
               type="text"
               inputMode="decimal"
               dir="ltr"
@@ -220,12 +246,13 @@ export function PassiveFilterView() {
               className="font-mono text-base sm:text-sm h-9 flex-1"
             />
             <select
+              aria-label="واحد فرکانس تست"
               value={state.testFrequencyUnit}
               onChange={(e) => {
                 // SAFETY: <select> options are strictly 'Hz' | 'kHz' | 'MHz'
                 updateField('testFrequencyUnit', e.target.value as FrequencyUnit);
               }}
-              className="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs rounded-md h-9 px-2 font-mono cursor-pointer"
+              className="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs rounded-md h-9 px-2 font-mono cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
             >
               <option value="Hz">Hz</option>
               <option value="kHz">kHz</option>
@@ -236,9 +263,12 @@ export function PassiveFilterView() {
 
         {/* Input Voltage Peak */}
         <div className="rounded-xl border border-zinc-800/90 bg-[#121215] p-3.5 space-y-2">
-          <label className="text-xs text-zinc-400 font-medium block">دامنه ورودی (Vin Peak)</label>
+          <label htmlFor="filter-vin-peak" className="text-xs text-zinc-400 font-medium block">
+            دامنه ورودی (Vin Peak)
+          </label>
           <div className="flex items-center gap-1.5">
             <Input
+              id="filter-vin-peak"
               type="text"
               inputMode="decimal"
               dir="ltr"
