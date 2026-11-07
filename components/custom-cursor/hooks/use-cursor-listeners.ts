@@ -2,7 +2,6 @@
 
 import { useEffect, type RefObject } from 'react';
 import {
-  isTouchDevice,
   checkClickable,
   checkHoveringText,
 } from './utils/cursor-detection';
@@ -21,7 +20,7 @@ export interface CursorElementsRef {
  */
 export function useHardwareCursorListeners({ cursorRef, innerRef, enabled = true }: CursorElementsRef) {
   useEffect(() => {
-    if (!enabled || isTouchDevice()) return;
+    if (!enabled) return;
     let isVisible = false;
     let isMouseDown = false;
     let isClickable = false;

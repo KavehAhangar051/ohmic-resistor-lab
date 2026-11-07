@@ -8,15 +8,13 @@
 import React, { useEffect, useState } from 'react';
 import { LazyMotion, domAnimation, m, AnimatePresence } from 'motion/react';
 import { AsciiLineLoader } from '@/components/motion/loader';
-import { EASE_OUT } from '@/lib/ease';
-import { markAppLoaded } from '@/hooks/use-app-loaded';
 
 export interface InitialAppLoaderProps {
   enabled?: boolean;
   minDurationMs?: number;
 }
 
-const EXIT_TRANSITION = { duration: 0.2, ease: EASE_OUT } as const;
+const EXIT_TRANSITION = { duration: 0.2, ease: [0.16, 1, 0.3, 1] } as const;
 const EXIT_STATE = { opacity: 0 } as const;
 const INITIAL_STATE = { opacity: 1 } as const;
 
@@ -24,7 +22,6 @@ const INITIAL_STATE = { opacity: 1 } as const;
  * Clean initial application loader using only the raw ASCII Line animation.
  * Disappears once the page and all assets are fully loaded, with a calibrated minimum
  * duration so the ASCII line animation cycles properly.
- * Optimized for V8 zero-allocation rendering and leak-free timers.
  */
 export function InitialAppLoader({
   enabled = true,
@@ -33,11 +30,7 @@ export function InitialAppLoader({
   const [isLoading, setIsLoading] = useState<boolean>(enabled);
 
   useEffect(() => {
-    if (!enabled) {
-      markAppLoaded();
-
-      return;
-    }
+    if (!enabled) return;
 
     const startTime = performance.now();
     let timerId: ReturnType<typeof setTimeout> | null = null;
@@ -48,7 +41,6 @@ export function InitialAppLoader({
 
       timerId = setTimeout(() => {
         setIsLoading(false);
-        markAppLoaded();
       }, remaining);
     };
 
