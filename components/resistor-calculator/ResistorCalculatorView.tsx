@@ -87,8 +87,8 @@ export function ResistorCalculatorView() {
                 Parallel Network
               </Badge>
             </h1>
-            <p className="mt-1 text-xs sm:text-sm text-zinc-400">
-              مقدار و تعداد مقاومت‌ها را در هر شاخه وارد کنید تا مقاومت معادل فوراً محاسبه شود.
+            <p className="mt-1.5 text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-[65ch] text-pretty">
+              مقدار و تعداد مقاومت‌ها را در هر شاخه وارد کنید تا مقاومت معادل و سهم جریان هر شاخه فوراً محاسبه شود.
             </p>
           </div>
         </div>

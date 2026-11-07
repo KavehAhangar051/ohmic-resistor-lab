@@ -22,7 +22,7 @@ export const FilterResultDisplay = React.memo(function FilterResultDisplay({
   const isRC = state.topology === 'rc';
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-[#121215] p-4 sm:p-5 space-y-4">
+    <div className="rounded-xl border border-zinc-800 bg-[#121215] lab-panel p-4 sm:p-5 space-y-4">
       {/* Top Main Result: Cutoff Frequency Hero */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
         <div>

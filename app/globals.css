@@ -119,6 +119,10 @@
     --accent-text: #34d399;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   /* Universal typography:
      - Latin/English letters & digits match 'Kode Mono' via unicode-range
      - Persian words & letters render in authentic 'Vazirmatn'
@@ -140,16 +144,19 @@
   h5,
   h6 {
     font-family: 'Kode Mono', 'Vazirmatn', 'Vazir', system-ui, -apple-system, sans-serif;
-    letter-spacing: normal;
     word-spacing: normal;
   }
 
   body {
     background-color: var(--bg-canvas);
+    background-image:
+      radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.045), transparent 55%),
+      radial-gradient(circle at 15% 85%, rgba(6, 182, 212, 0.025), transparent 45%);
+    background-attachment: fixed;
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   /* Monospace typography strictly for inputs, raw numbers, and technical readouts */
@@ -157,6 +164,7 @@
   .tabular-nums,
   input {
     font-family: 'Kode Mono', monospace !important;
+    font-variant-numeric: tabular-nums;
   }
 
   .font-sans {
@@ -165,6 +173,14 @@
 
   .font-vazir {
     font-family: 'Vazirmatn', 'Vazir', 'Kode Mono', system-ui, -apple-system, sans-serif !important;
+  }
+
+  /* Top-lit laboratory instrument surface with subtle edge refraction and tinted shadow */
+  .lab-panel {
+    background-color: var(--bg-surface);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+      0 10px 28px -8px rgba(4, 12, 10, 0.55);
   }
 
   ::selection {

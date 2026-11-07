@@ -20,7 +20,7 @@ export const DividerResultDisplay = React.memo(function DividerResultDisplay({
   const showTelemetry = result.isValid && !result.isShortCircuit;
 
   return (
-    <div className="relative rounded-xl border border-zinc-800 bg-[#121215] p-5 sm:p-6 overflow-hidden">
+    <div className="relative rounded-xl border border-zinc-800 bg-[#121215] lab-panel p-5 sm:p-6 overflow-hidden">
       {/* Short Circuit Warning Banner */}
       <AnimatePresence>
         {result.isShortCircuit ? (

@@ -69,7 +69,7 @@ export function PassiveFilterView() {
                 RC / RL Filter
               </Badge>
             </h1>
-            <p className="mt-1 text-xs sm:text-sm text-zinc-400">
+            <p className="mt-1.5 text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-[65ch] text-pretty">
               محاسبه فرکانس قطع (-3dB)، ثابت زمانی، پاسخ فاز و نمودار بُد برای فیلترهای مرتبه اول RC و RL.
             </p>
           </div>
@@ -88,7 +88,7 @@ export function PassiveFilterView() {
                 aria-checked={state.type === 'lowpass'}
                 onClick={() => updateField('type', 'lowpass')}
                 className={cn(
-                  'px-3 py-1.5 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
+                  'px-3 py-1.5 rounded-md transition-[color,background-color,transform] duration-200 cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                   state.type === 'lowpass' ? 'bg-zinc-800 text-white font-semibold shadow-xs' : 'text-zinc-400 hover:text-zinc-200'
                 )}
               >
@@ -100,7 +100,7 @@ export function PassiveFilterView() {
                 aria-checked={state.type === 'highpass'}
                 onClick={() => updateField('type', 'highpass')}
                 className={cn(
-                  'px-3 py-1.5 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
+                  'px-3 py-1.5 rounded-md transition-[color,background-color,transform] duration-200 cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                   state.type === 'highpass' ? 'bg-zinc-800 text-white font-semibold shadow-xs' : 'text-zinc-400 hover:text-zinc-200'
                 )}
               >
@@ -120,7 +120,7 @@ export function PassiveFilterView() {
                 aria-checked={state.topology === 'rc'}
                 onClick={() => updateField('topology', 'rc')}
                 className={cn(
-                  'px-3 py-1.5 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
+                  'px-3 py-1.5 rounded-md transition-[color,background-color,transform] duration-200 cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                   state.topology === 'rc' ? 'bg-zinc-800 text-emerald-400 font-semibold shadow-xs' : 'text-zinc-400 hover:text-zinc-200'
                 )}
               >
@@ -132,7 +132,7 @@ export function PassiveFilterView() {
                 aria-checked={state.topology === 'rl'}
                 onClick={() => updateField('topology', 'rl')}
                 className={cn(
-                  'px-3 py-1.5 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
+                  'px-3 py-1.5 rounded-md transition-[color,background-color,transform] duration-200 cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
                   state.topology === 'rl' ? 'bg-zinc-800 text-emerald-400 font-semibold shadow-xs' : 'text-zinc-400 hover:text-zinc-200'
                 )}
               >

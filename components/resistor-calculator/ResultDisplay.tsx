@@ -11,7 +11,7 @@ interface ResultDisplayProps {
 
 export const ResultDisplay = React.memo(function ResultDisplay({ result }: ResultDisplayProps) {
   return (
-    <div className="relative rounded-xl border border-zinc-800 bg-[#121215] p-5 sm:p-6 overflow-hidden">
+    <div className="relative rounded-xl border border-zinc-800 bg-[#121215] lab-panel p-5 sm:p-6 overflow-hidden">
 
       {/* Short Circuit Warning Banner with Corporate Error Shake Pattern */}
       <AnimatePresence>

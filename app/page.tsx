@@ -5,12 +5,16 @@ import dynamic from 'next/dynamic';
 import { AppShell } from '@/components/layout/AppShell';
 import { VoltageDividerView } from '@/components/voltage-divider/VoltageDividerView';
 
+import { WorkspaceSkeleton } from '@/components/ui/workspace-skeleton';
+
 const PassiveFilterView = dynamic(
-  () => import('@/components/passive-filter/PassiveFilterView').then((m) => m.PassiveFilterView)
+  () => import('@/components/passive-filter/PassiveFilterView').then((m) => m.PassiveFilterView),
+  { loading: () => <WorkspaceSkeleton /> }
 );
 
 const ResistorCalculatorView = dynamic(
-  () => import('@/components/resistor-calculator/ResistorCalculatorView').then((m) => m.ResistorCalculatorView)
+  () => import('@/components/resistor-calculator/ResistorCalculatorView').then((m) => m.ResistorCalculatorView),
+  { loading: () => <WorkspaceSkeleton /> }
 );
 
 export default function HomePage() {

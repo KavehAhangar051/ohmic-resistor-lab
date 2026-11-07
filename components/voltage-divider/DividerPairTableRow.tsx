@@ -65,8 +65,10 @@ const PairRankCell = React.memo(function PairRankCell({
       <div className="flex flex-col items-center gap-0.5">
         <span
           className={cn(
-            'flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold font-mono transition-colors',
-            isActive ? 'bg-emerald-500 text-zinc-950 font-bold' : 'bg-zinc-800 text-zinc-300'
+            'flex h-5 w-5 items-center justify-center rounded-md border text-[10px] font-bold font-mono transition-colors',
+            isActive
+              ? 'bg-emerald-500 border-emerald-400 text-zinc-950 font-bold'
+              : 'bg-zinc-900 border-zinc-700/70 text-zinc-300'
           )}
         >
           {idx + 1}

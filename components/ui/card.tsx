@@ -9,7 +9,7 @@ const CardRoot = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef
     <ark.div
       ref={ref}
       className={cn(
-        'rounded-xl border border-zinc-800/80 bg-zinc-900/40 text-zinc-100 shadow-xs backdrop-blur-xs relative overflow-hidden',
+        'rounded-xl border border-zinc-800/80 bg-zinc-900/40 lab-panel text-zinc-100 backdrop-blur-xs relative overflow-hidden',
         className
       )}
       {...props}
@@ -36,7 +36,7 @@ const CardTitle = React.forwardRef<HTMLHeadingElement, React.ComponentPropsWitho
     <ark.h3
       ref={ref}
       className={cn(
-        'text-base font-semibold leading-none tracking-tight text-zinc-100',
+        'text-base font-semibold leading-none tracking-tight text-zinc-100 text-balance',
         className
       )}
       {...props}
@@ -50,7 +50,7 @@ const CardDescription = React.forwardRef<HTMLParagraphElement, React.ComponentPr
   ({ className, ...props }, ref) => (
     <ark.p
       ref={ref}
-      className={cn('text-xs text-zinc-400 leading-relaxed', className)}
+      className={cn('text-xs text-zinc-400 leading-relaxed text-pretty max-w-[65ch]', className)}
       {...props}
     />
   )

@@ -137,7 +137,7 @@ export function VoltageDividerView() {
       className="space-y-6"
     >
       {/* Title & Scope Header */}
-      <div className="border-b border-zinc-800/80 pb-4">
+      <div className="border-b border-zinc-800/80 pb-5">
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5 text-balance">
           <Sliders className="h-6 w-6 text-emerald-400" />
           <span>محاسبه‌گر مقسم ولتاژ</span>
@@ -145,6 +145,9 @@ export function VoltageDividerView() {
             Voltage Divider
           </Badge>
         </h1>
+        <p className="mt-1.5 text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-[65ch] text-pretty">
+          طراحی دقیق مقسم ولتاژ با تحلیل امپدانس معادل تئونن، اثر بارگذاری (RL) و پیشنهاد نزدیک‌ترین جفت مقاومت‌های استاندارد E24 و E96.
+        </p>
       </div>
 
       {/* Dynamic Circuit Schematic (Live EDA visualization with calculated R1 and R2) */}
