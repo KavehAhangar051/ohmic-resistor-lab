@@ -323,16 +323,15 @@ export function findBestE24Pairs(
 }
 
 /**
- * Filters and sorts standard commercial resistor pairs by current consumption constraint
- * and multi-column engineering criteria with deterministic tie-breaking.
+ * Filters commercial resistor pairs by current consumption constraint.
  */
-export function filterAndSortResistorPairs(
+export function filterResistorPairsByCurrent(
   pairs: StandardResistorPair[],
-  currentFilter: CurrentFilterOption = 'all',
-  sortKey: PairTableSortKey = 'score',
-  sortDir: SortDirection = 'asc'
+  currentFilter: CurrentFilterOption = 'all'
 ): StandardResistorPair[] {
-  const filtered = pairs.filter((pair) => {
+  if (currentFilter === 'all') return pairs;
+
+  return pairs.filter((pair) => {
     if (currentFilter === 'low' && pair.currentAmperes >= 100e-6) return false;
 
     if (currentFilter === 'mid' && (pair.currentAmperes < 100e-6 || pair.currentAmperes > 5e-3)) {
@@ -343,10 +342,17 @@ export function filterAndSortResistorPairs(
 
     return true;
   });
+}
 
-  // V8 optimization: Array.prototype.sort is strictly stable (TimSort in V8).
-  // In-place sorting eliminates intermediate wrapper objects and mapping passes.
-  filtered.sort((a, b) => {
+/**
+ * Immutably sorts resistor pairs by multi-column engineering criteria with deterministic tie-breaking.
+ */
+export function sortResistorPairs(
+  pairs: StandardResistorPair[],
+  sortKey: PairTableSortKey = 'score',
+  sortDir: SortDirection = 'asc'
+): StandardResistorPair[] {
+  return pairs.toSorted((a, b) => {
     let diff = 0;
 
     switch (sortKey) {
@@ -389,6 +395,19 @@ export function filterAndSortResistorPairs(
 
     return sortDir === 'asc' ? diff : -diff;
   });
+}
 
-  return filtered;
+/**
+ * Filters and sorts standard commercial resistor pairs by current consumption constraint
+ * and multi-column engineering criteria with deterministic tie-breaking.
+ */
+export function filterAndSortResistorPairs(
+  pairs: StandardResistorPair[],
+  currentFilter: CurrentFilterOption = 'all',
+  sortKey: PairTableSortKey = 'score',
+  sortDir: SortDirection = 'asc'
+): StandardResistorPair[] {
+  const filtered = filterResistorPairsByCurrent(pairs, currentFilter);
+
+  return sortResistorPairs(filtered, sortKey, sortDir);
 }

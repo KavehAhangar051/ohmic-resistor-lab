@@ -21,6 +21,7 @@ interface AppShellProps {
   children: React.ReactNode;
   activeToolId?: string;
   onSelectTool?: (toolId: string) => void;
+  onPreloadTool?: (toolId: string) => void;
 }
 
 interface ToolItem {
@@ -68,6 +69,7 @@ export function AppShell({
   children,
   activeToolId = 'parallel-resistor',
   onSelectTool,
+  onPreloadTool,
 }: AppShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
@@ -81,7 +83,7 @@ export function AppShell({
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-tools-drawer"
             className="md:hidden p-2 text-zinc-400 hover:text-zinc-100 rounded-md hover:bg-zinc-800/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
@@ -152,6 +154,16 @@ export function AppShell({
                   key={tool.id}
                   type="button"
                   aria-current={isSelected ? 'page' : undefined}
+                  onMouseEnter={() => {
+                    if (tool.active && onPreloadTool) {
+                      onPreloadTool(tool.id);
+                    }
+                  }}
+                  onFocus={() => {
+                    if (tool.active && onPreloadTool) {
+                      onPreloadTool(tool.id);
+                    }
+                  }}
                   onClick={() => {
                     if (tool.active && onSelectTool) {
                       onSelectTool(tool.id);
@@ -198,7 +210,7 @@ export function AppShell({
 
         {/* Mobile Sidebar Drawer with Directional Easing */}
         <AnimatePresence>
-          {mobileMenuOpen && (
+          {mobileMenuOpen ? (
             <motion.div
               id="mobile-tools-drawer"
               initial={{ opacity: 0, y: -10 }}
@@ -226,6 +238,16 @@ export function AppShell({
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: idx * 0.04, duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                      onMouseEnter={() => {
+                        if (tool.active && onPreloadTool) {
+                          onPreloadTool(tool.id);
+                        }
+                      }}
+                      onFocus={() => {
+                        if (tool.active && onPreloadTool) {
+                          onPreloadTool(tool.id);
+                        }
+                      }}
                       onClick={() => {
                         if (tool.active) {
                           if (onSelectTool) onSelectTool(tool.id);
@@ -256,7 +278,7 @@ export function AppShell({
                 })}
               </nav>
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
 
         {/* Content Viewport */}

@@ -1,4 +1,5 @@
 import type {Metadata} from 'next';
+import ReactDOM from 'react-dom';
 import './globals.css'; // Global styles with local bundled fonts
 import { CustomCursor } from '@/components/custom-cursor';
 import { InitialAppLoader } from '@/components/ui/initial-app-loader';
@@ -23,25 +24,19 @@ const isGithubPages = process.env.GITHUB_ACTIONS === 'true' || process.env.GITHU
 const fontBasePath = isGithubPages ? '/ohmic-resistor-lab' : '';
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
+  ReactDOM.preload(`${fontBasePath}/fonts/vazirmatn-400.woff2`, {
+    as: 'font',
+    type: 'font/woff2',
+    crossOrigin: 'anonymous',
+  });
+  ReactDOM.preload(`${fontBasePath}/fonts/kodemono-400.woff2`, {
+    as: 'font',
+    type: 'font/woff2',
+    crossOrigin: 'anonymous',
+  });
+
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
-      <head>
-        {/* Local bundled font preloads */}
-        <link
-          rel="preload"
-          href={`${fontBasePath}/fonts/vazirmatn-400.woff2`}
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          href={`${fontBasePath}/fonts/kodemono-400.woff2`}
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-      </head>
       <body className="antialiased" suppressHydrationWarning>
         <DisableThemeTransitions />
         <InitialAppLoader />

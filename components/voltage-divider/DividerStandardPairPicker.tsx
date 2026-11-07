@@ -17,7 +17,10 @@ import {
   SortDirection,
 } from '@/types/voltage-divider';
 import { ResistorUnit } from '@/types/resistor';
-import { filterAndSortResistorPairs } from '@/lib/voltage-divider-pair-finder';
+import {
+  filterResistorPairsByCurrent,
+  sortResistorPairs,
+} from '@/lib/voltage-divider-pair-finder';
 import { DividerPairFilterBar } from './DividerPairFilterBar';
 import { DividerPairTableRow } from './DividerPairTableRow';
 import { TableSortHeader } from './DividerTableSortHeader';
@@ -34,8 +37,10 @@ interface DividerStandardPairPickerProps {
   rlValue?: string;
   rlUnit?: ResistorUnit;
   onApplyPair: (r1: string, r1Unit: ResistorUnit, r2: string, r2Unit: ResistorUnit) => void;
-  activeR1?: { value: string; unit: ResistorUnit };
-  activeR2?: { value: string; unit: ResistorUnit };
+  activeR1Value?: string;
+  activeR1Unit?: ResistorUnit;
+  activeR2Value?: string;
+  activeR2Unit?: ResistorUnit;
 }
 
 export const DividerStandardPairPicker = React.memo(function DividerStandardPairPicker({
@@ -50,8 +55,10 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
   rlValue,
   rlUnit,
   onApplyPair,
-  activeR1,
-  activeR2,
+  activeR1Value,
+  activeR1Unit,
+  activeR2Value,
+  activeR2Unit,
 }: DividerStandardPairPickerProps) {
   // Engineering constraints & page size
   const [currentFilter, setCurrentFilter] = React.useState<CurrentFilterOption>('all');
@@ -74,9 +81,16 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
     setCurrentFilter('all');
   }, []);
 
+  // Split combined hook computations (rerender-split-combined-hooks):
+  // Filtering only recomputes when pairs or currentFilter change, not when sort column changes.
+  const filteredPairs = React.useMemo(
+    () => filterResistorPairsByCurrent(pairs, currentFilter),
+    [pairs, currentFilter]
+  );
+
   const sortedPairs = React.useMemo(
-    () => filterAndSortResistorPairs(pairs, currentFilter, sortState.key, sortState.dir),
-    [pairs, currentFilter, sortState]
+    () => sortResistorPairs(filteredPairs, sortState.key, sortState.dir),
+    [filteredPairs, sortState.key, sortState.dir]
   );
 
   if (pairs.length === 0) {
@@ -233,7 +247,7 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
                 <td colSpan={7} className="py-8 text-center text-zinc-400 font-sans text-xs">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <p>هیچ جفت مقاومت استانداردی با معیارهای فیلتر فعلی مطابقت ندارد.</p>
-                    {hasActiveFilters && (
+                    {hasActiveFilters ? (
                       <button
                         type="button"
                         onClick={handleResetFilters}
@@ -242,17 +256,17 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
                         <RotateCcw className="h-3 w-3" />
                         <span>بازنشانی فیلترها</span>
                       </button>
-                    )}
+                    ) : null}
                   </div>
                 </td>
               </tr>
             ) : (
               sortedPairs.slice(0, pageSize).map((pair, idx) => {
                 const isActive =
-                  activeR1?.value === pair.r1Value &&
-                  activeR1?.unit === pair.r1Unit &&
-                  activeR2?.value === pair.r2Value &&
-                  activeR2?.unit === pair.r2Unit;
+                  activeR1Value === pair.r1Value &&
+                  activeR1Unit === pair.r1Unit &&
+                  activeR2Value === pair.r2Value &&
+                  activeR2Unit === pair.r2Unit;
 
                 return (
                   <DividerPairTableRow

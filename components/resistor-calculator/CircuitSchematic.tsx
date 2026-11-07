@@ -20,7 +20,10 @@ const PARALLEL_LEGEND: SchematicLegendItem[] = [
   { label: 'شارش متناسب جریان (I)', color: '#10b981', marker: 'dash', textColor: 'text-emerald-400' },
 ];
 
-export function CircuitSchematic({ items, result }: CircuitSchematicProps) {
+export const CircuitSchematic = React.memo(function CircuitSchematic({
+  items,
+  result,
+}: CircuitSchematicProps) {
   const [symbolStandard, setSymbolStandard] = React.useState<SymbolStandard>('ieee');
   const [animateFlow, setAnimateFlow] = React.useState<boolean>(true);
   const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
@@ -100,4 +103,4 @@ export function CircuitSchematic({ items, result }: CircuitSchematicProps) {
       )}
     </SchematicCard>
   );
-}
+});

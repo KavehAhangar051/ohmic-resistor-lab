@@ -18,6 +18,8 @@ const EXIT_TRANSITION = { duration: 0.2, ease: [0.16, 1, 0.3, 1] } as const;
 const EXIT_STATE = { opacity: 0 } as const;
 const INITIAL_STATE = { opacity: 1 } as const;
 
+let didCompleteInitialLoad = false;
+
 /**
  * Clean initial application loader using only the raw ASCII Line animation.
  * Disappears once the page and all assets are fully loaded, with a calibrated minimum
@@ -27,10 +29,10 @@ export function InitialAppLoader({
   enabled = true,
   minDurationMs = 1100,
 }: InitialAppLoaderProps = {}): React.JSX.Element | null {
-  const [isLoading, setIsLoading] = useState<boolean>(enabled);
+  const [isLoading, setIsLoading] = useState<boolean>(() => enabled && !didCompleteInitialLoad);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || didCompleteInitialLoad) return;
 
     const startTime = performance.now();
     let timerId: ReturnType<typeof setTimeout> | null = null;
@@ -40,6 +42,7 @@ export function InitialAppLoader({
       const remaining = minDurationMs > elapsed ? minDurationMs - elapsed : 0;
 
       timerId = setTimeout(() => {
+        didCompleteInitialLoad = true;
         setIsLoading(false);
       }, remaining);
     };

@@ -4,26 +4,34 @@ interface SchematicDefsProps {
   terminalPulseOrigin?: { x: number; y: number };
 }
 
+const DEFAULT_PULSE_ORIGIN = { x: 58, y: 44 } as const;
+
+const STATIC_EDA_DEFS = (
+  <>
+    {/* Precision CAD Dot Grid */}
+    <pattern id="eda-grid" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="8" cy="8" r="0.65" fill="#27272a" />
+    </pattern>
+
+    {/* Laboratory Instrument Glow Filters */}
+    <filter id="emerald-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#10b981" floodOpacity="0.45" />
+    </filter>
+    <filter id="amber-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#f59e0b" floodOpacity="0.45" />
+    </filter>
+    <filter id="cyan-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#06b6d4" floodOpacity="0.55" />
+    </filter>
+  </>
+);
+
 export const SchematicDefs = React.memo(function SchematicDefs({
-  terminalPulseOrigin = { x: 58, y: 44 },
+  terminalPulseOrigin = DEFAULT_PULSE_ORIGIN,
 }: SchematicDefsProps) {
   return (
     <defs>
-      {/* Precision CAD Dot Grid */}
-      <pattern id="eda-grid" width="16" height="16" patternUnits="userSpaceOnUse">
-        <circle cx="8" cy="8" r="0.65" fill="#27272a" />
-      </pattern>
-
-      {/* Laboratory Instrument Glow Filters */}
-      <filter id="emerald-glow" x="-30%" y="-30%" width="160%" height="160%">
-        <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#10b981" floodOpacity="0.45" />
-      </filter>
-      <filter id="amber-glow" x="-30%" y="-30%" width="160%" height="160%">
-        <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#f59e0b" floodOpacity="0.45" />
-      </filter>
-      <filter id="cyan-glow" x="-30%" y="-30%" width="160%" height="160%">
-        <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#06b6d4" floodOpacity="0.55" />
-      </filter>
+      {STATIC_EDA_DEFS}
 
       {/* Keyframe Animations for EDA Instrumentation */}
       <style>

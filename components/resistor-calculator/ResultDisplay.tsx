@@ -9,13 +9,13 @@ interface ResultDisplayProps {
   result: ParallelCalculationResult;
 }
 
-export function ResultDisplay({ result }: ResultDisplayProps) {
+export const ResultDisplay = React.memo(function ResultDisplay({ result }: ResultDisplayProps) {
   return (
     <div className="relative rounded-xl border border-zinc-800 bg-[#121215] p-5 sm:p-6 overflow-hidden">
 
       {/* Short Circuit Warning Banner with Corporate Error Shake Pattern */}
       <AnimatePresence>
-        {result.isShortCircuit && (
+        {result.isShortCircuit ? (
           <motion.div
             initial={{ opacity: 0, height: 0, scale: 0.96, marginBottom: 0 }}
             animate={{
@@ -38,7 +38,7 @@ export function ResultDisplay({ result }: ResultDisplayProps) {
               <span>{result.errorMessage}</span>
             </div>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
 
       {/* Main Result Display Content */}
@@ -77,4 +77,4 @@ export function ResultDisplay({ result }: ResultDisplayProps) {
       </div>
     </div>
   );
-}
+});
