@@ -1,150 +1,93 @@
-# معماری فنی و جریان داده (Technical Architecture)
+# معماری فنی و جریان داده (`ARCHITECTURE.md`)
 
-## ۱. ساختار پوشه‌ها و سلسله‌مراتب فایل‌ها
+## ۱. ساختار پوشه‌ها و ماژول‌ها
 
-```
+```text
 /
 ├── app/
-│   ├── layout.tsx                   # چیدمان ریشه (Root Layout) و تنظیم فونت و متادیتا
-│   ├── page.tsx                     # صفحه اصلی (سوئیچینگ ابزارها)
-│   └── globals.css                  # استایل‌های سراسری، فونت‌های محلی و Tailwind
+│   ├── layout.tsx                           # Root Layout، فونت‌های محلی و متادیتا
+│   ├── page.tsx                             # سوئیچینگ ۳ ابزار آزمایشگاهی
+│   ├── globals.css                          # توکن‌های رنگ، فونت‌ها و Tailwind CSS 4
+│   ├── error.tsx / global-error.tsx         # مرزهای خطای زمان اجرا (Error Boundaries)
+│   └── not-found.tsx                        # صفحه 404
 ├── components/
-│   ├── layout/
-│   │   └── AppShell.tsx             # پوسته اصلی شامل هدر مهندسی، سوییچ ابزار و فوتر
-│   ├── resistor-calculator/         # ماژول آزمایشگاه مقاومت‌های موازی
-│   │   ├── ResistorCalculatorView.tsx  # کانتینر اصلی وضعیت شبکه موازی
-│   │   ├── CircuitSchematic.tsx        # رندرینگ SVG شماتیک زنده و تعاملی
-│   │   ├── ResistorRow.tsx             # ردیف ورودی مقاومت و کنترل‌های واحد/حذف
-│   │   └── ResultDisplay.tsx           # کارت نمایش مقاومت معادل و بازشونده فرمول
-│   ├── voltage-divider/             # ماژول آزمایشگاه مقسم ولتاژ و پتانسیومتر
-│   │   ├── VoltageDividerView.tsx      # کانتینر وضعیت مقسم و حل‌کننده‌های معکوس
-│   │   ├── DividerSchematic.tsx        # شماتیک برداری مدار مقسم ولتاژ
-│   │   ├── DividerResultDisplay.tsx    # نمایشگر پارامترهای تئونن، توان و جریان
-│   │   ├── DividerStandardPairPicker.tsx # جدول بهینه‌ساز جفت مقاومت‌های استاندارد
-│   │   └── DividerTableSortHeader.tsx  # هدر مرتب‌سازی ستون‌های جدول مهندسی
-│   ├── passive-filter/              # ماژول آزمایشگاه فیلترهای فرکانسی RC و RL
-│   │   ├── PassiveFilterView.tsx       # کانتینر وضعیت فیلترها و تنظیمات فرکانس تست
-│   │   ├── FilterSchematic.tsx         # شماتیک برداری مدار فیلتر با موج متناوب AC
-│   │   ├── FilterBodePlot.tsx          # رسم دیاگرام بُد (دامنه dB و فاز) در ۴ دهه لاگاریتمی
-│   │   ├── FilterResultDisplay.tsx     # نمایشگر مقادیر فرکانس قطع، تاخیر و تضعیف
-│   │   └── FilterStandardPicker.tsx    # انتخاب‌گر جفت قطعات تجاری E24/E12
-│   ├── schematic-core/              # المان‌های زیربنایی SVG شماتیک (Power, Gnd, Pad, Resistor)
-│   ├── custom-cursor/               # نشانگر ماوس شتاب‌یافته سخت‌افزاری 120FPS
-│   └── ui/                          # کامپوننت‌های پایه UI (دکمه، کارت، ورودی، سلکتور)
+│   ├── layout/AppShell.tsx                  # هدر مهندسی، ناوبری تب‌ها و فوتر
+│   ├── resistor-calculator/                 # آزمایشگاه مقاومت‌های موازی
+│   │   ├── ResistorCalculatorView.tsx       # کانتینر وضعیت شبکه موازی
+│   │   ├── CircuitSchematic.tsx             # بوم شماتیک برداری SVG
+│   │   ├── ResistorRow.tsx                  # ردیف ورودی شاخه و کد رنگی
+│   │   ├── ResultDisplay.tsx                # نمایشگر مقاومت معادل و رسانایی
+│   │   └── schematic/                       # اجزای شاخه، باس‌ها و ترمینال‌های موازی
+│   ├── voltage-divider/                     # آزمایشگاه مقسم ولتاژ
+│   │   ├── VoltageDividerView.tsx           # کانتینر وضعیت مقسم ولتاژ
+│   │   ├── DividerSchematic.tsx             # شماتیک برداری مقسم ولتاژ و بار RL
+│   │   ├── DividerParameterRow.tsx          # ردیف ورودی ولتاژ و مقاومت بار
+│   │   ├── DividerResultDisplay.tsx         # نمایشگر تئونن، توان و جریان
+│   │   ├── DividerStandardPairPicker.tsx    # جدول انتخاب‌گر جفت مقاومت‌های E24/E96
+│   │   ├── DividerPairFilterBar.tsx         # نوار فیلتر حالت کاربرد، سری و جریان
+│   │   ├── DividerPairTableRow.tsx          # سطر جدول جفت‌های پیشنهادی
+│   │   ├── DividerTableSortHeader.tsx       # هدر مرتب‌سازی ستون‌های جدول
+│   │   └── ResistorColorCodeBadge.tsx       # بج کد رنگی ۴ نواره EIA
+│   ├── passive-filter/                      # آزمایشگاه فیلترهای پسیو RC و RL
+│   │   ├── PassiveFilterView.tsx            # کانتینر وضعیت فیلتر فرکانسی
+│   │   ├── FilterSchematic.tsx              # شماتیک مدار فیلتر با منبع AC
+│   │   ├── FilterBodePlot.tsx               # نمودار بُد (دامنه dB و فاز) در ۴ دهه
+│   │   ├── FilterResultDisplay.tsx          # نمایشگر فرکانس قطع، ثابت زمانی و تضعیف
+│   │   └── FilterStandardPicker.tsx         # پیشنهاد جفت قطعات استاندارد E24/E12
+│   ├── schematic-core/                      # المان‌های پایه SVG (Resistor, Ground, Node, Pad, PowerPort, Card)
+│   ├── custom-cursor/                       # نشانگر ماوس شتاب‌یافته سخت‌افزاری (LERP RAF)
+│   ├── motion/loader.tsx                    # اسپینر متنی ASCII Line (`| / - \`)
+│   └── ui/                                  # کامپوننت‌های پایه UI (Button, Card, Input, Badge, Tooltip)
 ├── lib/
-│   ├── resistor-calc.ts             # موتور محاسبات شبکه موازی و کدهای رنگی
-│   ├── voltage-divider-calc.ts      # موتور محاسبات مقسم ولتاژ و نقطه کار
-│   ├── voltage-divider-solver.ts    # حل‌کننده‌های تحلیلی معادلات (R1, R2, Vin)
-│   ├── voltage-divider-pair-finder.ts # جستجوگر چندهدفه مقاومت‌های استاندارد E24/E96
-│   ├── voltage-divider-format.ts    # ماژول فرمت مهندسی واحدهای جریان، توان و مقاومت
-│   ├── passive-filter-calc.ts       # موتور محاسبات فیزیک فیلترها و توابع تبدیل فرکانسی
-│   ├── e-series.ts                  # جداول کدهای استاندارد EIA سری‌های E12/E24
-│   └── utils.ts                     # توابع کمکی مشترک (cn برای کلاس‌های شرطی)
-├── types/
-│   ├── resistor.ts                  # تایپ‌های محاسبات مقاومت موازی
-│   ├── voltage-divider.ts           # تایپ‌های مقسم ولتاژ و سری‌های استاندارد
-│   └── passive-filter.ts            # تایپ‌های فیلترهای پسیو فرکانسی RC/RL
-└── GEMINI.md                        # قوانین و استانداردهای توسعه
+│   ├── resistor-calc.ts                     # محاسبات شبکه موازی (رسانایی G) و مدیریت شاخه‌ها
+│   ├── resistor-color-code.ts               # کدگذار ۴ نواره رنگ مقاومت (IEC 60062) با کش محدود
+│   ├── voltage-divider-calc.ts              # سرویس ارزیابی فضای کاری مقسم ولتاژ، تئونن و توان
+│   ├── voltage-divider-solver.ts            # حل‌کننده‌های تحلیلی معادلات (`solveR1`, `solveR2`, `solveVin`, `getEffectiveR2`)
+│   ├── voltage-divider-pair-finder.ts       # جستجوگر و مرتب‌ساز جفت مقاومت‌های تجاری E24/E96
+│   ├── voltage-divider-pair-scoring.ts      # امتیازدهی امپدانس ADC، پایداری بایاس و سفتی بار
+│   ├── voltage-divider-format.ts            # تبدیل واحد و فرمت مهندسی (`toOhms`, `toVolts`, `decomposeOhms`)
+│   ├── passive-filter-calc.ts               # محاسبات فیلتر RC/RL، تابع تبدیل و تصویرسازی نمودار بُد
+│   ├── e-series.ts                          # جداول استاندارد سری‌های E12، E24 و E96
+│   ├── utils.ts                             # ترکیب کلاس‌ها (`cn`) و پاک‌سازی ورودی عددی (`sanitizeNumericInput`)
+│   └── clean-architecture.test.ts           # تست‌های واحد مرز ماژول‌ها (`node:test`)
+└── types/
+    ├── resistor.ts                          # تایپ‌ها و جدول ضرایب واحد مقاومت (`RESISTOR_UNIT_MAP`)
+    ├── voltage-divider.ts                   # تایپ‌های مقسم ولتاژ و جفت‌های استاندارد
+    └── passive-filter.ts                    # تایپ‌های فیلتر پسیو و مختصات نمودار بُد
 ```
 
 ---
 
-## ۲. جریان داده و مدیریت وضعیت (State Flow)
+## ۲. قانون وابستگی و لایه‌بندی (PoEAA & Clean Architecture)
 
-جریان داده در این نرم‌افزار به صورت یک‌طرفه (Unidirectional) و مبتنی بر Single Source of Truth مدیریت می‌شود:
+جریان وابستگی‌ها یک‌طرفه و رو به داخل است (`app/components` $\rightarrow$ `lib` $\rightarrow$ `types`):
 
-```
-[کاربر: ورودی مقادیر / تغییر واحد / حذف / اضافه شاخه]
-                         │
-                         ▼
-        ┌──────────────────────────────────┐
-        │   ResistorCalculatorView State   │
-        │      items: ResistorItem[]       │
-        └──────────────────────────────────┘
-                         │
-                         ├─────────────────────────────────────────┐
-                         │                                         │
-                         ▼                                         ▼
-            ┌───────────────────────────┐             ┌─────────────────────────┐
-            │ lib/resistor-calc.ts      │             │ CircuitSchematic.tsx    │
-            │ calculateParallelResistance│             │ محاسبات سهم جریان Ik    │
-            └───────────────────────────┘             │ رندر اتصالات و قطعات    │
-                         │                            └─────────────────────────┘
-                         ▼                                         │
-        ┌──────────────────────────────────┐                       ▼
-        │ ParallelCalculationResult        │─────────────► [نمایش بصری مدار]
-        │ Req, Conductance, Error, Units   │
-        └──────────────────────────────────┘
-                         │
-                         ▼
-             ┌───────────────────────┐
-             │ ResultDisplay.tsx     │
-             │ نمایش خروجی و فرمول   │
-             └───────────────────────┘
-```
+| لایه | مسیر | مسئولیت | محدودیت |
+| :--- | :--- | :--- | :--- |
+| **Presentation Layer** | `app/`, `components/` | وضعیت تعامل کاربر، رندرینگ SVG و جدول‌ها | فاقد فرمول‌های فیزیک مدار و تبدیل واحد دستی |
+| **Service / Facade Layer** | `lib/*-calc.ts`, `lib/*-pair-finder.ts` | هماهنگی سناریوها، ترکیب وضعیت و تولید DTO خروجی | بدون وابستگی به React، DOM یا Next.js |
+| **Domain / Table Modules** | `lib/*-solver.ts`, `lib/e-series.ts`, `lib/*-scoring.ts` | معادلات جبری مدار، امتیازدهی مهندسی و جداول EIA | توابع خالص (Pure Functions) و سینگلتون‌های تغییرناپذیر |
+| **Value Objects & Contracts** | `types/*.ts` | قراردادهای داده (DTO)، واحدها و ضرایب پایه | بدون هیچ‌گونه وابستگی خارجی |
 
 ---
 
-## ۳. موتور محاسبات فیزیک مدار (`lib/resistor-calc.ts`)
+## ۳. مرز ماژول‌های عمیق (Deep Module Seams)
 
-محاسبات موازی مستقیماً با رسانایی الکتریکی ($G$ بر حسب زیمنس) انجام می‌شود تا درگیر کسرهای تودرتو و خطای گرد کردن ممیز شناور نشویم:
-
-1. **تبدیل به اهم**:
-   $$R_{\text{ohms}} = \text{value} \times \text{multiplier}$$
-   ($\text{multiplier} = 1$ برای $\Omega$، $10^3$ برای $\text{k}\Omega$، $10^6$ برای $\text{M}\Omega$)
-
-2. **رسانایی هر شاخه و جمع کل**:
-   $$G_k = \frac{\text{count}_k}{R_{\text{ohms}, k}}, \quad G_{\text{total}} = \sum_{k=1}^N G_k$$
-
-3. **مقاومت معادل ($R_{eq}$)**:
-   $$R_{eq} = \frac{1}{G_{\text{total}}}$$
-
-4. **تشخیص اتصال کوتاه**:
-   اگر حتی یک شاخه $0\,\Omega$ باشد، مدار اتصال کوتاه است و بلافاصله $R_{eq} = 0\,\Omega$ با فلگ `isShortCircuit = true` برگردانده می‌شود.
-
-5. **تغییر خودکار واحد نمایش**:
-   مقادیر بزرگ‌تر یا مساوی $10^6\,\Omega$ با واحد $\text{M}\Omega$، مقادیر بزرگ‌تر یا مساوی $10^3\,\Omega$ با واحد $\text{k}\Omega$ و بقیه با واحد $\Omega$ فرمت می‌شوند.
+| زمینه (Bounded Context) | نقطه ورود (Entry Seam) | ورودی | خروجی (DTO) | تضمین‌ها (Invariants) |
+| :--- | :--- | :--- | :--- | :--- |
+| **مقاومت موازی** | `calculateParallelResistance` | `ResistorItem[]` | `ParallelCalculationResult` | تشخیص اتصال کوتاه ($R=0\rightarrow R_{eq}=0$)، حفظ حداقل ۱ شاخه در `removeResistorBranch` |
+| **مقسم ولتاژ** | `evaluateVoltageDividerWorkspace` | `VoltageDividerState`, `PairSortCriterion` | `VoltageDividerWorkspaceEvaluation` | محاسبه $R_{2,\text{eff}} = R_2 \parallel R_L$، تطبیق امپدانس تئونن با هدف `sampling`/`biasing`/`reference` |
+| **فیلتر پسیو RC/RL** | `calculatePassiveFilter` + `buildBodePlotProjection` | `FilterState`, `BodeViewport` | `FilterCalculationResult`, `BodePlotProjection` | جاروب ۴ دهه لاگاریتمی حول $f_c$ ($0.01f_c$ تا $100f_c$)، حفظ واحد خازنی/سلفی در `applyStandardFilterPair` |
 
 ---
 
-## ۴. موتور شماتیک الکتریکی (`CircuitSchematic.tsx`)
+## ۴. معادلات پایه فیزیک مدار
 
-کامپوننت `CircuitSchematic` مقادیر `items` و شیء خروجی `result` را دریافت کرده و به شکل هندسی برداری SVG تبدیل می‌کند:
-- **نقطه شروع و فاصله شاخه‌ها**:
-  موقعیت شاخه $i$ به صورت $X_i = \text{firstBranchX} + i \times \text{branchSpacing}$ محاسبه می‌شود.
-- **ترمینال انتهایی ریل**:
-  ریل‌های اصلی ولتاژ بالا و پایین در نقطه اتصال آخرین شاخه ($X_{last}$) متوقف می‌شوند تا خط معلق در مدار وجود نداشته باشد.
-- **محاسبه توزیع جریان شاخه‌ها**:
-  $$\text{Current Share } \% = \frac{G_i}{G_{\text{total}}} \times 100\%$$
+1. **شبکه موازی (مبتنی بر رسانایی $G$)**:
+   $$G_{\text{total}} = \sum_{k=1}^N \frac{\text{count}_k}{R_k}, \quad R_{eq} = \frac{1}{G_{\text{total}}}, \quad \text{Share}_k = \frac{G_k}{G_{\text{total}}} \times 100\%$$
+2. **مقسم ولتاژ تحت بار ($R_L$)**:
+   $$R_{2,\text{eff}} = \frac{R_2 \cdot R_L}{R_2 + R_L}, \quad V_{\text{out}} = V_{\text{in}} \frac{R_{2,\text{eff}}}{R_1 + R_{2,\text{eff}}}, \quad R_{\text{th}} = \frac{R_1 \cdot R_2}{R_1 + R_2}$$
+3. **فیلتر پسیو مرتبه اول (RC / RL)**:
+   $$f_{c,\text{RC}} = \frac{1}{2\pi R C}, \quad f_{c,\text{RL}} = \frac{R}{2\pi L}, \quad |H(f)|_{\text{LP}} = \frac{1}{\sqrt{1 + (f/f_c)^2}}, \quad |H(f)|_{\text{HP}} = \frac{f/f_c}{\sqrt{1 + (f/f_c)^2}}$$
 
----
-
-## ۵. مرز ماژول‌ها و طراحی رابط‌ها (Deep Modules)
-
-ماژول‌های محاسباتی داخل `lib/` طوری طراحی شده‌اند که کامپوننت‌های رابط کاربری مجبور نباشند تبدیل واحد، جستجوی جدول `E24`/`E96` و بررسی قیدهای مدار را مرحله‌به‌مرحله با هم هماهنگ کنند:
-
-در مقسم ولتاژ، تابع `evaluateVoltageDividerWorkspace` در `lib/voltage-divider-calc.ts` ولتاژها و مقاومت بار را به واحد پایه تبدیل می‌کند، بهترین جفت‌های استاندارد تجاری را می‌یابد، جفت انتخاب‌شده را با وضعیت فعلی مدار ترکیب می‌کند و نتیجه نهایی تئونن و توان را برمی‌گرداند. ماژول `lib/voltage-divider-solver.ts` هم فقط حل‌کننده‌های معادلات تحلیلی (`solveR1`، `solveR2`، `solveVin` و `getEffectiveR2`) را نگه می‌دارد و صادرات عبوری (Pass-through) ندارد.
-
-به همین شکل در شبکه موازی، `calculateParallelResistance` آمار جریان و سرعت انیمیشن هر شاخه (`branchStats`) را همراه مقاومت معادل برمی‌گرداند و توابع تغییر شاخه (`removeResistorBranch` و همنوعانش) تضمین می‌کنند که حداقل یک شاخه در مدار باقی بماند. در فیلتر پسیو هم `calculatePassiveFilter` علاوه بر پاسخ فرکانسی و نقاط نمودار بُد، جفت‌های استاندارد تجاری (`standardPairs`) را در همان خروجی تولید می‌کند. تست‌های واحد در `lib/clean-architecture.test.ts` مستقیماً همین توابع خروجی را صدا می‌زنند.
-
----
-
-## ۶. الگوهای معماری سازمانی مارتین فاولر (PoEAA)
-
-معماری این سامانه بر اساس الگوهای کتاب *Patterns of Enterprise Application Architecture* سازمان‌دهی شده است:
-
-1. **لایه‌بندی صریح (Explicit Layering)**:
-   - **لایه نمایش (Presentation Layer)**: کامپوننت‌های React در پوشه `components/` فقط وظیفه دریافت تعاملات کاربر، وضعیت بصری و رندرینگ SVG را بر عهده دارند و فاقد هرگونه محاسبات مدار هستند.
-   - **لایه سرویس / هماهنگی کاربرد (Service Layer / Application Facade)**: توابع سطح‌بالا (`evaluateVoltageDividerWorkspace`, `calculateParallelResistance`, `calculatePassiveFilter`) جریان سناریوهای کاربر را هماهنگ می‌کنند و واسط درشت‌دانه (Coarse-grained) به لایه نمایش ارائه می‌دهند.
-   - **مدل دامنه و حل‌کننده‌ها (Domain Model & Solvers)**: توابع خالص فیزیک الکترونیک و حل معادلات جبری مدار در ماژول‌های مجزا (`voltage-divider-solver.ts`, `resistor-calc.ts`).
-   - **ماژول جدول داده (Table Module / Data Gateway)**: ماژول `e-series.ts` دسترسی و جستجو روی جداول داده‌ای مقادیر استاندارد تجاری EIA (سری‌های E12، E24، E96) را متمرکز می‌کند.
-
-2. **اشیاء انتقال داده (Data Transfer Objects - DTOs)**:
-   - خروجی لایه سرویس به لایه نمایش در قالب اشیاء DTO مشخص و صریح (`VoltageDividerResult`, `ParallelCalculationResult`, `FilterCalculationResult`) انتقال می‌یابد تا لایه نمایش به جزییات محاسبات واسط وابسته نباشد.
-
-3. **اشیاء مقداری (Value Objects)**:
-   - واحدهای اندازه‌گیری مقاومت و ولتاژ، دسته‌بندی‌های وضعیت و خروجی‌های تبدیل مهندسی به عنوان Value Objectهای تغییرناپذیر (Immutable) مدیریت می‌شوند.
-
-4. **اجتناب از تئاتر لایه‌بندی (No Layering Theater)**:
-   - هر لایه وظیفه کاهش جفت‌شدگی (Coupling) و تعریف مرز صریح را انجام می‌دهد و هیچ لایه صوری و پاس‌دادن محض متدها در سیستم وجود ندارد.
 

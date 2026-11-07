@@ -20,7 +20,6 @@
 - **Thevenin Impedance (`R_th`)**: Equivalent output impedance looking back into the unloaded divider node (`(R1 * R2) / (R1 + R2)`).
 - **Effective Lower Resistance (`R2_eff`)**: Parallel combination of `R2` and load resistor `RL` (`getEffectiveR2`).
 - **Load Sag**: Drop in `Vout` (in Volts and percentage) when a finite load `RL` is connected across `R2`.
-- **Load Regulation Curve**: Logarithmic sweep of `Vout` across `RL` from heavy loading (`0.05 * R2`) to near open-circuit (`25 * R2`).
 - **Commercial E-Series Pair (`StandardResistorPair`)**: A pair of standard `E12`, `E24`, or `E96` resistors scored against target `Vout`, quiescent current, and application-mode impedance rules.
 
 ### 3. Passive Filter Context (`types/passive-filter.ts`, `lib/passive-filter-calc.ts`)

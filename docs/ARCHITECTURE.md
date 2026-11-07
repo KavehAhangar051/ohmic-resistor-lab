@@ -1,90 +1,69 @@
 # Architecture Record (`docs/ARCHITECTURE.md`)
 
-> Created by `improve-code-quality` (Phases 5, 8, 9, and Optional DDD Phase). Companion to root `/ARCHITECTURE.md`.
+> Companion architectural decision record (ADR) to root [`/ARCHITECTURE.md`](../ARCHITECTURE.md) and [`/CONTEXT.md`](../CONTEXT.md).
 
 ## Layer Map & Dependency Rule
 
 ```text
 +-------------------------------------------------------------------------+
-| Layer 3: Presentation & UI (`app/`, `components/`, `hooks/`)            |
-| - Next.js 15 App Router entry, state hooks, SVG diagram, calculator UI  |
+| Layer 3: Presentation & UI (`app/`, `components/`)                      |
+| - Next.js 15 App Router entry, interactive state, SVG schematics & Bode |
 +-------------------------------------------------------------------------+
                                     |
                                     v (depends inward only)
 +-------------------------------------------------------------------------+
 | Layer 2: Pure Domain & Application Services (`lib/*.ts`)                |
-| - IEC 60062 color band decoder/encoder, EIA E-series matcher,           |
-|   parallel/series solver, loaded voltage divider math & formatting      |
+| - Parallel conductance engine, E24/E96 voltage divider solver & scorer, |
+|   first-order RC/RL transfer functions, EIA 4-band color encoding       |
 +-------------------------------------------------------------------------+
                                     |
                                     v (depends inward only)
 +-------------------------------------------------------------------------+
-| Layer 1: Entities & Value Types (`types/resistor.ts`)                   |
-| - BandCount, BandRole, ColorId, ResistorUnit, RESISTOR_UNIT_MAP,        |
-|   CalculationResult, ESeriesResult, VoltageDividerInput/Result          |
+| Layer 1: Entities & Value Contracts (`types/*.ts`)                      |
+| - `types/resistor.ts`, `types/voltage-divider.ts`,                      |
+|   `types/passive-filter.ts`, `RESISTOR_UNIT_MAP`                        |
 +-------------------------------------------------------------------------+
 ```
 
-**Dependency Rule**: Source code dependencies point strictly inward (`app/components/hooks` -> `lib` -> `types`). `types/` and `lib/` contain zero React, DOM, browser storage, or Next.js imports.
+**Dependency Rule**: Source code dependencies point strictly inward (`app/components` -> `lib` -> `types`). `types/` and `lib/` contain zero React, DOM, browser storage, or Next.js imports.
 
 ---
 
 ## System Context
 
-- **Runtime**: Client-side static single-page web application (Next.js 15 static export `output: 'export'`).
-- **Deployment Target**: GitHub Pages (`https://kavehahangar051.github.io/ohmic-resistor-lab`) via `.github/workflows/deploy.yml` and local Node/Next.js dev server on port `3000`.
-- **External Dependencies**: Zero backend APIs, zero telemetry, zero remote runtime calls. All calculations execute synchronously in the browser's main thread in `< 1 ms`.
+| Property | Value |
+| :--- | :--- |
+| **Runtime** | Client-side static web application (Next.js 15 `output: 'export'` on CI, `standalone` in preview) |
+| **Deployment Target** | GitHub Pages (`https://kavehahangar051.github.io/ohmic-resistor-lab`) & port `3000` dev server |
+| **External Dependencies** | Zero backend APIs, zero telemetry, zero outbound network calls at runtime |
+| **State Management** | Unidirectional React state in view containers (`ResistorCalculatorView`, `VoltageDividerView`, `PassiveFilterView`) |
 
 ---
 
-## Data & Storage Decisions
+## Bounded Contexts
 
-- **Primary State Store**: Ephemeral React state in `hooks/use-resistor-calculator.ts` (current band count, selected band colors, reverse ohmic input, and unit).
-- **Encoding & Serialization**: Pure in-memory TypeScript value objects defined in `types/resistor.ts`.
-- **Caching & Persistence**: Static constant lookup tables (`COLOR_DATA`, `COLOR_MAP`, `E_SERIES_VALUES`, `RESISTOR_UNIT_MAP`) evaluated once at module load time. No `localStorage`, cookies, or IndexedDB persistence is required, eliminating stale client-cache failure modes.
-
----
-
-## Bounded Contexts & Context Map
-
-1. **Color Code & E-Series Context** (`lib/resistor-data.ts`, `lib/resistor-calc.ts`, `lib/resistor-color-code.ts`, `lib/e-series-data.ts`, `lib/e-series.ts`):
-   - Owns IEC 60062 4/5/6-band decoding, reverse value-to-band quantization, and EIA E12/E24/E48/E96 nearest standard value matching.
-2. **Parallel/Series Synthesis Context** (`lib/parallel-series.ts`):
-   - Consumes `E_SERIES_VALUES` from the E-Series Context to synthesize target resistances from two standard E-series resistors in series (`R1 + R2`) or parallel (`(R1 * R2) / (R1 + R2)`).
-3. **Voltage Divider & Load Analysis Context** (`lib/voltage-divider.ts`, `lib/voltage-divider-solver.ts`, `lib/voltage-divider-format.ts`):
-   - Owns loaded/unloaded DC voltage divider calculation (`Vout`, `R_eq`, branch currents, power dissipation, load drop percentage, and E24 pair suggestions).
-   - Shares the canonical `ResistorUnit` and `RESISTOR_UNIT_MAP` kernel in `types/resistor.ts` with the Color Code Context.
-
----
-
-## Domain Glossary (Ubiquitous Language)
-
-| Term | Code Representation | Definition |
+| Context | Modules | Core Responsibility |
 | :--- | :--- | :--- |
-| **Band Count** | `BandCount` (`4 \| 5 \| 6`) | Number of IEC 60062 color bands painted on the axial resistor body. |
-| **Band Role** | `BandRole` (`digit \| multiplier \| tolerance \| tcr`) | Functional meaning of a band position for a given `BandCount`. |
-| **Nominal Resistance** | `CalculationResult.resistance` | Decoded resistance in Ohms (`Ω`) prior to tolerance bounds. |
-| **Tolerance Window** | `minResistance`, `maxResistance` | Lower and upper resistance bounds in Ohms derived from `±tolerance%`. |
-| **TCR** | `tcr` (`ppm/K`) | Temperature Coefficient of Resistance (6th band on precision 6-band resistors). |
-| **E-Series** | `ESeriesName` (`E12 \| E24 \| E48 \| E96`) | IEC 60063 logarithmic decade series of preferred standard resistor values. |
-| **Effective R2** | `getEffectiveR2(r2, rLoad)` | Parallel combination of lower divider resistor `R2` and load impedance `R_load`. |
-| **Load Drop %** | `VoltageDividerResult.loadDropPercent` | Percentage drop in `V_out` caused by connecting a finite `R_load` across `R2`. |
+| **Parallel Network** | `types/resistor.ts`, `lib/resistor-calc.ts`, `lib/resistor-color-code.ts` | Conductance-based equivalent resistance ($R_{eq}$), per-branch current share telemetry, branch collection invariants, and 4-band EIA color encoding |
+| **Voltage Divider Workspace** | `types/voltage-divider.ts`, `lib/voltage-divider-*.ts`, `lib/e-series.ts` | Forward/inverse divider equations, loaded $R_{2,\text{eff}}$ sag analysis, and multi-objective E24/E96 resistor pair synthesis |
+| **Passive Filter (RC / RL)** | `types/passive-filter.ts`, `lib/passive-filter-calc.ts` | Cutoff frequency ($f_c$), time constant ($\tau$), 4-decade Bode magnitude/phase projection, and E24/E12 component pair matching |
 
 ---
 
 ## Decision Log
 
 ### ADR-001: Keep All Electrical Domain Logic Pure and Framework-Free in `lib/`
-- **Context**: UI state changes frequently and must be testable without spinning up a browser DOM.
-- **Decision**: Enforce strict inward dependency rules (`components/hooks` -> `lib` -> `types`) and keep `lib/` 100% pure TypeScript functions tested via `node:test`.
-- **Consequences**: Complete domain test execution in ~120 ms with zero mocking or DOM overhead.
+- **Context**: Circuit math and E-series optimization must be verifiable without DOM rendering overhead.
+- **Decision**: Enforce inward dependencies (`components` -> `lib` -> `types`) and pin all `lib/` seams with `node:test` in `lib/clean-architecture.test.ts`.
+- **Consequences**: Full 8-test domain suite runs in ~400 ms (`npm run test`).
 
 ### ADR-002: Consolidate Unit Multipliers in `types/resistor.ts` (`RESISTOR_UNIT_MAP`)
-- **Context**: `Ohm`, `kOhm`, and `MOhm` scale factors (`1`, `1e3`, `1e6`) were previously defined in three separate modules (`lib/resistor-calc.ts`, `lib/resistor-color-code.ts`, `lib/voltage-divider-format.ts`).
-- **Decision**: Extract `RESISTOR_UNIT_MAP` to `types/resistor.ts` as the single canonical source of truth across all contexts.
-- **Consequences**: Eliminates DRY knowledge duplication while preserving inward dependency direction.
+- **Context**: `Ohm`, `kOhm`, and `MOhm` scale factors (`1`, `1e3`, `1e6`) are needed across all three bounded contexts.
+- **Decision**: Define `RESISTOR_UNIT_MAP` once in `types/resistor.ts` as the single canonical source of truth.
+- **Consequences**: Zero duplicated multiplier maps across `lib/`.
 
-### ADR-003: Dual-Stage Static Analysis (`tsc --noEmit` + `oxlint` Custom Anti-Slop Plugin)
-- **Context**: Standard linting misses structural AI-slop patterns such as widened object return types, over-nested conditionals, and cramped multi-line declarations.
-- **Decision**: Enforce `npm run check` (`tsc --noEmit` + `oxlint` with `.oxlint/plugins/anti-slop.mjs`) on every change and in GitHub Actions CI.
-- **Consequences**: Zero warnings and zero errors across all repository files before deployment.
+### ADR-003: Dual-Stage Static Analysis (`tsc --noEmit` + `eslint` + `oxlint` Custom Anti-Slop Plugin)
+- **Context**: Standard linting misses structural AI-slop patterns such as widened object return types and cramped multi-line declarations.
+- **Decision**: Enforce `npm run check` (`tsc --noEmit && eslint . && oxlint`) on every change.
+- **Consequences**: Zero warnings and zero errors across all 65 repository source files.
+

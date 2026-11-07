@@ -1,11 +1,12 @@
 {
-  "name": "ai-studio-applet",
+  "name": "ohmic-resistor-lab",
   "version": "0.1.5",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000 -H 0.0.0.0",
     "build": "NODE_ENV=production next build",
     "start": "next start",
+    "test": "npx --yes tsx --test lib/clean-architecture.test.ts",
     "lint": "eslint . && oxlint",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run lint",
