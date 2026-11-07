@@ -109,7 +109,7 @@ export const DividerStandardPairPicker = React.memo(function DividerStandardPair
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-      className="relative rounded-xl border border-zinc-800 bg-[#121215] p-5 sm:p-6 overflow-hidden space-y-4"
+      className="relative rounded-xl border border-zinc-800 bg-[#121215] lab-panel cv-auto-section p-5 sm:p-6 overflow-hidden space-y-4"
     >
 
       {/* Engineering Filter Bar with Application Modes */}

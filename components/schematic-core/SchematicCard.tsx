@@ -165,6 +165,7 @@ export function SchematicCard({
           }}
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           className="w-full block"
+          width={svgWidth}
           height={svgHeight}
           preserveAspectRatio="xMidYMid meet"
           aria-label={title}

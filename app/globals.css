@@ -190,6 +190,12 @@
       0 10px 28px -8px rgba(4, 12, 10, 0.55);
   }
 
+  /* Skip layout and paint work for below-the-fold data tables until scrolled near */
+  .cv-auto-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 420px;
+  }
+
   ::selection {
     background-color: #27272a;
     color: #ffffff;

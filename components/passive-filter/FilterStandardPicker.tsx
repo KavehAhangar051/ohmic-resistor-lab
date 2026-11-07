@@ -76,7 +76,7 @@ export const FilterStandardPicker = React.memo(function FilterStandardPicker({
   }
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-[#121215] p-4 space-y-3">
+    <div className="rounded-xl border border-zinc-800 bg-[#121215] lab-panel cv-auto-section p-4 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 pb-2.5">
         <div>
           <h2 className="text-xs sm:text-sm font-semibold text-zinc-100 flex items-center gap-1.5">

@@ -4,6 +4,8 @@ const isGithubPages = process.env.GITHUB_ACTIONS === 'true' || process.env.GITHU
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  compress: true,
+  poweredByHeader: false,
   eslint: {
     ignoreDuringBuilds: true,
   },

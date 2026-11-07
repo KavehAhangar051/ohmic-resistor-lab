@@ -27,13 +27,13 @@ let didCompleteInitialLoad = false;
  */
 export function InitialAppLoader({
   enabled = true,
-  minDurationMs = 1100,
+  minDurationMs = 180,
 }: InitialAppLoaderProps = {}): React.JSX.Element | null {
   const [isLoading, setIsLoading] = useState<boolean>(() => enabled && !didCompleteInitialLoad);
 
   useEffect(() => {
     let minTimeElapsed = false;
-    let windowLoaded = document.readyState === 'complete';
+    let windowLoaded = document.readyState !== 'loading';
 
     const tryComplete = () => {
       if (enabled && !didCompleteInitialLoad && minTimeElapsed && windowLoaded) {
@@ -52,10 +52,12 @@ export function InitialAppLoader({
       tryComplete();
     }, minDurationMs);
 
+    window.addEventListener('DOMContentLoaded', handleLoad, { once: true, passive: true });
     window.addEventListener('load', handleLoad, { once: true, passive: true });
 
     return () => {
       clearTimeout(timerId);
+      window.removeEventListener('DOMContentLoaded', handleLoad);
       window.removeEventListener('load', handleLoad);
     };
   }, [enabled, minDurationMs]);
