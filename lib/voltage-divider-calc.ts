@@ -6,7 +6,6 @@ import {
   VoltageDividerPairSelection,
   StandardResistorPair,
   PairSortCriterion,
-  DividerPreset,
 } from '@/types/voltage-divider';
 import { formatPrecision } from './resistor-calc';
 import {
@@ -17,8 +16,6 @@ import {
 } from './voltage-divider-solver';
 import { findBestE24Pairs } from './voltage-divider-pair-finder';
 import {
-  RESISTOR_UNIT_MAP,
-  VOLTAGE_UNIT_MAP,
   toOhms,
   toVolts,
   decomposeOhms,
@@ -28,14 +25,6 @@ import {
   formatResistance,
   getResistorSymbol,
 } from './voltage-divider-format';
-
-export {
-  RESISTOR_UNIT_MAP,
-  VOLTAGE_UNIT_MAP,
-  formatCurrent,
-  formatPower,
-  formatResistance,
-};
 
 const EMPTY_DIVIDER_RESULT: VoltageDividerResult = {
   isValid: false,
@@ -385,53 +374,3 @@ export function applySelectedPairToState(
     selectedPair: null,
   };
 }
-
-/**
- * Common engineering presets for voltage dividers
- */
-export const DIVIDER_PRESETS: DividerPreset[] = [
-  {
-    id: 'logic-5v-to-3v3',
-    title: '5V → 3.3V',
-    description: 'تطبیق سطح منطقی آردوینو به ESP32/Raspberry Pi',
-    vin: '5',
-    vinUnit: 'V',
-    r1: '1.7',
-    r1Unit: 'kOhm',
-    r2: '3.3',
-    r2Unit: 'kOhm',
-  },
-  {
-    id: 'sensor-12v-to-5v',
-    title: '12V → 5V',
-    description: 'کاهش ولتاژ سنسور خودرویی یا صنعتی به ADC میکروکنترلر',
-    vin: '12',
-    vinUnit: 'V',
-    r1: '14',
-    r1Unit: 'kOhm',
-    r2: '10',
-    r2Unit: 'kOhm',
-  },
-  {
-    id: 'half-bridge',
-    title: 'تقسیم نصف (1:2)',
-    description: 'پل مقاومتی متقارن ۵۰٪ جهت ایجاد ولتاژ مرجع مجازی',
-    vin: '10',
-    vinUnit: 'V',
-    r1: '10',
-    r1Unit: 'kOhm',
-    r2: '10',
-    r2Unit: 'kOhm',
-  },
-  {
-    id: 'attenuator-10-to-1',
-    title: 'تضعیف‌کننده 10:1',
-    description: 'پروب اسیلوسکوپ و اندازه‌گیری با مقاومت ورودی ۱ مگااهم',
-    vin: '10',
-    vinUnit: 'V',
-    r1: '9',
-    r1Unit: 'MOhm',
-    r2: '1',
-    r2Unit: 'MOhm',
-  },
-];

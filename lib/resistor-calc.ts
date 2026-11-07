@@ -162,51 +162,6 @@ export { getResistorColorBands } from './resistor-color-code';
 
 export type { ResistorColorBand } from './resistor-color-code';
 
-export interface BranchResistanceSummary {
-  displayValue: string;
-  displayUnit: string;
-  rawOhms: number;
-}
-
-/**
- * Calculates individual branch equivalent resistance when count > 1
- */
-export function getBranchResistance(item: ResistorItem): BranchResistanceSummary | null {
-  const raw = item.value;
-
-  if (raw.length === 0) return null;
-  const num = parseFloat(raw);
-
-  if (isNaN(num) || num < 0) return null;
-
-  const count = item.count > 1 ? (item.count | 0) : 1;
-  const multiplier = UNIT_MAP[item.unit] ?? 1;
-  const branchOhms = (num * multiplier) / count;
-
-  if (branchOhms === 0) {
-    return { rawOhms: 0, displayValue: '0', displayUnit: 'Ω' };
-  }
-
-  let displayValue = '';
-  let displayUnit = 'Ω';
-
-  if (branchOhms >= 1e6) {
-    displayValue = formatPrecision(branchOhms / 1e6, 3);
-    displayUnit = 'MΩ';
-  } else if (branchOhms >= 1e3) {
-    displayValue = formatPrecision(branchOhms / 1e3, 3);
-    displayUnit = 'kΩ';
-  } else if (branchOhms >= 1) {
-    displayValue = formatPrecision(branchOhms, 3);
-    displayUnit = 'Ω';
-  } else {
-    displayValue = formatPrecision(branchOhms * 1e3, 3);
-    displayUnit = 'mΩ';
-  }
-
-  return { displayValue, displayUnit, rawOhms: branchOhms };
-}
-
 /**
  * Calculates per-branch equivalent resistance, current share percentage (Gi / Gtotal),
  * and visual flow velocity/opacity parameters for parallel resistor networks.
